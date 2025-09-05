@@ -1,0 +1,27 @@
+{
+  "name": "create-something",
+  "description": "Create a something app at ease.",
+  "version": "0.0.0",
+  "author": "Something Great Inc.",
+  "scripts": {
+    "build": "tsup src/cli.ts --minify",
+    "clean": "shx rm -rf dist",
+    "dev": "tsup src/cli.ts --watch",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "bin": "dist/cli.js",
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "devDependencies": {
+    "@types/node": "^17.0.29",
+    "shx": "^0.3.4",
+    "tsup": "^5.12.1",
+    "typescript": "^4.6.3"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "create-create-x": "^0.1.2"
+  }
+}
