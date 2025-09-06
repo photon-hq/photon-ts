@@ -2,6 +2,9 @@
   "name": "@something/openai-compatible",
   "module": "src/index.ts",
   "type": "module",
+  "dependencies": {
+    "something": "workspace:*"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
