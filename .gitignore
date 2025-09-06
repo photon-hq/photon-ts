@@ -78,7 +78,7 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 ### Node.js specific ignores (merged from packages/create-something/.gitignore)
-/dist
+dist
 package-lock.json
 yarn.lock
 bun.lockb
