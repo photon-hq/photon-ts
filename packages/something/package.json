@@ -8,6 +8,14 @@
   "peerDependencies": {
     "typescript": "^5"
   },
+  "files": [
+    "dist/**/*",
+    "!dist/**/*.test.*",
+    "!dist/**/__tests__"
+  ],
+  "scripts": {
+    "test": "bun test src/"
+  },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
