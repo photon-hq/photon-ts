@@ -1,6 +1,6 @@
 import type {SomeModifier} from "./modifier/some-modifier.ts";
 import type {Target} from "./target.ts";
-import {connectSomethingServer} from "./io-server/connect.ts";
+import {Server} from "./io-server/server.ts";
 
 export interface Options {
 
@@ -27,7 +27,7 @@ export class App {
     }
 
     public async deploy(...targets: Target[]): Promise<void> {
-        connectSomethingServer()
+        await Server.connect()
 
         for (const target of targets) {
             await target.start()

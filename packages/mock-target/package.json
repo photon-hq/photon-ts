@@ -1,0 +1,17 @@
+{
+  "name": "@something/mock",
+  "module": "src/index.ts",
+  "type": "module",
+  "dependencies": {
+    "something": "workspace:*"
+  },
+  "scripts": {
+    "test": "bun test src/"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.21"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
