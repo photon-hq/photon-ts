@@ -26,7 +26,11 @@ export class App {
         return this;
     }
 
-    public deploy(...targets: Target[]): void {
+    public async deploy(...targets: Target[]): Promise<void> {
         connectSomethingServer()
+
+        for (const target of targets) {
+            await target.start()
+        }
     }
 }
