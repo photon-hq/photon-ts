@@ -1,15 +1,24 @@
-import {Server, type Target} from "something";
+import {Gateway, type Target} from "something";
 
 export class Mock implements Target {
-    async start(): Promise<boolean> {
-        await Server.connect()
+    private readonly userId: string;
+    private gateway!: Gateway;
 
-        console.log('Mock target started')
+    constructor(userId: string) {
+        this.userId = userId;
+    }
+
+    async start(): Promise<boolean> {
+        this.gateway = await Gateway.connect('test')
+
+        console.log(`Mock target started with user: ${this.userId}`)
 
         return true
     }
 
     public sendMessage(msg: string) {
-        console.log('[user] send message: ', msg)
+        this.gateway.Client.send(msg, this.userId)
+
+        console.log(`[user:${this.userId}] send message: ${msg}`)
     }
 }

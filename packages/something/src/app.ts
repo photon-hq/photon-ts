@@ -1,6 +1,6 @@
-import type {SomeModifier} from "./modifier/some-modifier.ts";
+import type {SomeModifier} from "./modifiers/some-modifier.ts";
 import type {Target} from "./target.ts";
-import {Server} from "./io-server/server.ts";
+import {Gateway} from "./gateway/server.ts";
 
 export interface Options {
 
@@ -26,8 +26,14 @@ export class App {
         return this;
     }
 
-    public async deploy(...targets: Target[]): Promise<void> {
-        await Server.connect()
+    public async deploy(api_key: string, ...targets: Target[]): Promise<void>;
+    public async deploy(...targets: Target[]): Promise<void>;
+    public async deploy(first: string | Target, ...rest: Target[]): Promise<void> {
+        const isApiKeyProvided = typeof first === 'string';
+        const api_key = isApiKeyProvided ? first : process.env.SOMETHING_API!;
+        const targets = isApiKeyProvided ? rest : [first, ...rest];
+
+        const gateway = await Gateway.connect(api_key)
 
         for (const target of targets) {
             await target.start()
