@@ -23,7 +23,7 @@ export class App {
     }
 
     public use(modifier: SomeModifier): App {
-        return this;
+        return modifier.main(this);
     }
 
     public async deploy(api_key: string, ...targets: Target[]): Promise<void>;
