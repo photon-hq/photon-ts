@@ -1,6 +1,6 @@
 {
-  "name": "create-something",
-  "description": "Create a something app at ease.",
+  "name": "create-photon",
+  "description": "Create a photon app at ease.",
   "version": "0.0.0",
   "author": "Something Great Inc.",
   "scripts": {

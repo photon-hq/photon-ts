@@ -1,4 +1,4 @@
-import type {SomeModifier} from "./modifiers/some-modifier.ts";
+import type {Modified, SomeModifier} from "./modifiers/some-modifier.ts";
 import type {Target} from "./target.ts";
 import {Gateway} from "./gateway/server.ts";
 
@@ -6,7 +6,7 @@ export interface Options {
 
 }
 
-export class App {
+export class App<S = {}> {
     private readonly name: string;
     private readonly description: string;
     private readonly options: Options | null;
@@ -22,8 +22,8 @@ export class App {
         this.options = options;
     }
 
-    public use(modifier: SomeModifier): App {
-        return modifier.main(this);
+    public use<M extends SomeModifier<App<S>, any>>(modifier: M): App<Modified<M, App<S>>> {
+        return modifier.main(this) as App<Modified<M, App<S>>>;
     }
 
     public async deploy(api_key: string, ...targets: Target[]): Promise<void>;

@@ -1,5 +1,5 @@
 {
-  "name": "@something/openai-compatible",
+  "name": "@photon/openai-compatible",
   "module": "src/index.ts",
   "type": "module",
   "dependencies": {

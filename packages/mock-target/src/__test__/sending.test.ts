@@ -13,6 +13,9 @@ describe('sending', () => {
 
         await app.deploy(mockInstance)
 
+        const a = app.onboard()
+
+
         mockInstance.sendMessage('hello, world')
 
         await new Promise(() => {})

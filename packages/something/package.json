@@ -1,5 +1,5 @@
 {
-  "name": "something",
+  "name": "photon",
   "main": "./src/index.ts",
   "module": "src/index.ts",
   "devDependencies": {

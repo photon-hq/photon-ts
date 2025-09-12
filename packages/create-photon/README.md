@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npx create-something <name>
+npx create-photon <name>
 ```
 
 ## Template string reference

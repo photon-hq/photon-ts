@@ -1,5 +1,5 @@
 {
-  "name": "something-ts",
+  "name": "photon-ts",
   "private": true,
   "workspaces": [
     "packages/*"

@@ -12,7 +12,7 @@ You can change this in \`src/cli.ts\`.
 
 // See https://github.com/painfulexistence/create-create-x/blob/main/README.md for other options.
 
-create('create-something', {
+create('create-photon', {
   templateRoot,
   extra: {
     architecture: {
