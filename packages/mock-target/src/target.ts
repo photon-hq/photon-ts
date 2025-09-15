@@ -1,4 +1,4 @@
-import {Gateway, type Target} from "something";
+import {Gateway, type Target} from "packages/photon";
 
 export class Mock implements Target {
     private readonly userId: string;

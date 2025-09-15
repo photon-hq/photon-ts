@@ -1,5 +1,5 @@
 import {describe, test} from 'bun:test'
-import {App} from "something";
+import {App} from "packages/photon";
 import {Mock} from "../target.ts";
 import crypto from 'crypto';
 

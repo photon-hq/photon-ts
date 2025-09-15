@@ -1,5 +1,5 @@
 import {test, describe} from "bun:test";
-import {App} from "something";
+import {App} from "packages/photon";
 import {OpenAICompatibleTarget} from "../target.ts";
 
 describe("deploy", () => {

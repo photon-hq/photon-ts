@@ -1,4 +1,4 @@
-import type { Target } from 'something';
+import type { Target } from 'packages/photon';
 import {startServer} from "./openai-server/start.ts";
 
 export class OpenAICompatibleTarget implements Target {

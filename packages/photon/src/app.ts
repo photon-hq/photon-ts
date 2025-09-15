@@ -22,8 +22,8 @@ export class App<S = {}> {
         this.options = options;
     }
 
-    public use<M extends SomeModifier<App<S>, any>>(modifier: M): App<Modified<M, App<S>>> {
-        return modifier.main(this) as App<Modified<M, App<S>>>;
+    public use<M extends SomeModifier<this, any>>(modifier: M): Modified<M, this> {
+        return modifier.main(this);
     }
 
     public async deploy(api_key: string, ...targets: Target[]): Promise<void>;
