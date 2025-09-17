@@ -8,7 +8,7 @@ type OutPhoton = {onboard: {}}
 
 export const onboardModifier: SomeModifier<
     string, string,
-    WithoutKey<'onboard'>,
+    InPhoton,
     OutPhoton
 > = {
     main(app) {
@@ -27,10 +27,6 @@ declare module "../app.ts" {
         Description extends string,
         Photon extends {} = {}
     > {
-        /**
-         * Configure onboarding once.
-         * Callable only if Photon has NO `onboard` key.
-         */
         onboard(
             this: Photon extends InPhoton ? App<Name, Description, Photon> : never
         ): App<Name, Description, Merge<Photon, OutPhoton>>;

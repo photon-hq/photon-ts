@@ -3,7 +3,7 @@ import { App, onboardModifier } from '../index';
 
 test("onboard modifier should work once", () => {
     const app = new App('test', 'test app');
-    const onboardedApp = app.use(onboardModifier);
+    const onboardedApp = app.onboard();
     
     // Verify that the app has the onboard property
     expect((onboardedApp as any).photon.onboard).toBeDefined();
