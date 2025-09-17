@@ -20,6 +20,10 @@ export class App<
         this.photon = {} as Photon;
     }
 
+    public main(): this {
+        return this;
+    }
+
     public use<M extends SomeModifier<any, any>>(
         this: Photon extends ModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M
