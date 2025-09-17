@@ -6,16 +6,9 @@ import {App} from "../app.ts";
 type InPhoton = WithoutKey<'onboard'>
 type OutPhoton = {onboard: {}}
 
-export const onboardModifier: SomeModifier<
-    string, string,
-    InPhoton,
-    OutPhoton
-> = {
+export const onboardModifier: SomeModifier<InPhoton, OutPhoton> = {
     main(app) {
-        (app as any).photon = {
-            ...(app as any).photon,
-            onboard: {},
-        };
+        (app as any).photon = { ...(app as any).photon, onboard: {} };
         return app as any;
     }
 };
@@ -32,7 +25,6 @@ declare module "../app.ts" {
         ): App<Name, Description, Merge<Photon, OutPhoton>>;
     }
 }
-
 
 App.prototype.onboard = function <
     Name extends string,

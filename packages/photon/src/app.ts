@@ -20,7 +20,7 @@ export class App<
         this.photon = {} as Photon;
     }
 
-    public use<M extends SomeModifier<Name, Description, any, any>>(
+    public use<M extends SomeModifier<any, any>>(
         this: Photon extends ModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M
     ): App<Name, Description, Merge<Photon, ModOut<M>>> {
