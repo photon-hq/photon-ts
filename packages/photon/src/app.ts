@@ -39,7 +39,7 @@ export class App<
     public async deploy(...targets: Target[]): Promise<void>;
     public async deploy(first: string | Target, ...rest: Target[]): Promise<void> {
         const isApiKeyProvided = typeof first === 'string';
-        const api_key = isApiKeyProvided ? first : process.env.SOMETHING_API!;
+        const api_key = isApiKeyProvided ? first : process.env.PHOTON_API!;
         const targets = isApiKeyProvided ? rest : [first, ...rest];
 
         const gateway = await Gateway.connect(api_key)
