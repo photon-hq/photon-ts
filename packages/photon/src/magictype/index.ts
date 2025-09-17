@@ -1,1 +1,1 @@
-export type NonEmptyString<T extends string> = T extends '' ? never : T;
+export type WithoutKey<K extends PropertyKey> = { [P in K]?: never };

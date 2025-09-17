@@ -3,5 +3,8 @@
   "private": true,
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "type-fest": "^5.0.0"
+  }
 }

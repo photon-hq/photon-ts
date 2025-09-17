@@ -4,7 +4,7 @@
   "type": "module",
   "dependencies": {
     "elysia": "^1.3.21",
-    "something": "workspace:*"
+    "photon": "workspace:*"
   },
   "scripts": {
     "test": "bun test src/"

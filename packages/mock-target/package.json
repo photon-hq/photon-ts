@@ -3,7 +3,7 @@
   "module": "src/index.ts",
   "type": "module",
   "dependencies": {
-    "something": "workspace:*"
+    "photon": "workspace:*"
   },
   "scripts": {
     "test": "bun test src/"

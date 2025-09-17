@@ -1,7 +1,14 @@
 import {App} from "../app.ts";
+import type {Merge} from "type-fest";
 
-export interface SomeModifier<I = App<any>, O = App<any>> {
-    main(app: I): O;
+export interface SomeModifier<
+    Name extends string,
+    Description extends string,
+    In extends {},
+    Out extends {}
+> {
+    main<P extends In>(app: App<Name, Description, P>): App<Name, Description, Merge<P, Out>>;
 }
 
-export type Modified<M, I> = M extends SomeModifier<I, infer O> ? O : never;
+export type ModIn<M>  = M extends SomeModifier<any, any, infer I, any> ? I : never;
+export type ModOut<M> = M extends SomeModifier<any, any, any, infer O> ? O : never;

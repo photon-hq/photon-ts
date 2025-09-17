@@ -1,7 +1,7 @@
-import type {Modified, SomeModifier} from "./modifiers/some-modifier.ts";
+import type {ModIn, ModOut, SomeModifier} from "./modifiers/some-modifier.ts";
 import type {Target} from "./target.ts";
 import {Gateway} from "./gateway/server.ts";
-import type {NonEmptyString} from "./magictype";
+import type {Merge, NonEmptyString} from "type-fest";
 
 export class App<
     Name extends string,
@@ -11,7 +11,7 @@ export class App<
     private readonly name: Name;
     private readonly description: Description;
 
-    private photon: Photon;
+    photon: Photon;
 
     public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>) {
         this.name = name;
@@ -20,8 +20,15 @@ export class App<
         this.photon = {} as Photon;
     }
 
-    public use<M extends SomeModifier<this, any>>(modifier: M): Modified<M, this> {
-        return modifier.main(this);
+    public use<M extends SomeModifier<Name, Description, any, any>>(
+        this: Photon extends ModIn<M> ? App<Name, Description, Photon> : never,
+        modifier: M
+    ): App<Name, Description, Merge<Photon, ModOut<M>>> {
+        return modifier.main(this) as unknown as App<
+            Name,
+            Description,
+            Merge<Photon, ModOut<M>>
+        >;
     }
 
     public async deploy(api_key: string, ...targets: Target[]): Promise<void>;
