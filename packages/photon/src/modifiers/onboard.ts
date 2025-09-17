@@ -14,7 +14,6 @@ export const onboardModifier = {
             ? "ERROR: Cannot use onboardModifier twice - app is already onboarded" 
             : T
     ): T & OnboardedMarker {
-        // Properly extend the app instance while preserving prototype chain  
         const onboardedApp = Object.create(Object.getPrototypeOf(app));
         Object.assign(onboardedApp, app, { __onboarded: true as const });
         return onboardedApp as T & OnboardedMarker;
