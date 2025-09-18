@@ -33,7 +33,7 @@ App.prototype.onboard = function <
 >(
     this: Photon extends InPhoton ? App<Name, Description, Photon> : never
 ): App<Name, Description, Merge<Photon, OutPhoton>> {
-    return this.use(onboardModifier) as unknown as App<Name, Description, Merge<Photon, OutPhoton>>
+    return this.modifier(onboardModifier) as unknown as App<Name, Description, Merge<Photon, OutPhoton>>
 };
 
 export {};
