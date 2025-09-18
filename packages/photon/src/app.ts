@@ -1,7 +1,16 @@
-import type {ModIn, ModOut, SomeModifier} from "./modifiers/some-modifier.ts";
+import {
+    type BaseModIn,
+    type BaseModOut,
+    type BaseOf, BasePhoton,
+    type ModIn,
+    type ModOut,
+    type SomeBaseModifier,
+    type SomeModifier, type WithBase
+} from "./modifiers/some-modifier.ts";
 import type {Target} from "./target.ts";
 import {Gateway} from "./gateway/server.ts";
 import type {Merge, NonEmptyString} from "type-fest";
+import {onboardModifier} from "./modifiers/onboard.ts";
 
 export class App<
     Name extends string,
@@ -31,6 +40,27 @@ export class App<
         >;
     }
 
+    public baseModifier<M extends SomeBaseModifier<any, any, any>>(
+        this: Photon extends BaseModIn<M> ? App<Name, Description, Photon> : never,
+        modifier: M
+    ): App<Name, Description,
+        Merge< Merge<Photon, BaseModOut<M>>, WithBase<BaseOf<M>>>
+    > {
+        const next = modifier.main(this) as unknown as App<
+            Name,
+            Description,
+            Merge<Photon, BaseModOut<M>>
+        >;
+
+        (next.photon as any)[BasePhoton] = modifier.base;
+
+        return next as unknown as App<
+            Name,
+            Description,
+            Merge< Merge<Photon, BaseModOut<M>>, WithBase<BaseOf<M>>>
+        >;
+    }
+
     public async deploy(api_key: string, ...targets: Target[]): Promise<void>;
     public async deploy(...targets: Target[]): Promise<void>;
     public async deploy(first: string | Target, ...rest: Target[]): Promise<void> {
@@ -45,3 +75,6 @@ export class App<
         }
     }
 }
+
+const app = new App('test', 'test');
+const app1 = app.baseModifier(onboardModifier)
