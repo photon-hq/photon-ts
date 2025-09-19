@@ -10,7 +10,7 @@ import {
 import type {Target} from "./target.ts";
 import {Gateway} from "./gateway/server.ts";
 import type {Merge, NonEmptyString} from "type-fest";
-import {BasePhoton, type ReturnPhoton} from "./types";
+import {BasePhoton, type ReturnPhoton, type UniqueOf} from "./types";
 
 export class App<
     Name extends string,
@@ -31,6 +31,14 @@ export class App<
     
     public asPhoton<O extends Merge<{}, Omit<Photon, typeof BasePhoton>>>(): O {
         return this.photon as any as O
+    }
+
+    public use<P extends {}>(
+        this: Photon extends UniqueOf<P> ? App<Name, Description, Photon> : never,
+        photon: P
+    ): App<Name, Description, Merge<Photon, P>> {
+        this.photon = { ...(this.photon as any), ...photon };
+        return this as any;
     }
 
     public modifier<M extends SomeModifier<any, any>>(
