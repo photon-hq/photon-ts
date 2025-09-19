@@ -3,9 +3,9 @@ import {
     type BaseModOut,
     type BaseOf, BasePhoton,
     type ModIn,
-    type ModOut,
+    type ModOut, type ReturnPhoton,
     type SomeBaseModifier,
-    type SomeModifier, type WithBase
+    type SomeModifier, UniquePhoton, type WithBase
 } from "./modifiers/some-modifier.ts";
 import type {Target} from "./target.ts";
 import {Gateway} from "./gateway/server.ts";
@@ -43,10 +43,20 @@ export class App<
     public baseModifier<M extends SomeBaseModifier<any, any, any>>(
         this: Photon extends BaseModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M
-    ): App<Name, Description,
-        Merge< Merge<Photon, BaseModOut<M>>, WithBase<BaseOf<M>>>
-    > {
-        const next = modifier.main(this) as unknown as App<
+    ): App<Name, Description, ReturnPhoton<Photon, M, false>>;
+
+    public baseModifier<M extends SomeBaseModifier<any, any, any>, U extends boolean>(
+        this: Photon extends BaseModIn<M> ? App<Name, Description, Photon> : never,
+        modifier: M,
+        unique: U
+    ): App<Name, Description, ReturnPhoton<Photon, M, U>>;
+
+    public baseModifier<M extends SomeBaseModifier<any, any, any>>(
+        this: any,
+        modifier: M,
+        unique?: boolean
+    ) {
+        const next = modifier.main(this) as App<
             Name,
             Description,
             Merge<Photon, BaseModOut<M>>
@@ -54,11 +64,12 @@ export class App<
 
         (next.photon as any)[BasePhoton] = modifier.base;
 
-        return next as unknown as App<
-            Name,
-            Description,
-            Merge< Merge<Photon, BaseModOut<M>>, WithBase<BaseOf<M>>>
-        >;
+        if (unique) {
+            const prev = (next.photon as any)[UniquePhoton] ?? {};
+            (next.photon as any)[UniquePhoton] = { ...prev };
+        }
+
+        return next as any;
     }
 
     public async deploy(api_key: string, ...targets: Target[]): Promise<void>;
@@ -77,4 +88,4 @@ export class App<
 }
 
 const app = new App('test', 'test');
-const app1 = app.baseModifier(onboardModifier)
+const app1 = app.baseModifier(onboardModifier, false);

@@ -24,3 +24,18 @@ export type BaseOf<M>     = M extends SomeBaseModifier<any, any, infer B> ? B : 
 
 export const BasePhoton: unique symbol = Symbol('base');
 export type WithBase<B extends string> = { [BasePhoton]: B };
+
+export const UniquePhoton: unique symbol = Symbol('unique');
+export type UniqueOf<P> = P extends { [UniquePhoton]: infer U } ? U : {};
+export type WithUnique<U extends {}> = { [UniquePhoton]: U };
+// return-photon builder that conditionally accumulates unique
+export type ReturnPhoton<P, M, U extends boolean> =
+    Merge<
+        Merge<P, BaseModOut<M>>,
+        Merge<
+            WithBase<BaseOf<M>>,
+            U extends true
+                ? WithUnique<Merge<UniqueOf<P>, BaseModIn<M>>>
+                : {}
+        >
+    >;
