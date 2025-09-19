@@ -1,11 +1,11 @@
 import {
     type BaseModIn,
     type BaseModOut,
-    type BaseOf, BasePhoton,
+    type BaseOf, BasePhoton, type IsUnique,
     type ModIn,
     type ModOut, type ReturnPhoton,
     type SomeBaseModifier,
-    type SomeModifier, UniquePhoton, type WithBase
+    type SomeModifier, type SomeUniqueBaseModifier, type UniqueOf, UniquePhoton, type WithBase
 } from "./modifiers/some-modifier.ts";
 import type {Target} from "./target.ts";
 import {Gateway} from "./gateway/server.ts";
@@ -43,31 +43,14 @@ export class App<
     public baseModifier<M extends SomeBaseModifier<any, any, any>>(
         this: Photon extends BaseModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M
-    ): App<Name, Description, ReturnPhoton<Photon, M, false>>;
-
-    public baseModifier<M extends SomeBaseModifier<any, any, any>, U extends boolean>(
-        this: Photon extends BaseModIn<M> ? App<Name, Description, Photon> : never,
-        modifier: M,
-        unique: U
-    ): App<Name, Description, ReturnPhoton<Photon, M, U>>;
-
-    public baseModifier<M extends SomeBaseModifier<any, any, any>>(
-        this: any,
-        modifier: M,
-        unique?: boolean
-    ) {
-        const next = modifier.main(this) as App<
+    ): App<Name, Description, ReturnPhoton<Photon, M>> {
+        const next = modifier.main(this) as unknown as App<
             Name,
             Description,
             Merge<Photon, BaseModOut<M>>
         >;
 
         (next.photon as any)[BasePhoton] = modifier.base;
-
-        if (unique) {
-            const prev = (next.photon as any)[UniquePhoton] ?? {};
-            (next.photon as any)[UniquePhoton] = { ...prev };
-        }
 
         return next as any;
     }
@@ -86,6 +69,3 @@ export class App<
         }
     }
 }
-
-const app = new App('test', 'test');
-const app1 = app.baseModifier(onboardModifier, false);

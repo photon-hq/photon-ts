@@ -1,4 +1,4 @@
-import type {SomeBaseModifier, SomeModifier} from "./some-modifier.ts";
+import type {SomeBaseModifier, SomeModifier, SomeUniqueBaseModifier} from "./some-modifier.ts";
 import type {WithoutKey} from "../magictype";
 import type {Merge} from "type-fest";
 import {App} from "../app.ts";
@@ -6,7 +6,8 @@ import {App} from "../app.ts";
 type InPhoton = WithoutKey<'onboard'>
 type OutPhoton = {onboard: {}}
 
-export const onboardModifier: SomeBaseModifier<InPhoton, OutPhoton, "onboard"> = {
+export const onboardModifier: SomeUniqueBaseModifier<InPhoton, OutPhoton, "onboard"> = {
+    unique: true,
     base: "onboard",
 
     main(app) {
