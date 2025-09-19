@@ -1,6 +1,3 @@
-import type {TestApp} from "./index.ts";
+import {testApp} from "./index.ts";
 
-const b = (app: TestApp) => {
-    return app.onboard();
-};
-export default b;
+export const onboardB = testApp.onboard().asPhoton()

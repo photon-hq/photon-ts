@@ -1,5 +1,5 @@
 import type {SomeBaseModifier, SomeModifier, SomeUniqueBaseModifier} from "./some-modifier.ts";
-import type {WithoutKey} from "../types";
+import type {ReturnPhoton, WithoutKey} from "../types";
 import type {Merge} from "type-fest";
 import {App} from "../app.ts";
 
@@ -25,7 +25,7 @@ declare module "../app.ts" {
     > {
         onboard(
             this: Photon extends InPhoton ? App<Name, Description, Photon> : never
-        ): App<Name, Description, Merge<Photon, OutPhoton>>;
+        ): App<Name, Description, ReturnPhoton<Photon, typeof onboardModifier>>;
     }
 }
 
@@ -35,8 +35,8 @@ App.prototype.onboard = function <
     Photon extends {} = {}
 >(
     this: Photon extends InPhoton ? App<Name, Description, Photon> : never
-): App<Name, Description, Merge<Photon, OutPhoton>> {
-    return this.baseModifier(onboardModifier) as unknown as App<Name, Description, Merge<Photon, OutPhoton>>
+): App<Name, Description, ReturnPhoton<Photon, typeof onboardModifier>> {
+    return this.baseModifier(onboardModifier) as any
 };
 
 export {};

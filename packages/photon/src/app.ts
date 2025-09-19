@@ -1,16 +1,16 @@
 import {
     type BaseModIn,
     type BaseModOut,
-    type BaseOf, BasePhoton, type IsUnique,
+    type BaseOf,
     type ModIn,
-    type ModOut, type ReturnPhoton,
+    type ModOut,
     type SomeBaseModifier,
-    type SomeModifier, type SomeUniqueBaseModifier, type UniqueOf, UniquePhoton, type WithBase
+    type SomeModifier
 } from "./modifiers/some-modifier.ts";
 import type {Target} from "./target.ts";
 import {Gateway} from "./gateway/server.ts";
 import type {Merge, NonEmptyString} from "type-fest";
-import {onboardModifier} from "./modifiers/onboard.ts";
+import {BasePhoton, type ReturnPhoton} from "./types";
 
 export class App<
     Name extends string,
@@ -27,6 +27,10 @@ export class App<
         this.description = description;
 
         this.photon = {} as Photon;
+    }
+    
+    public asPhoton<O extends Merge<{}, Omit<Photon, typeof BasePhoton>>>(): O {
+        return this.photon as any as O
     }
 
     public modifier<M extends SomeModifier<any, any>>(
