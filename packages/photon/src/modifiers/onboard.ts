@@ -1,5 +1,5 @@
 import type {SomeBaseModifier, SomeModifier, SomeUniqueBaseModifier} from "./some-modifier.ts";
-import type {WithoutKey} from "../magictype";
+import type {WithoutKey} from "../types";
 import type {Merge} from "type-fest";
 import {App} from "../app.ts";
 

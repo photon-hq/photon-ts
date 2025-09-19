@@ -1,0 +1,23 @@
+import type {Merge} from "type-fest";
+import type {BaseModIn, BaseModOut, BaseOf, SomeUniqueBaseModifier} from "../modifiers/some-modifier.ts";
+
+export type WithoutKey<K extends PropertyKey> = { [P in K]?: never };
+
+export const BasePhoton: unique symbol = Symbol('base');
+export type WithBase<B extends string> = { [BasePhoton]: B };
+
+export const UniquePhoton: unique symbol = Symbol('unique');
+export type UniqueOf<P> = P extends { [UniquePhoton]: infer U } ? U : {};
+export type WithUnique<U extends {}> = { [UniquePhoton]: U };
+export type IsUnique<M> = M extends SomeUniqueBaseModifier<any, any, any> ? true : false;
+// return-photon builder that conditionally accumulates unique
+export type ReturnPhoton<P, M> =
+    Merge<
+        Merge<P, BaseModOut<M>>,
+        Merge<
+            WithBase<BaseOf<M>>,
+            IsUnique<M> extends true
+                ? WithUnique<Merge<UniqueOf<P>, BaseModIn<M>>>
+                : {}
+        >
+    >;
