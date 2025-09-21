@@ -1,4 +1,4 @@
-import type {SomeModifier} from "./some-modifier.ts";
+import type {ModOut, SomeModifier} from "./some-modifier.ts";
 import {type BaseOf, BasePhoton} from "../types";
 import {App} from "../app.ts";
 import type {Merge} from "type-fest";
@@ -28,5 +28,27 @@ export const sendModifier: SomeModifier<InPhoton, OutFn> = {
     }
 };
 
+declare module "../app.ts" {
+    interface App<
+        Name extends string,
+        Description extends string,
+        Photon extends {} = {}
+    > {
+        send(
+            this: Photon extends InPhoton ? App<Name, Description, Photon> : never
+        ): App<Name, Description, Merge<Photon, ModOut<typeof sendModifier, Photon>>>;
+    }
+}
+
+App.prototype.send = function <
+    Name extends string,
+    Description extends string,
+    Photon extends {} = {}
+>(
+    this: Photon extends InPhoton ? App<Name, Description, Photon> : never
+): App<Name, Description, Merge<Photon, ModOut<typeof sendModifier, Photon>>> {
+    return this.modifier(sendModifier) as any
+};
+
 const app = new App('test', 'test');
-const c = app.onboard().modifier(sendModifier);
+const c = app.onboard().send()

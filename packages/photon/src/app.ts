@@ -9,7 +9,7 @@ import {
 import type {Target} from "./target.ts";
 import {Gateway} from "./gateway/server.ts";
 import type {Merge, NonEmptyString} from "type-fest";
-import {BasePhoton, type ReturnPhoton, type UniqueOf} from "./types";
+import {BasePhoton, type ReturnWithUnique, type UniqueOf} from "./types";
 
 export class App<
     Name extends string,
@@ -54,7 +54,7 @@ export class App<
     public baseModifier<M extends SomeBaseModifier<any, any, any>>(
         this: Photon extends BaseModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M
-    ): App<Name, Description, ReturnPhoton<Photon, M>> {
+    ): App<Name, Description, ReturnWithUnique<Photon, M>> {
         const next = modifier.main(this) as unknown as App<
             Name,
             Description,

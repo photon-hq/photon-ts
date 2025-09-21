@@ -13,7 +13,7 @@ export type UniqueOf<P> = P extends { [UniquePhoton]: infer U } ? U : {};
 export type WithUnique<U extends {}> = { [UniquePhoton]: U };
 export type IsUnique<M> = M extends SomeUniqueBaseModifier<any, any, any> ? true : false;
 // return-photon builder that conditionally accumulates unique
-export type ReturnPhoton<P, M> =
+export type ReturnWithUnique<P, M> =
     Merge<
         Merge<P, BaseModOut<M>>,
         Merge<
