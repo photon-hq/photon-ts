@@ -10,7 +10,7 @@ export const onboardModifier: SomeUniqueBaseModifier<InPhoton, OutPhoton, "onboa
     base: "onboard",
 
     main(app) {
-        (app as any).photon = { ...(app as any).photon, onboard: {} };
+        (app as any).photon = { ...(app as any).photon, onboard: {flow: []} };
         return app as any;
     }
 };
