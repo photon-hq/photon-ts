@@ -1,10 +1,9 @@
 import type {SomeBaseModifier, SomeModifier, SomeUniqueBaseModifier} from "./some-modifier.ts";
 import type {ReturnPhoton, WithoutKey} from "../types";
-import type {Merge} from "type-fest";
 import {App} from "../app.ts";
 
 type InPhoton = WithoutKey<'onboard'>
-type OutPhoton = {onboard: {}}
+type OutPhoton = {onboard: {flow: []}}
 
 export const onboardModifier: SomeUniqueBaseModifier<InPhoton, OutPhoton, "onboard"> = {
     unique: true,

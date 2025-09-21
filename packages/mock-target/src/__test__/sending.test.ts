@@ -1,10 +1,10 @@
 import {describe, test} from 'bun:test'
-import {App} from "packages/photon";
+import {App} from "photon";
 import {Mock} from "../target.ts";
 import crypto from 'crypto';
 
 describe('sending', () => {
-    const app = new App('Test Bot', '')
+    const app = new App('Test Bot', 'hi')
 
     test('one-way sending from user', async () => {
         const userId = crypto.randomUUID();
@@ -13,7 +13,9 @@ describe('sending', () => {
 
         await app.deploy(mockInstance)
 
-        const a = app.onboard()
+        const a = app.onboard().asPhoton()
+        const b = app.onboard().asPhoton()
+        app.use(a)
 
 
         mockInstance.sendMessage('hello, world')

@@ -1,7 +1,6 @@
 import {
     type BaseModIn,
     type BaseModOut,
-    type BaseOf,
     type ModIn,
     type ModOut,
     type SomeBaseModifier,
@@ -44,11 +43,11 @@ export class App<
     public modifier<M extends SomeModifier<any, any>>(
         this: Photon extends ModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M
-    ): App<Name, Description, Merge<Photon, ModOut<M>>> {
+    ): App<Name, Description, Merge<Photon, ModOut<M, Photon>>> {
         return modifier.main(this) as unknown as App<
             Name,
             Description,
-            Merge<Photon, ModOut<M>>
+            Merge<Photon, ModOut<M, Photon>>
         >;
     }
 
