@@ -10,7 +10,7 @@ import type {Target} from "./target.ts";
 import {Gateway} from "./gateway/server.ts";
 import type {Merge, NonEmptyString} from "type-fest";
 import {BasePhoton, type ReturnWithUnique, type UniqueOf} from "./types";
-import {type CompiledPhoton, CompiledPhotonSchema} from "./types/compiled-photon.ts";
+import {type CompiledPhoton, CompiledPhotonSchema} from "./types";
 
 export class App<
     Name extends string,
@@ -86,6 +86,8 @@ export class App<
         console.dir(compiledPhoton, {depth: null})
 
         const gateway = await Gateway.connect(api_key)
+
+        await gateway.Server.register(compiledPhoton)
 
         for (const target of targets) {
             await target.start()

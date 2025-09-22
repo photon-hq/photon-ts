@@ -12,7 +12,18 @@ class GatewayServer extends GatewayBase {
         },
 
         register: async (photon: CompiledPhoton) => {
-
+            return new Promise<void>((resolve, reject) => {
+                this.socket.emit('register', {
+                    'apiKey': this.api_key,
+                    'photon': photon
+                }, (response: any) => {
+                    if (response.success) {
+                        resolve();
+                    } else {
+                        reject(new Error(response.error));
+                    }
+                })
+            })
         }
     }
 }
