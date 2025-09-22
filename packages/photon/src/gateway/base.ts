@@ -12,7 +12,7 @@ export class GatewayBase {
 
         gateway.api_key = api_key;
 
-        new Promise<void>((resolve) => {
+        await new Promise<void>((resolve) => {
             gateway.socket = io('http://localhost:4001', {
                 transports: ['websocket']
             });

@@ -1,6 +1,9 @@
 import type {Merge} from "type-fest";
-import type {BaseModIn, BaseModOut, BaseModOf, SomeUniqueBaseModifier} from "../modifiers/some-modifier.ts";
+
 import './flow-types.ts'
+import './compiled-photon.ts';
+
+import type {BaseModIn, BaseModOut, BaseModOf, SomeUniqueBaseModifier} from "../modifiers/some-modifier.ts";
 
 export type WithoutKey<K extends PropertyKey> = { [P in K]?: never };
 

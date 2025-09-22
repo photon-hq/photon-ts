@@ -11,11 +11,11 @@ describe('sending', () => {
 
         const mockInstance = new Mock(userId)
 
-        await app.deploy(mockInstance)
-
-        const a = app.onboard().asPhoton()
+        const a = app.onboard().send("hello world").asPhoton()
         const b = app.onboard().asPhoton()
         app.use(a)
+
+        await app.deploy(mockInstance.mockKey, mockInstance)
 
 
         mockInstance.sendMessage('hello, world')

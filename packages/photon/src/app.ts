@@ -10,6 +10,7 @@ import type {Target} from "./target.ts";
 import {Gateway} from "./gateway/server.ts";
 import type {Merge, NonEmptyString} from "type-fest";
 import {BasePhoton, type ReturnWithUnique, type UniqueOf} from "./types";
+import {type CompiledPhoton, CompiledPhotonSchema} from "./types/compiled-photon.ts";
 
 export class App<
     Name extends string,
@@ -66,12 +67,24 @@ export class App<
         return next as any;
     }
 
+    private compilePhoton(): CompiledPhoton {
+        return CompiledPhotonSchema.parse(this.photon)
+    }
+
     public async deploy(api_key: string, ...targets: Target[]): Promise<void>;
     public async deploy(...targets: Target[]): Promise<void>;
     public async deploy(first: string | Target, ...rest: Target[]): Promise<void> {
         const isApiKeyProvided = typeof first === 'string';
-        const api_key = isApiKeyProvided ? first : process.env.PHOTON_API!;
+        const api_key = isApiKeyProvided ? first : process.env.PHOTON_API;
         const targets = isApiKeyProvided ? rest : [first, ...rest];
+
+        if (!api_key) {
+            throw new Error('API key is required. Provide it as first argument or set PHOTON_API environment variable.');
+        }
+
+        const compiledPhoton = this.compilePhoton();
+
+        console.dir(compiledPhoton, {depth: null})
 
         const gateway = await Gateway.connect(api_key)
 
