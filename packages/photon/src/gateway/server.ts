@@ -1,4 +1,5 @@
 import {GatewayBase} from "./base.ts";
+import type {CompiledPhoton} from "../types/compiled-photon.ts";
 
 class GatewayServer extends GatewayBase {
     constructor() {
@@ -7,6 +8,10 @@ class GatewayServer extends GatewayBase {
 
     readonly Server = {
         send: async (msg: string, userId: string) => {
+
+        },
+
+        register: async (photon: CompiledPhoton) => {
 
         }
     }

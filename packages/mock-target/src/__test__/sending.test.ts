@@ -17,7 +17,6 @@ describe('sending', () => {
 
         await app.deploy(mockInstance.mockKey, mockInstance)
 
-
         mockInstance.sendMessage('hello, world')
 
         await new Promise(() => {})
