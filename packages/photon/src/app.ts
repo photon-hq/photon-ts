@@ -30,14 +30,13 @@ export class App<
     }
     
     public asPhoton<O extends Merge<{}, Omit<Photon, typeof BasePhoton>>>(): O {
-        return this.photon as any as O
+        return this.photon as any
     }
 
     public use<P extends {}>(
         this: Photon extends UniqueOf<P> ? App<Name, Description, Photon> : never,
         photon: P
     ): App<Name, Description, Merge<Photon, P>> {
-        this.photon = { ...(this.photon as any), ...photon };
         return this as any;
     }
 

@@ -1,6 +1,7 @@
 import type {SomeBaseModifier, SomeModifier, SomeUniqueBaseModifier} from "./some-modifier.ts";
 import type {ReturnWithUnique, WithoutKey} from "../types";
 import {App} from "../app.ts";
+import merge from 'deepmerge';
 
 type InPhoton = WithoutKey<'onboard'>
 type OutPhoton = {onboard: {flow: []}}
@@ -10,7 +11,7 @@ export const onboardModifier: SomeUniqueBaseModifier<InPhoton, OutPhoton, "onboa
     base: "onboard",
 
     main(app) {
-        (app as any).photon = { ...(app as any).photon, onboard: {flow: []} };
+        (app as any).photon = merge(app.photon, {onboard: {flow: []}})
         return app as any;
     }
 };
