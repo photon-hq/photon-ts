@@ -9,6 +9,8 @@ describe('sending', () => {
     test('one-way sending from user', async () => {
         const userId = crypto.randomUUID();
 
+        console.log(`userId: ${userId}`)
+
         const mockInstance = new Mock(userId)
 
         const a = app.onboard().send("hello world").asPhoton()
@@ -17,7 +19,7 @@ describe('sending', () => {
 
         await app.deploy(mockInstance.mockKey, mockInstance)
 
-        mockInstance.sendMessage('hello, world')
+        await mockInstance.sendMessage('hello, world')
 
         await new Promise(() => {})
     }, 60 * 60 * 1000)
