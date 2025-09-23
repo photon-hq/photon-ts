@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import {CompiledPhotonSchema} from "../../types/compiled-photon.ts";
+import {CompiledPhotonSchema} from "../../types";
 
 export const registerSchema = z.object({
     apiKey: z.string(),

@@ -1,5 +1,5 @@
 import {GatewayBase} from "./base.ts";
-import type {CompiledPhoton} from "../types/compiled-photon.ts";
+import type {CompiledPhoton} from "../types";
 
 class GatewayServer extends GatewayBase {
     constructor() {

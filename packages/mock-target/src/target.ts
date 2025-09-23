@@ -3,6 +3,7 @@ import {Gateway, type Target} from "photon";
 export class Mock implements Target {
     private readonly userId: string;
     private gateway!: Gateway;
+
     readonly mockKey = `pho_${crypto.randomUUID()}`;
 
     constructor(userId: string) {
@@ -14,11 +15,15 @@ export class Mock implements Target {
 
         console.log(`Mock target started with user: ${this.userId}`)
 
+        await this.gateway.Client.registerUser({apiKey: this.mockKey, userId: this.userId})
+
+        console.log(`[user:${this.userId}] registered on gateway`)
+
         return true
     }
 
-    public sendMessage(msg: string) {
-        this.gateway.Client.send(msg, this.userId)
+    public async sendMessage(msg: string) {
+        await this.gateway.Client.send(msg, this.userId)
 
         console.log(`[user:${this.userId}] send message: ${msg}`)
     }
