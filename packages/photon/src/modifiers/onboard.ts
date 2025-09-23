@@ -3,10 +3,9 @@ import type {
   SomeModifier,
   SomeUniqueBaseModifier,
 } from "./some-modifier.ts";
-import type { ReturnWithUnique, WithoutKey } from "../types";
-import { App } from "../app.ts";
+import type { WithoutKey } from "../types";
 
-type InPhoton = WithoutKey<"onboard">;
+export type InPhoton = WithoutKey<"onboard">;
 type OutPhoton = { onboard: { flow: [] } };
 
 export function onboardModifier(): SomeUniqueBaseModifier<
@@ -24,27 +23,3 @@ export function onboardModifier(): SomeUniqueBaseModifier<
     },
   };
 }
-
-declare module "../app.ts" {
-  interface App<
-    Name extends string,
-    Description extends string,
-    Photon extends {} = {}
-  > {
-    onboard(
-      this: Photon extends InPhoton ? App<Name, Description, Photon> : never
-    ): App<Name, Description, ReturnWithUnique<Photon, typeof onboardModifier>>;
-  }
-}
-
-App.prototype.onboard = function <
-  Name extends string,
-  Description extends string,
-  Photon extends {} = {}
->(
-  this: Photon extends InPhoton ? App<Name, Description, Photon> : never
-): App<Name, Description, ReturnWithUnique<Photon, typeof onboardModifier>> {
-  return this.baseModifier(onboardModifier()) as any;
-};
-
-export {};
