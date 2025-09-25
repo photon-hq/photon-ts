@@ -1,9 +1,9 @@
-import * as v from "valibot";
+import { z } from 'zod';
 
-export const messageSchema = v.object({
-  role: v.picklist(["client", "server"] as const),
-  content: v.string(),
-  userId: v.string(),
-});
+export const messageSchema = z.object({
+  role: z.enum(['client', 'server']),
+  content: z.string(),
+  userId: z.string()
+})
 
-export type Message = v.InferOutput<typeof messageSchema>;
+export type Message = z.infer<typeof messageSchema>;

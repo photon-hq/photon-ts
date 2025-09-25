@@ -1,8 +1,8 @@
-import * as v from "valibot";
+import { z } from 'zod';
 
-export const registerUserSchema = v.object({
-  apiKey: v.string(),
-  userId: v.string(),
-});
+export const registerUserSchema = z.object({
+  apiKey: z.string(),
+  userId: z.string()
+})
 
-export type RegisterUser = v.InferOutput<typeof registerUserSchema>;
+export type RegisterUser = z.infer<typeof registerUserSchema>;

@@ -21,6 +21,6 @@
   ],
   "dependencies": {
     "type-fest": "^5.0.1",
-    "valibot": "^1.1.0"
+    "zod": "^4.1.11"
   }
 }

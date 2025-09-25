@@ -1,9 +1,9 @@
-import * as v from "valibot";
-import { CompiledPhotonSchema } from "../../types";
+import { z } from 'zod';
+import {CompiledPhotonSchema} from "photon";
 
-export const registerSchema = v.object({
-  apiKey: v.string(),
-  photon: CompiledPhotonSchema,
-});
+export const registerSchema = z.object({
+  apiKey: z.string(),
+  photon: CompiledPhotonSchema
+})
 
-export type Register = v.InferOutput<typeof registerSchema>;
+export type Register = z.infer<typeof registerSchema>;

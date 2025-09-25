@@ -1,16 +1,12 @@
-import { FlowTypeSchema } from "./flow-types.ts";
-import * as v from "valibot";
+import {FlowTypeSchema} from "./flow-types.ts";
+import {z} from "zod";
 
-export const CompiledPhotonSchema = v.object({
-  onboard: v.optional(
-    v.object({
-      flow: v.array(
-        v.object({
-          type: FlowTypeSchema,
-        })
-      ),
-    })
-  ),
-});
+export const CompiledPhotonSchema = z.object({
+    onboard: z.object({
+        flow: z.array(z.object({
+            type: FlowTypeSchema
+        }).loose())
+    }).optional()
+}).strip()
 
-export type CompiledPhoton = v.InferInput<typeof CompiledPhotonSchema>;
+export type CompiledPhoton = z.infer<typeof CompiledPhotonSchema>;
