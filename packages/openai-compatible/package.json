@@ -1,18 +1,15 @@
 {
   "name": "@photon/openai-compatible",
+  "scripts": {
+    "test": "bun test"
+  },
   "module": "src/index.ts",
   "type": "module",
-  "dependencies": {
-    "elysia": "^1.3.21",
-    "photon": "workspace:*"
-  },
-  "scripts": {
-    "test": "bun test src/"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.2.21"
-  },
   "peerDependencies": {
-    "typescript": "^5.9.2"
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "elysia": "^1.4.7",
+    "photon": "workspace:*"
   }
 }

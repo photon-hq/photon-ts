@@ -1,1 +1,1 @@
-export { Mock } from './target'
+export { Mock } from "./target.ts";

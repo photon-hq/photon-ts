@@ -1,1 +1,1 @@
-export {OpenAICompatibleTarget} from './target';
+export { OpenAICompatibleTarget } from "../target.ts";

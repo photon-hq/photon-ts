@@ -1,5 +1,5 @@
-import type { Target } from 'packages/photon';
-import {startServer} from "./openai-server/start.ts";
+import type { Target } from "photon";
+import { startServer } from "./src/openai-server/start.ts";
 
 export class OpenAICompatibleTarget implements Target {
     private readonly port: number;
@@ -9,7 +9,7 @@ export class OpenAICompatibleTarget implements Target {
     }
 
     async start(): Promise<boolean> {
-        startServer(this.port)
+        startServer(this.port);
 
         return true;
     }
