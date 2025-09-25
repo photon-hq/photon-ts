@@ -27,6 +27,7 @@ export class Mock implements Target {
 
   public async sendMessage(msg: string) {
     await this.gateway.Client.send({
+      type: "plain_text",
       content: msg,
       userId: this.userId,
       payload: {message: msg},

@@ -11,6 +11,9 @@ import type {
 } from "../modifiers/some-modifier.ts";
 
 export type WithoutKey<K extends PropertyKey> = { [P in K]?: never };
+export type OmitDiscriminant<T, K extends keyof T> = T extends any
+    ? Omit<T, K>
+    : never;
 
 export const BasePhoton: unique symbol = Symbol("base");
 export type WithBase<B extends string> = { [BasePhoton]: B };

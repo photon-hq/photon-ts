@@ -1,5 +1,5 @@
 import {z} from "zod";
 
-export const FlowTypeSchema = z.enum(["send", "tell"]);
+export const flowTypeSchema = z.enum(["send", "tell"]);
 
-export type FlowType = z.infer<typeof FlowTypeSchema>;
+export type FlowType = z.infer<typeof flowTypeSchema>;

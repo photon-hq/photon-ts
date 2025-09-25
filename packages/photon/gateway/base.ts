@@ -1,48 +1,50 @@
-import { io, Socket } from "socket.io-client";
-import { type Message, messageSchema } from "./types";
-import { z } from 'zod';
+import {io, Socket} from "socket.io-client";
+import {type Message, messageSchema} from "./types";
+import {z} from 'zod';
 
 export class GatewayBase {
-  protected socket!: Socket;
-  protected api_key!: string;
+    protected socket!: Socket;
+    protected api_key!: string;
 
-  protected constructor() {}
+    protected constructor() {
+    }
 
-  static async connect<T extends GatewayBase>(
-    this: new () => T,
-    api_key: string
-  ): Promise<T> {
-    const gateway = new this();
+    static async connect<T extends GatewayBase>(
+        this: new () => T,
+        api_key: string
+    ): Promise<T> {
+        const gateway = new this();
 
-    gateway.api_key = api_key;
+        gateway.api_key = api_key;
 
-    await new Promise<void>((resolve) => {
-      gateway.socket = io("http://localhost:4001", {
-        transports: ["websocket"],
-      });
+        await new Promise<void>((resolve) => {
+            gateway.socket = io("http://localhost:4001", {
+                transports: ["websocket"],
+            });
 
-      gateway.socket.on("connect", () => {
-        console.log("Connected:", gateway.socket.id);
-        resolve();
-      });
+            gateway.socket.on("connect", () => {
+                console.log("Connected:", gateway.socket.id);
+                resolve();
+            });
 
-      gateway.socket.on("disconnect", () => {
-        console.log("Disconnected:", gateway.socket.id);
-      });
+            gateway.socket.on("disconnect", () => {
+                console.log("Disconnected:", gateway.socket.id);
+            });
 
-      gateway.socket.on("message", (data) => {
-        const result = z.safeParse(messageSchema, data);
+            gateway.socket.on("message", (data) => {
+                const result = z.safeParse(messageSchema, data);
 
-        if (result.success) {
-          gateway.onMessage(result.data);
-        } else {
-          console.error(result.error);
-        }
-      });
-    });
+                if (result.success) {
+                    gateway.onMessage(result.data);
+                } else {
+                    console.error(result.error);
+                }
+            });
+        });
 
-    return gateway as T;
-  }
+        return gateway as T;
+    }
 
-  private async onMessage(data: Message) {}
+    private async onMessage(data: Message) {
+    }
 }

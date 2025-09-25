@@ -15,7 +15,7 @@ describe("sending", () => {
 
             const mockInstance = new Mock(userId);
 
-            const a = app.onboard().send("hello world").asPhoton();
+            const a = app.onboard().send("hello world from photon").asPhoton();
             const b = app.onboard().asPhoton();
             app.use(a);
 

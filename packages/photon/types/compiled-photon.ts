@@ -1,10 +1,10 @@
-import {FlowTypeSchema} from "./flow-types.ts";
+import {flowTypeSchema} from "./flow-types.ts";
 import {z} from "zod";
 
 export const CompiledPhotonSchema = z.object({
     onboard: z.object({
         flow: z.array(z.object({
-            type: FlowTypeSchema
+            type: flowTypeSchema
         }).loose())
     }).optional()
 }).strip()
