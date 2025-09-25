@@ -15,7 +15,7 @@ export class Mock implements Target {
 
     console.log(`Mock target started with user: ${this.userId}`);
 
-    await this.gateway.Client.registerUser({
+    await this.gateway.Edge.registerUser({
       apiKey: this.mockKey,
       userId: this.userId,
     });
@@ -26,7 +26,12 @@ export class Mock implements Target {
   }
 
   public async sendMessage(msg: string) {
-    await this.gateway.Client.send(msg, this.userId);
+    await this.gateway.Edge.send({
+      message: msg,
+      userId: this.userId,
+      payload: {message: msg},
+      keysToPayloadMessage: ['message']
+    });
 
     console.log(`[user:${this.userId}] send message: ${msg}`);
   }

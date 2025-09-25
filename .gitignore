@@ -86,3 +86,6 @@ atlassian-ide-plugin.xml
 
 # SonarLint plugin
 .idea/sonarlint/
+
+#cursor
+.cursor

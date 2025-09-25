@@ -11,7 +11,7 @@ import { Gateway } from "./gateway/server.ts";
 import type { Merge, NonEmptyString } from "type-fest";
 import { BasePhoton, type ReturnWithUnique, type UniqueOf } from "./types";
 import { type CompiledPhoton, CompiledPhotonSchema } from "./types";
-import * as v from "valibot";
+import { z } from 'zod';
 
 export class App<
   Name extends string,
@@ -71,7 +71,7 @@ export class App<
   }
 
   private compilePhoton(): CompiledPhoton {
-    return v.parse(CompiledPhotonSchema, this.photon);
+    return z.parse(CompiledPhotonSchema, this.photon);
   }
 
   public async deploy(api_key: string, ...targets: Target[]): Promise<void>;

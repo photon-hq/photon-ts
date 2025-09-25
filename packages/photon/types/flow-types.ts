@@ -1,5 +1,5 @@
-import * as v from "valibot";
+import {z} from "zod";
 
-export const FlowTypeSchema = v.picklist(["send", "tell"]);
+export const FlowTypeSchema = z.enum(["send", "tell"]);
 
-export type FlowType = v.InferInput<typeof FlowTypeSchema>;
+export type FlowType = z.infer<typeof FlowTypeSchema>;

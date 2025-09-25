@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
-import * as v from "valibot";
-import { type Message, messageSchema } from "./types/message.ts";
+import { type Message, messageSchema } from "./types";
+import { z } from 'zod';
 
 export class GatewayBase {
   protected socket!: Socket;
@@ -31,12 +31,12 @@ export class GatewayBase {
       });
 
       gateway.socket.on("message", (data) => {
-        const result = v.safeParse(messageSchema, data);
+        const result = z.safeParse(messageSchema, data);
 
         if (result.success) {
-          gateway.onMessage(result.output);
+          gateway.onMessage(result.data);
         } else {
-          console.error(result.issues);
+          console.error(result.error);
         }
       });
     });
