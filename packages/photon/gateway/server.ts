@@ -1,6 +1,6 @@
-import {GatewayBase} from "./base.ts";
-import type {CompiledPhoton, OmitDiscriminant} from "../types";
-import type {Message} from "./types";
+import { GatewayBase } from "./base.ts";
+import type { CompiledPhoton, OmitDiscriminant } from "../types";
+import type { Message } from "./types";
 
 class GatewayServer extends GatewayBase {
     constructor() {
@@ -8,13 +8,13 @@ class GatewayServer extends GatewayBase {
     }
 
     readonly Server = {
-        send: async (data: OmitDiscriminant<Extract<Message, { role: 'server' }>, 'role'>) => {
+        send: async (data: OmitDiscriminant<Extract<Message, { role: "server" }>, "role">) => {
             return new Promise<void>((resolve, reject) => {
                 this.socket.emit(
                     "message",
                     {
                         role: "server",
-                        ...data
+                        ...data,
                     } satisfies Message,
                     (response: any) => {
                         if (response.success) {
@@ -22,7 +22,7 @@ class GatewayServer extends GatewayBase {
                         } else {
                             reject(new Error(response.error));
                         }
-                    }
+                    },
                 );
             });
         },
@@ -41,11 +41,11 @@ class GatewayServer extends GatewayBase {
                         } else {
                             reject(new Error(response.error));
                         }
-                    }
+                    },
                 );
             });
         },
     };
 }
 
-export {GatewayServer as Gateway};
+export { GatewayServer as Gateway };

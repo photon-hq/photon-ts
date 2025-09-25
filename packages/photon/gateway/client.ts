@@ -1,6 +1,6 @@
-import {GatewayBase} from "./base.ts";
-import type {Message, RegisterUser} from "./types";
-import type {OmitDiscriminant} from "../types";
+import { GatewayBase } from "./base.ts";
+import type { Message, RegisterUser } from "./types";
+import type { OmitDiscriminant } from "../types";
 
 class GatewayClient extends GatewayBase {
     constructor() {
@@ -8,13 +8,13 @@ class GatewayClient extends GatewayBase {
     }
 
     readonly Client = {
-        send: async (data: OmitDiscriminant<Extract<Message, { role: 'client' }>, 'role'>) => {
+        send: async (data: OmitDiscriminant<Extract<Message, { role: "client" }>, "role">) => {
             return new Promise<void>((resolve, reject) => {
                 this.socket.emit(
                     "message",
                     {
                         role: "client",
-                        ...data
+                        ...data,
                     } satisfies Message,
                     (response: any) => {
                         if (response.success) {
@@ -22,7 +22,7 @@ class GatewayClient extends GatewayBase {
                         } else {
                             reject(new Error(response.error));
                         }
-                    }
+                    },
                 );
             });
         },
@@ -41,4 +41,4 @@ class GatewayClient extends GatewayBase {
     };
 }
 
-export {GatewayClient};
+export { GatewayClient };

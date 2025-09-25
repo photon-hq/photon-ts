@@ -1,18 +1,14 @@
-import {io, Socket} from "socket.io-client";
-import {type Message, messageSchema} from "./types";
-import {z} from 'zod';
+import { io, Socket } from "socket.io-client";
+import { type Message, messageSchema } from "./types";
+import { z } from "zod";
 
 export class GatewayBase {
     protected socket!: Socket;
     protected api_key!: string;
 
-    protected constructor() {
-    }
+    protected constructor() {}
 
-    static async connect<T extends GatewayBase>(
-        this: new () => T,
-        api_key: string
-    ): Promise<T> {
+    static async connect<T extends GatewayBase>(this: new () => T, api_key: string): Promise<T> {
         const gateway = new this();
 
         gateway.api_key = api_key;
@@ -45,6 +41,5 @@ export class GatewayBase {
         return gateway as T;
     }
 
-    private async onMessage(data: Message) {
-    }
+    private async onMessage(data: Message) {}
 }

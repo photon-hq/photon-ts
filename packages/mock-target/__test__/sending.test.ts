@@ -1,6 +1,6 @@
-import {describe, test} from "bun:test";
-import {App} from "photon";
-import {Mock} from "../target.ts";
+import { describe, test } from "bun:test";
+import { App } from "photon";
+import { Mock } from "../target.ts";
 import crypto from "crypto";
 
 describe("sending", () => {
@@ -23,9 +23,8 @@ describe("sending", () => {
 
             await mockInstance.sendMessage("hello, world");
 
-            await new Promise(() => {
-            });
+            await new Promise(() => {});
         },
-        60 * 60 * 1000
+        60 * 60 * 1000,
     );
 });

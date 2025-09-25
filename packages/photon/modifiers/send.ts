@@ -1,7 +1,7 @@
-import type {ModOut, SomeModifier} from "./some-modifier.ts";
-import {type BaseOf, BasePhoton} from "../types";
-import {App} from "../app.ts";
-import type {Merge} from "type-fest";
+import type { ModOut, SomeModifier } from "./some-modifier.ts";
+import { type BaseOf, BasePhoton } from "../types";
+import { App } from "../app.ts";
+import type { Merge } from "type-fest";
 import "./onboard.ts";
 
 type InPhoton = {
@@ -16,8 +16,8 @@ type OutPhoton<P extends InPhoton> =
                 : { onboard: { flow: ["send"] } }
             : { onboard: { flow: ["send"] } }
         : BaseOf<P> extends "tool"
-            ? { tool: [] }
-            : never;
+          ? { tool: [] }
+          : never;
 
 type OutFn = <P extends InPhoton>(p: P) => OutPhoton<P>;
 
@@ -38,19 +38,11 @@ function sendModifier(content: string): SomeModifier<InPhoton, OutFn> {
 }
 
 declare module "../app.ts" {
-    interface App<
-        Name extends string,
-        Description extends string,
-        Photon extends {} = {},
-    > {
+    interface App<Name extends string, Description extends string, Photon extends {} = {}> {
         send(
             this: Photon extends InPhoton ? App<Name, Description, Photon> : never,
-            content: string
-        ): App<
-            Name,
-            Description,
-            Merge<Photon, ModOut<typeof sendModifier, Photon>>
-        >;
+            content: string,
+        ): App<Name, Description, Merge<Photon, ModOut<typeof sendModifier, Photon>>>;
     }
 }
 
@@ -60,7 +52,7 @@ App.prototype.send = function <
     Photon extends {} = {},
 >(
     this: Photon extends InPhoton ? App<Name, Description, Photon> : never,
-    content: string
+    content: string,
 ): App<Name, Description, Merge<Photon, ModOut<typeof sendModifier, Photon>>> {
     return this.modifier(sendModifier(content)) as any;
 };
