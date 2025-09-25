@@ -1,18 +1,18 @@
 import { GatewayBase } from "./base.ts";
 import type {Message, RegisterUser} from "./types";
 
-class GatewayEdge extends GatewayBase {
+class GatewayClient extends GatewayBase {
   constructor() {
     super();
   }
 
-  readonly Edge = {
-    send: async (data: Omit<Message & {role: "edge"}, "role">) => {
+  readonly Client = {
+    send: async (data: Omit<Message & {role: "client"}, "role">) => {
       return new Promise<void>((resolve, reject) => {
         this.socket.emit(
           "message",
           {
-            role: "edge",
+            role: "client",
             ...data
           } satisfies Message,
           (response: any) => {
@@ -40,4 +40,4 @@ class GatewayEdge extends GatewayBase {
   };
 }
 
-export { GatewayEdge };
+export { GatewayClient };
