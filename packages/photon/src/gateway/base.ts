@@ -1,7 +1,7 @@
 import {io, Socket} from "socket.io-client";
 import {type Message, messageSchema} from "./types";
 import {z} from 'zod';
-import type {Target} from "../target";
+import type {Target} from "../target.ts";
 
 export class GatewayBase {
     protected socket!: Socket;

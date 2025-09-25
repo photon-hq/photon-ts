@@ -1,12 +1,12 @@
 {
   "name": "photon",
-  "main": "./index.ts",
-  "module": "index.ts",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
   "peerDependencies": {
     "typescript": "^5"
   },
   "exports": {
-    ".": "./index.ts"
+    ".": "./src/index.ts"
   },
   "files": [
     "dist/**/*",
@@ -18,7 +18,7 @@
     "test": "bun test"
   },
   "type": "module",
-  "types": "./index.ts",
+  "types": "./src/index.ts",
   "dependencies": {
     "deepmerge": "^4.3.1"
   }

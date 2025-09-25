@@ -3,7 +3,7 @@
   "scripts": {
     "test": "bun test"
   },
-  "module": "index.ts",
+  "module": "src/index.ts",
   "type": "module",
   "peerDependencies": {
     "typescript": "^5"

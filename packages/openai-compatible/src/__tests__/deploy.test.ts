@@ -1,6 +1,6 @@
 import { test, describe } from "bun:test";
 import { App } from "photon";
-import { OpenAICompatibleTarget } from "../target.ts";
+import { OpenAICompatibleTarget } from "../../target.ts";
 
 describe("deploy", () => {
     const app = new App("Parcel", "");

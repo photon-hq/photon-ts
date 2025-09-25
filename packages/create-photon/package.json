@@ -5,9 +5,9 @@
   "license": "MIT",
   "author": "Something Great Inc.",
   "scripts": {
-    "build": "tsup cli.ts --minify",
+    "build": "tsup src/cli.ts --minify",
     "clean": "shx rm -rf dist",
-    "dev": "tsup cli.ts --watch",
+    "dev": "tsup src/cli.ts --watch",
     "prepublishOnly": "bun run clean && bun run build"
   },
   "bin": "dist/cli.js",
