@@ -13,15 +13,15 @@ You can change this in \`cli.ts\`.
 // See https://github.com/painfulexistence/create-create-x/blob/main/README.md for other options.
 
 create("create-photon", {
-  templateRoot,
-  extra: {
-    architecture: {
-      type: "list",
-      describe: "choose your fave os",
-      choices: ["macOS", "Windows", "Linux"],
-      prompt: "if-no-arg",
+    templateRoot,
+    extra: {
+        architecture: {
+            type: "list",
+            describe: "choose your fave os",
+            choices: ["macOS", "Windows", "Linux"],
+            prompt: "if-no-arg",
+        },
     },
-  },
-  after: ({ answers }) => console.log(`Ok you chose ${answers.architecture}.`),
-  caveat,
+    after: ({ answers }) => console.log(`Ok you chose ${answers.architecture}.`),
+    caveat,
 }).then();
