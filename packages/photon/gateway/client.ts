@@ -1,6 +1,7 @@
 import {GatewayBase} from "./base.ts";
 import type {Message, RegisterUser} from "./types";
 import type {OmitDiscriminant} from "../types";
+import type {Target} from "../target";
 
 class GatewayClient extends GatewayBase {
     constructor() {
@@ -8,6 +9,10 @@ class GatewayClient extends GatewayBase {
     }
 
     readonly Client = {
+        setTarget: (target: Target) => {
+            this.target = target;
+        },
+
         send: async (data: OmitDiscriminant<Extract<Message, { role: 'client' }>, 'role'>) => {
             return new Promise<void>((resolve, reject) => {
                 this.socket.emit(

@@ -1,4 +1,4 @@
-import { Gateway, type Target } from "photon";
+import {Gateway, type Message, type Target} from "photon";
 
 export class Mock implements Target {
   private readonly userId: string;
@@ -12,6 +12,7 @@ export class Mock implements Target {
 
   async start(): Promise<boolean> {
     this.gateway = await Gateway.connect(this.mockKey);
+    this.gateway.Client.setTarget(this);
 
     console.log(`Mock target started with user: ${this.userId}`);
 
@@ -23,6 +24,10 @@ export class Mock implements Target {
     console.log(`[user:${this.userId}] registered on gateway`);
 
     return true;
+  }
+
+  onMessage(data: Message & { role: "server"}): void {
+    console.log(`[Edge] received server message: ${data.type == 'plain_text' ? data.content : data.type}`);
   }
 
   public async sendMessage(msg: string) {

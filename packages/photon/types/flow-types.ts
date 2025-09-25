@@ -1,5 +1,13 @@
 import {z} from "zod";
 
-export const flowTypeSchema = z.enum(["send", "tell"]);
+export const flowStepSchema = z.discriminatedUnion('type', [
+    z.object({
+        type: z.literal("send"),
+        content: z.string()
+    }),
+    z.object({
+        type: z.literal("tell"),
+    })
+])
 
-export type FlowType = z.infer<typeof flowTypeSchema>;
+export type FlowStep = z.infer<typeof flowStepSchema>;
