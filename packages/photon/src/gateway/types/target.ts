@@ -1,4 +1,4 @@
-import type { Message } from "./gateway/types";
+import type { Message } from "./message";
 
 export interface Target {
     start(): Promise<boolean>;
