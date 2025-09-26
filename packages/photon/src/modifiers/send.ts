@@ -8,16 +8,15 @@ type InPhoton = {
     [BasePhoton]: "onboard";
 };
 
-type OutPhoton<P extends InPhoton> =
-    BaseOf<P> extends "onboard"
-        ? P extends { onboard: { flow: infer F } }
-            ? F extends readonly string[]
-                ? { onboard: { flow: [...F, "send"] } }
-                : { onboard: { flow: ["send"] } }
+type OutPhoton<P extends InPhoton> = BaseOf<P> extends "onboard"
+    ? P extends { onboard: { flow: infer F } }
+        ? F extends readonly string[]
+            ? { onboard: { flow: [...F, "send"] } }
             : { onboard: { flow: ["send"] } }
-        : BaseOf<P> extends "tool"
-            ? { tool: [] }
-            : never;
+        : { onboard: { flow: ["send"] } }
+    : BaseOf<P> extends "tool"
+      ? { tool: [] }
+      : never;
 
 type OutFn = <P extends InPhoton>(p: P) => OutPhoton<P>;
 
@@ -46,11 +45,7 @@ declare module "../app.ts" {
     }
 }
 
-App.prototype.send = function <
-    Name extends string,
-    Description extends string,
-    Photon extends {} = {},
->(
+App.prototype.send = function <Name extends string, Description extends string, Photon extends {} = {}>(
     this: Photon extends InPhoton ? App<Name, Description, Photon> : never,
     content: string,
 ): App<Name, Description, Merge<Photon, ModOut<ReturnType<typeof sendModifier>, Photon>>> {

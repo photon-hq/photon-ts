@@ -1,20 +1,16 @@
-import {io, Socket} from "socket.io-client";
-import {type Message, messageSchema} from "./types";
-import {z} from 'zod';
-import type {Target} from "../target.ts";
+import { io, Socket } from "socket.io-client";
+import { type Message, messageSchema } from "./types";
+import { z } from "zod";
+import type { Target } from "../target.ts";
 
 export class GatewayBase {
     protected socket!: Socket;
     protected api_key!: string;
     protected target: Target | null = null;
 
-    protected constructor() {
-    }
+    protected constructor() {}
 
-    static async connect<T extends GatewayBase>(
-        this: new () => T,
-        api_key: string
-    ): Promise<T> {
+    static async connect<T extends GatewayBase>(this: new () => T, api_key: string): Promise<T> {
         const gateway = new this();
 
         gateway.api_key = api_key;
@@ -40,8 +36,8 @@ export class GatewayBase {
                     gateway.onMessage(result.data);
 
                     callback({
-                        success: true
-                    })
+                        success: true,
+                    });
                 } else {
                     console.error(result.error);
                 }

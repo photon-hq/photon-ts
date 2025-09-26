@@ -1,29 +1,29 @@
 {
-  "name": "create-photon",
-  "description": "Create a photon app at ease.",
-  "version": "0.0.0",
-  "license": "MIT",
-  "author": "Something Great Inc.",
-  "scripts": {
-    "build": "tsup src/cli.ts --minify",
-    "clean": "shx rm -rf dist",
-    "dev": "tsup src/cli.ts --watch",
-    "prepublishOnly": "bun run clean && bun run build"
-  },
-  "bin": "dist/cli.js",
-  "files": [
-    "dist",
-    "templates"
-  ],
-  "dependencies": {
-    "create-create-x": "^0.1.2",
-    "socket.io-client": "^4.8.1"
-  },
-  "devDependencies": {
-    "shx": "^0.4.0",
-    "tsup": "^8.5.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  }
+    "name": "create-photon",
+    "description": "Create a photon app at ease.",
+    "version": "0.0.0",
+    "license": "MIT",
+    "author": "Something Great Inc.",
+    "scripts": {
+        "build": "tsup src/cli.ts --minify",
+        "clean": "shx rm -rf dist",
+        "dev": "tsup src/cli.ts --watch",
+        "prepublishOnly": "bun run clean && bun run build"
+    },
+    "bin": "dist/cli.js",
+    "files": [
+        "dist",
+        "templates"
+    ],
+    "dependencies": {
+        "create-create-x": "^0.1.2",
+        "socket.io-client": "^4.8.1"
+    },
+    "devDependencies": {
+        "shx": "^0.4.0",
+        "tsup": "^8.5.0"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    }
 }
