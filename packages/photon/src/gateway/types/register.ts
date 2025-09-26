@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { CompiledPhotonSchema } from "../../types";
+import { compiledPhotonSchema } from "../../types";
 
 export const registerSchema = z.object({
     apiKey: z.string(),
-    photon: CompiledPhotonSchema,
+    photon: compiledPhotonSchema,
 });
 
 export type Register = z.infer<typeof registerSchema>;

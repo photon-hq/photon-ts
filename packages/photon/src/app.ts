@@ -10,7 +10,7 @@ import type { Target } from "./target.ts";
 import { Gateway } from "./gateway/server.ts";
 import type { Merge, NonEmptyString } from "type-fest";
 import { BasePhoton, type ReturnWithUnique, type UniqueOf } from "./types";
-import { type CompiledPhoton, CompiledPhotonSchema } from "./types";
+import { type CompiledPhoton, compiledPhotonSchema } from "./types";
 import { z } from "zod";
 
 export class App<Name extends string, Description extends string, Photon extends {} = {}> {
@@ -64,7 +64,7 @@ export class App<Name extends string, Description extends string, Photon extends
     }
 
     private compilePhoton(): CompiledPhoton {
-        return z.parse(CompiledPhotonSchema, this.photon);
+        return z.parse(compiledPhotonSchema, this.photon);
     }
 
     public async deploy(api_key: string, ...targets: Target[]): Promise<void>;
