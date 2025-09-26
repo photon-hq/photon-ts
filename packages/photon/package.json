@@ -9,6 +9,7 @@
     ".": "./src/index.ts"
   },
   "files": [
+    "src",
     "dist/**/*",
     "!dist/**/*.test.*",
     "!dist/**/__tests__"

@@ -27,7 +27,7 @@ export class App<Name extends string, Description extends string, Photon extends
     }
 
     public asPhoton<O extends Merge<{}, Omit<Photon, typeof BasePhoton>>>(): O {
-        return this.photon as any;
+        return null as any;
     }
 
     public use<P extends {}>(
