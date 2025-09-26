@@ -1,5 +1,5 @@
 import { describe, test } from "bun:test";
-import { App } from "photon";
+import {App, onboardModifier} from "photon";
 import { Mock } from "../target.ts";
 import crypto from "crypto";
 
@@ -14,6 +14,8 @@ describe("sending", () => {
             console.log(`userId: ${userId}`);
 
             const mockInstance = new Mock(userId);
+
+            const c =app.onboard()
 
             const a = app.onboard().send("hello world from photon").asPhoton();
             const b = app.onboard().asPhoton();

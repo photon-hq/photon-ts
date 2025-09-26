@@ -1,6 +1,6 @@
-import type {SomeUniqueBaseModifier} from "./some-modifier.ts";
-import type {ReturnWithUnique, WithoutKey} from "../types";
-import {App} from "../app.ts";
+import type { SomeBaseModifier, SomeModifier, SomeUniqueBaseModifier } from "./some-modifier.ts";
+import type {IsUnique, ReturnWithUnique, WithoutKey} from "../types";
+import { App } from "../app.ts";
 import merge from "deepmerge";
 
 type InPhoton = WithoutKey<"onboard">;
@@ -22,7 +22,7 @@ declare module "../app.ts" {
     interface App<Name extends string, Description extends string, Photon extends {} = {}> {
         onboard(
             this: Photon extends InPhoton ? App<Name, Description, Photon> : never,
-        ): App<Name, Description, ReturnWithUnique<Photon, typeof onboardModifier>>;
+        ): App<Name, Description, ReturnWithUnique<Photon, ReturnType<typeof onboardModifier>>>;
     }
 }
 
@@ -32,7 +32,7 @@ App.prototype.onboard = function <
     Photon extends {} = {},
 >(
     this: Photon extends InPhoton ? App<Name, Description, Photon> : never,
-): App<Name, Description, ReturnWithUnique<Photon, typeof onboardModifier>> {
+): App<Name, Description, ReturnWithUnique<Photon, ReturnType<typeof onboardModifier>>> {
     return this.baseModifier(onboardModifier()) as any;
 };
 
