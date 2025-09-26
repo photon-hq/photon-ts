@@ -1,15 +1,15 @@
 {
-  "name": "@photon/mock",
-  "private": true,
-  "scripts": {
-    "test": "bun test"
-  },
-  "module": "src/index.ts",
-  "type": "module",
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "photon": "workspace:*"
-  }
+    "name": "@photon/mock",
+    "private": true,
+    "scripts": {
+        "test": "bun test"
+    },
+    "module": "src/index.ts",
+    "type": "module",
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "photon": "workspace:*"
+    }
 }

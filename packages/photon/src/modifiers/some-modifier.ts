@@ -21,8 +21,7 @@ export interface SomeUniqueBaseModifier<In extends {}, Out extends {}, Base exte
 }
 
 export type ModIn<M> = M extends SomeModifier<infer I, any> ? I : never;
-export type ModOut<M, P> =
-    M extends SomeModifier<any, infer F> ? (F extends (p: P) => infer R ? R : never) : never;
+export type ModOut<M, P> = M extends SomeModifier<any, infer F> ? (F extends (p: P) => infer R ? R : never) : never;
 
 type AnyBaseModifier<In extends {}, Out extends {}, Base extends string> =
     | SomeBaseModifier<In, Out, Base>

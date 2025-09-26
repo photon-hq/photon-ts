@@ -1,15 +1,15 @@
 {
-  "name": "@photon/openai-compatible",
-  "scripts": {
-    "test": "bun test"
-  },
-  "module": "src/index.ts",
-  "type": "module",
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "elysia": "^1.4.7",
-    "photon": "workspace:*"
-  }
+    "name": "@photon/openai-compatible",
+    "scripts": {
+        "test": "bun test"
+    },
+    "module": "src/index.ts",
+    "type": "module",
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "elysia": "^1.4.7",
+        "photon": "workspace:*"
+    }
 }

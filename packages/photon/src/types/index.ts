@@ -3,12 +3,7 @@ import type { Merge } from "type-fest";
 export * from "./flow-types.ts";
 export * from "./compiled-photon.ts";
 
-import type {
-    BaseModIn,
-    BaseModOut,
-    BaseModOf,
-    SomeUniqueBaseModifier,
-} from "../modifiers/some-modifier.ts";
+import type { BaseModIn, BaseModOut, BaseModOf, SomeUniqueBaseModifier } from "../modifiers/some-modifier.ts";
 
 export type WithoutKey<K extends PropertyKey> = { [P in K]?: never };
 export type OmitDiscriminant<T, K extends keyof T> = T extends any ? Omit<T, K> : never;
@@ -24,8 +19,5 @@ export type IsUnique<M> = M extends SomeUniqueBaseModifier<any, any, any> ? true
 // return-photon builder that conditionally accumulates unique
 export type ReturnWithUnique<P, M> = Merge<
     Merge<P, BaseModOut<M>>,
-    Merge<
-        WithBase<BaseModOf<M>>,
-        IsUnique<M> extends true ? WithUnique<Merge<UniqueOf<P>, BaseModIn<M>>> : {}
-    >
+    Merge<WithBase<BaseModOf<M>>, IsUnique<M> extends true ? WithUnique<Merge<UniqueOf<P>, BaseModIn<M>>> : {}>
 >;
