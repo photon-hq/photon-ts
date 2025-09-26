@@ -1,12 +1,13 @@
 import type { Merge } from "type-fest";
 
-export * from "./flow-types.ts";
 export * from "./compiled-photon.ts";
+export * from "./flow-types.ts";
 
-import type { BaseModIn, BaseModOut, BaseModOf, SomeUniqueBaseModifier } from "../modifiers/some-modifier.ts";
+import type { BaseModIn, BaseModOf, BaseModOut, SomeUniqueBaseModifier } from "../modifiers/some-modifier.ts";
 
 export type WithoutKey<K extends PropertyKey> = { [P in K]?: never };
 export type OmitDiscriminant<T, K extends keyof T> = T extends any ? Omit<T, K> : never;
+export type ReturnTypeWithArg<F, A> = F extends <_T>(arg: A) => infer R ? R : never;
 
 export const BasePhoton: unique symbol = Symbol("base");
 export type WithBase<B extends string> = { [BasePhoton]: B };

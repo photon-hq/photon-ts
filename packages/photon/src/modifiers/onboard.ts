@@ -1,7 +1,7 @@
-import type { SomeBaseModifier, SomeModifier, SomeUniqueBaseModifier } from "./some-modifier.ts";
-import type { IsUnique, ReturnWithUnique, WithoutKey } from "../types";
-import { App } from "../app.ts";
 import merge from "deepmerge";
+import { App } from "../app.ts";
+import type { IsUnique, ReturnWithUnique, WithoutKey } from "../types";
+import type { SomeUniqueBaseModifier } from "./some-modifier.ts";
 
 type InPhoton = WithoutKey<"onboard">;
 type OutPhoton = { onboard: { flow: [] } };
