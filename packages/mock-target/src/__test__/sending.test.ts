@@ -20,7 +20,7 @@ describe("sending", () => {
 
             const a = app.onboard().send("hello world from photon").asPhoton();
             const b = app.onboard().asPhoton();
-            app.use(a);
+            app.use(a).use(c);
 
             await app.deploy(mockInstance.mockKey, mockInstance);
 
