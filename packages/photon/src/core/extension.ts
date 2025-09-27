@@ -1,7 +1,7 @@
-import { registry } from "./setup/registry.ts";
-import type { App } from "../core/app.ts";
+import { registry } from "../modifiers/setup/registry.ts";
+import type { App } from "./app.ts";
 import type { Merge } from "type-fest";
-import type { BaseModIn, ModOut, SomeBaseModifier, SomeModifier } from "../core/modifier.ts";
+import type { BaseModIn, ModOut, SomeBaseModifier, SomeModifier } from "./modifier.ts";
 import type { ReturnWithUnique } from "../types/index.ts";
 
 type RegistryShape = typeof registry;
