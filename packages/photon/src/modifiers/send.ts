@@ -1,4 +1,4 @@
-import type { SomeModifier } from "./base.ts";
+import type { SomeModifier } from "../core/modifier.ts";
 import { type BaseOf, BasePhoton } from "../types";
 
 type InPhoton = {

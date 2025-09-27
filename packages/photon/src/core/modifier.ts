@@ -1,4 +1,4 @@
-import { App } from "../app.ts";
+import { App } from "./app.ts";
 import type { Merge } from "type-fest";
 
 export interface SomeModifier<In extends {}, OutFn extends (p: In) => any> {

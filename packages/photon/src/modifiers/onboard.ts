@@ -1,4 +1,4 @@
-import type { SomeBaseModifier, SomeUniqueBaseModifier } from "./base.ts";
+import type { SomeBaseModifier, SomeUniqueBaseModifier } from "../core/modifier.ts";
 import type { WithoutKey } from "../types";
 import merge from "deepmerge";
 

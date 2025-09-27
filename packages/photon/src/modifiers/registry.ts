@@ -1,9 +1,8 @@
-import type { SomeBaseModifier, SomeModifier, SomeUniqueBaseModifier } from "./base.ts";
+import type { SomeBaseModifier, SomeModifier, SomeUniqueBaseModifier } from "../core/modifier.ts";
 import { onboardModifier } from "./onboard.ts";
 import { sendModifier } from "./send.ts";
 import { promptModifier } from "./prompt.ts";
 
-// Registry entry types describing how to build a modifier method at runtime
 export type NormalEntry<Args extends any[] = any[], M extends SomeModifier<any, any> = SomeModifier<any, any>> = {
     readonly mode: "modifier";
     readonly create: (...args: Args) => M;

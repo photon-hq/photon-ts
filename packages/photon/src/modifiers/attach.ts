@@ -1,4 +1,4 @@
-import { App } from "../app.ts";
+import { App } from "../core/app.ts";
 import { registry } from "./registry.ts";
 
 for (const key of Object.keys(registry)) {
