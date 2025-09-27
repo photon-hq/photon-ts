@@ -1,4 +1,4 @@
-import { registry } from "./registry.ts";
+import { registry } from "./setup/registry.ts";
 import type { App } from "../core/app.ts";
 import type { Merge } from "type-fest";
 import type { BaseModIn, ModOut, SomeBaseModifier, SomeModifier } from "../core/modifier.ts";

@@ -1,6 +1,6 @@
 import type { Merge } from "type-fest";
 
-export * from "./flow.ts";
+export * from "../modifiers/setup/type.ts";
 export * from "./compiled.ts";
 
 import type { SomeUniqueBaseModifier, BaseModIn, BaseModOf, BaseModOut } from "../core/modifier.ts";

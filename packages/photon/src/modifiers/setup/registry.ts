@@ -1,7 +1,7 @@
-import type { SomeBaseModifier, SomeModifier, SomeUniqueBaseModifier } from "../core/modifier.ts";
-import { onboardModifier } from "./onboard.ts";
-import { sendModifier } from "./send.ts";
-import { promptModifier } from "./prompt.ts";
+import type { SomeBaseModifier, SomeModifier, SomeUniqueBaseModifier } from "../../core/modifier.ts";
+import { onboardModifier } from "../onboard.ts";
+import { sendModifier } from "../send.ts";
+import { promptModifier } from "../prompt.ts";
 
 export type NormalEntry<Args extends any[] = any[], M extends SomeModifier<any, any> = SomeModifier<any, any>> = {
     readonly mode: "modifier";
