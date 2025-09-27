@@ -1,6 +1,7 @@
 import { GatewayBase } from "./base.ts";
-import type { Message, RegisterUser } from "./types/index.ts";
-import type { Target } from "./types/target.ts";
+import type { Message, RegisterUser } from "./types";
+import type { OmitDiscriminant } from "../types";
+import type { Target } from "../target.ts";
 
 class GatewayClient extends GatewayBase {
     constructor() {
@@ -12,14 +13,14 @@ class GatewayClient extends GatewayBase {
             this.target = target;
         },
 
-        send: async (data: Omit<Extract<Message, { role: "client" }>, "role">) => {
+        send: async (data: OmitDiscriminant<Extract<Message, { role: "client" }>, "role">) => {
             return new Promise<void>((resolve, reject) => {
                 this.socket.emit(
                     "message",
                     {
                         role: "client",
                         ...data,
-                    },
+                    } satisfies Message,
                     (response: any) => {
                         if (response.success) {
                             resolve();
@@ -31,19 +32,15 @@ class GatewayClient extends GatewayBase {
             });
         },
 
-        registerUser: async (data: Omit<RegisterUser, "apiKey">) => {
+        registerUser: async (data: RegisterUser) => {
             return new Promise<void>((resolve, reject) => {
-                this.socket.emit(
-                    "registerUser",
-                    { apiKey: this.apiKey, ...data },
-                    (response: any) => {
-                        if (response.success) {
-                            resolve();
-                        } else {
-                            reject(new Error(response.error));
-                        }
-                    },
-                );
+                this.socket.emit("registerUser", data, (response: any) => {
+                    if (response.success) {
+                        resolve();
+                    } else {
+                        reject(new Error(response.error));
+                    }
+                });
             });
         },
     };
