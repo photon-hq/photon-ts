@@ -17,7 +17,7 @@ describe("sending", () => {
 
             const c = app.onboard();
 
-            const a = app.onboard().send("hello world from photon").asPhoton();
+            const a = app.onboard().prompt("mobai").send("hello world from photon").asPhoton();
             const b = app.onboard().asPhoton();
             app.use(a);
 

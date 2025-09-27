@@ -1,6 +1,6 @@
 import { GatewayBase } from "./base.ts";
-import type { CompiledPhoton } from "../types";
-import type { Message } from "./types/index.ts";
+import type { CompiledPhoton, OmitDiscriminant } from "../types";
+import type { Message } from "./types";
 
 class GatewayServer extends GatewayBase {
     constructor() {
@@ -8,14 +8,14 @@ class GatewayServer extends GatewayBase {
     }
 
     readonly Server = {
-        send: async (data: Omit<Extract<Message, { role: "server" }>, "role">) => {
+        send: async (data: OmitDiscriminant<Extract<Message, { role: "server" }>, "role">) => {
             return new Promise<void>((resolve, reject) => {
                 this.socket.emit(
                     "message",
                     {
                         role: "server",
                         ...data,
-                    },
+                    } satisfies Message,
                     (response: any) => {
                         if (response.success) {
                             resolve();
@@ -32,7 +32,7 @@ class GatewayServer extends GatewayBase {
                 this.socket.emit(
                     "register",
                     {
-                        apiKey: this.apiKey,
+                        apiKey: this.api_key,
                         photon: photon,
                     },
                     (response: any) => {
@@ -46,18 +46,6 @@ class GatewayServer extends GatewayBase {
             });
         },
     };
-
-    public async register(photon: CompiledPhoton): Promise<void> {
-        return new Promise((resolve, reject) => {
-            this.socket.emit("register", { apiKey: this.apiKey, photon }, (response: any) => {
-                if (response?.success) {
-                    resolve();
-                } else {
-                    reject(new Error(response?.error || "Failed to register application"));
-                }
-            });
-        });
-    }
 }
 
-export { GatewayServer, GatewayServer as Gateway };
+export { GatewayServer as Gateway };
