@@ -1,8 +1,8 @@
-import { registry } from "../modifiers/setup/registry.ts";
-import type { App } from "./app.ts";
 import type { Merge } from "type-fest";
-import type { BaseModIn, ModOut, SomeBaseModifier, SomeModifier } from "./modifier.ts";
+import type { registry } from "../modifiers/setup/registry.ts";
 import type { ReturnWithUnique } from "../types/index.ts";
+import type { App } from "./app.ts";
+import type { BaseModIn, ModOut, SomeBaseModifier, SomeModifier } from "./modifier.ts";
 
 type RegistryShape = typeof registry;
 
@@ -29,5 +29,3 @@ type MethodsFromRegistry = { [K in keyof RegistryShape]: MethodFromEntry<K> };
 declare module "../core/app.ts" {
     interface App<Name extends string, Description extends string, Photon> extends MethodsFromRegistry {}
 }
-
-export {};

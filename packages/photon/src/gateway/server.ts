@@ -1,5 +1,5 @@
-import { GatewayBase } from "./base.ts";
 import type { CompiledPhoton, OmitDiscriminant } from "../types";
+import { GatewayBase } from "./base.ts";
 import type { Message } from "./types";
 
 class GatewayServer extends GatewayBase {

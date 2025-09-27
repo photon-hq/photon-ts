@@ -1,9 +1,8 @@
 export { App } from "./core/app.ts";
-export type { Target } from "./target.ts";
-
 export { GatewayClient as Gateway } from "./gateway/client.ts";
 export * from "./gateway/types";
 export * from "./modifiers";
+export type { Target } from "./target.ts";
 export * from "./types";
 
 import "./core/extension.ts";

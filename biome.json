@@ -22,6 +22,10 @@
             "suspicious": {
                 "noExplicitAny": "off"
             },
+            "correctness": {
+                "noUnusedVariables": "off",
+                "noUnusedImports": "off"
+            },
             "complexity": {
                 "noUselessConstructor": "off"
             }

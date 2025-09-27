@@ -1,7 +1,7 @@
-import { io, Socket } from "socket.io-client";
-import { type Message, messageSchema } from "./types";
+import { io, type Socket } from "socket.io-client";
 import { z } from "zod";
 import type { Target } from "../target.ts";
+import { type Message, messageSchema } from "./types";
 
 export class GatewayBase {
     protected socket!: Socket;
@@ -11,7 +11,7 @@ export class GatewayBase {
     protected constructor() {}
 
     static async connect<T extends GatewayBase>(this: new () => T, api_key: string): Promise<T> {
-        const gateway = new this();
+        const gateway = new GatewayBase();
 
         gateway.api_key = api_key;
 

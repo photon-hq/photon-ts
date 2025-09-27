@@ -1,7 +1,7 @@
+import type { Target } from "../target.ts";
+import type { OmitDiscriminant } from "../types";
 import { GatewayBase } from "./base.ts";
 import type { Message, RegisterUser } from "./types";
-import type { OmitDiscriminant } from "../types";
-import type { Target } from "../target.ts";
 
 class GatewayClient extends GatewayBase {
     constructor() {
