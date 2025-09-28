@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: bun install
       - name: Format code
-        run: bunx --bun biome format --write .
+        run: bunx --bun biome check --write .
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v6
         with:
