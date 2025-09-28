@@ -90,3 +90,4 @@ atlassian-ide-plugin.xml
 #IDE
 .cursor
 .idea
+.vscode

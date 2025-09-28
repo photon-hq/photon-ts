@@ -1,38 +1,24 @@
-import {
-    type BaseModIn,
-    type BaseModOut,
-    type ModIn,
-    type ModOut,
-    type SomeBaseModifier,
-    type SomeModifier,
-} from "./modifiers/some-modifier.ts";
-import type { Target } from "./target.ts";
-import { Gateway } from "./gateway/server.ts";
 import type { Merge, NonEmptyString } from "type-fest";
-import { BasePhoton, type ReturnWithUnique, type UniqueOf } from "./types";
-import { type CompiledPhoton, compiledPhotonSchema } from "./types";
 import { z } from "zod";
+import { Gateway } from "../gateway/server.ts";
+import type { Target } from "../target.ts";
+import { BasePhoton, type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique, type UniqueOf } from "../types";
+import type { BaseModIn, BaseModOut, ModIn, ModOut, SomeBaseModifier, SomeModifier } from "./modifier.ts";
 
-export class App<Name extends string, Description extends string, Photon extends {} = {}> {
-    private readonly name: Name;
-    private readonly description: Description;
-
+export class App<Name extends string, Description extends string, Photon extends object = Record<string, never>> {
     photon: Photon;
 
-    public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>) {
-        this.name = name;
-        this.description = description;
-
+    public constructor(_name: NonEmptyString<Name>, _description: NonEmptyString<Description>) {
         this.photon = {} as Photon;
     }
 
-    public asPhoton<O extends Merge<{}, Omit<Photon, typeof BasePhoton>>>(): O {
+    public asPhoton<O extends Merge<object, Omit<Photon, typeof BasePhoton>>>(): O {
         return null as any;
     }
 
-    public use<P extends {}>(
+    public use<P extends object>(
         this: Photon extends UniqueOf<P> ? App<Name, Description, Photon> : never,
-        photon: P,
+        _photon: P,
     ): App<Name, Description, Merge<Photon, P>> {
         return this as any;
     }

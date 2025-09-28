@@ -1,7 +1,7 @@
 import { describe, test } from "bun:test";
+import crypto from "node:crypto";
 import { App, onboardModifier } from "photon";
 import { Mock } from "../target.ts";
-import crypto from "crypto";
 
 describe("sending", () => {
     const app = new App("Test Bot", "hi");

@@ -27,7 +27,7 @@ export class Mock implements Target {
     }
 
     onMessage(data: Message & { role: "server" }): void {
-        console.log(`[Edge] received server message: ${data.type == "plain_text" ? data.content : data.type}`);
+        console.log(`[Edge] received server message: ${data.type === "plain_text" ? data.content : data.type}`);
     }
 
     public async sendMessage(msg: string) {

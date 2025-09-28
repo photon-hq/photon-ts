@@ -1,5 +1,5 @@
-import { flowStepSchema } from "./flow-types.ts";
 import { z } from "zod";
+import { flowStepSchema } from "../modifiers/setup/type.ts";
 
 export const compiledPhotonSchema = z
     .object({

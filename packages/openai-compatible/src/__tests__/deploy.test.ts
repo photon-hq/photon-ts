@@ -1,4 +1,4 @@
-import { test, describe } from "bun:test";
+import { describe, test } from "bun:test";
 import { App } from "photon";
 import { OpenAICompatibleTarget } from "../../target.ts";
 
