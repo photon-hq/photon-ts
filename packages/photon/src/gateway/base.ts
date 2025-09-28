@@ -11,7 +11,8 @@ export class GatewayBase {
     protected constructor() {}
 
     static async connect<T extends GatewayBase>(this: new () => T, api_key: string): Promise<T> {
-        const gateway = new GatewayBase();
+        // biome-ignore lint/complexity/noThisInStatic: <We use `this()` to get the proper version of gateway>
+        const gateway = new this();
 
         gateway.api_key = api_key;
 
