@@ -1,6 +1,6 @@
 import type { Merge } from "type-fest";
 import type { registry } from "../modifiers/setup/registry.ts";
-import type { ReturnWithUnique } from "../types/index.ts";
+import type { ReturnWithUnique } from "../types";
 import type { App } from "./app.ts";
 import type { BaseModIn, ModOut, SomeBaseModifier, SomeModifier } from "./modifier.ts";
 
