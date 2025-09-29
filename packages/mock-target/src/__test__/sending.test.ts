@@ -1,8 +1,8 @@
-import { test, describe } from "bun:test";
+import { describe, test } from "bun:test";
 import crypto from "node:crypto";
 import { createApp, defaultExtensions } from "photon";
-import { Mock } from "../target.ts";
 import { promptModifier } from "../modifiers/prompt.ts";
+import { Mock } from "../target.ts";
 
 describe("sending", () => {
     const app = createApp({
