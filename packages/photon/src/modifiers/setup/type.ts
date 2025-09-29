@@ -6,10 +6,6 @@ export const flowStepSchema = z.discriminatedUnion("type", [
         content: z.string(),
     }),
     z.object({
-        type: z.literal("prompt"),
-        content: z.string(),
-    }),
-    z.object({
         type: z.literal("tell"),
     }),
 ]);

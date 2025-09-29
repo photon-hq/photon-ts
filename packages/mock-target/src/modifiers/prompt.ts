@@ -1,5 +1,5 @@
-import type { SomeModifier } from "../core/modifier.ts";
-import { type BaseOf, BasePhoton } from "../types";
+import type { SomeModifier } from "photon";
+import { type BaseOf, BasePhoton } from "photon";
 
 type InPhoton = {
     [BasePhoton]: "onboard";
@@ -22,7 +22,7 @@ export function promptModifier(content: string): SomeModifier<InPhoton, OutFn> {
         main(app) {
             if (app.photon[BasePhoton] === "onboard") {
                 (app.photon as any).onboard.flow.push({
-                    type: "prompt",
+                    type: "send",
                     content: content,
                 });
             } else if (app.photon[BasePhoton] === "tool") {
