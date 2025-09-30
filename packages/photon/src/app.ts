@@ -1,3 +1,6 @@
+import type { Merge, NonEmptyString } from "type-fest";
+import { z } from "zod";
+import { Gateway } from "./gateway/server.ts";
 import {
     type BaseModIn,
     type BaseModOut,
@@ -7,21 +10,30 @@ import {
     type SomeModifier,
 } from "./modifiers/some-modifier.ts";
 import type { Target } from "./target.ts";
-import { Gateway } from "./gateway/server.ts";
-import type { Merge, NonEmptyString } from "type-fest";
-import { BasePhoton, type ReturnWithUnique, type UniqueOf } from "./types";
-import { type CompiledPhoton, compiledPhotonSchema } from "./types";
-import { z } from "zod";
+import {
+    BasePhoton,
+    type CompiledPhoton,
+    compiledPhotonSchema,
+    type IsBroadString,
+    type ReturnWithUnique,
+    type UniqueOf
+} from "./types";
+
+
+type IsModuleApp<A> = A extends App<infer N, any, any> ? IsBroadString<N> : never;
 
 export class App<Name extends string, Description extends string, Photon extends {} = {}> {
-    private readonly name: Name;
-    private readonly description: Description;
+    private readonly name: Name | undefined;
+    private readonly description: Description | undefined;
 
     photon: Photon;
 
-    public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>) {
-        this.name = name;
-        this.description = description;
+    public constructor();
+    public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>);
+
+    public constructor(name?: NonEmptyString<Name>, description?: NonEmptyString<Description>) {
+        this.name = name
+        this.description = description
 
         this.photon = {} as Photon;
     }
@@ -59,9 +71,20 @@ export class App<Name extends string, Description extends string, Photon extends
         return z.parse(compiledPhotonSchema, this.photon);
     }
 
-    public async deploy(api_key: string, ...targets: Target[]): Promise<void>;
-    public async deploy(...targets: Target[]): Promise<void>;
-    public async deploy(first: string | Target, ...rest: Target[]): Promise<void> {
+    public async deploy(
+        this: IsModuleApp<this> extends true ? never : App<Name, Description, Photon>,
+        api_key: string,
+        ...targets: Target[]
+    ): Promise<void>;
+    public async deploy(
+        this: IsModuleApp<this> extends true ? never : App<Name, Description, Photon>,
+        ...targets: Target[]
+    ): Promise<void>;
+    public async deploy(
+        this: IsModuleApp<this> extends true ? never : App<Name, Description, Photon>,
+        first: string | Target,
+        ...rest: Target[]
+    ): Promise<void> {
         const isApiKeyProvided = typeof first === "string";
         const api_key = isApiKeyProvided ? first : process.env.PHOTON_API;
         const targets = isApiKeyProvided ? rest : [first, ...rest];

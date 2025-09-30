@@ -1,10 +1,18 @@
 import { describe, test } from "bun:test";
+import crypto from "crypto";
 import { App, onboardModifier } from "photon";
 import { Mock } from "../target.ts";
-import crypto from "crypto";
 
 describe("sending", () => {
-    const app = new App("Test Bot", "hi");
+    type IsApp<A> = A extends App<string, string> ? true : false;
+
+    const app = new App();
+
+    function hi(): IsApp<typeof app> {
+        return null as any;
+    }
+
+    const a = hi();
 
     test(
         "one-way sending from user",
