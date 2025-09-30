@@ -18,9 +18,11 @@ import {
     type ReturnWithUnique,
     type UniqueOf
 } from "./types";
+import merge from "deepmerge";
 
 
 type IsModuleApp<A> = A extends App<infer N, any, any> ? IsBroadString<N> : never;
+type PhotonOf<A> = A extends App<any, any, infer P> ? P : never;
 
 export class App<Name extends string, Description extends string, Photon extends {} = {}> {
     private readonly name: Name | undefined;
@@ -38,14 +40,11 @@ export class App<Name extends string, Description extends string, Photon extends
         this.photon = {} as Photon;
     }
 
-    public asPhoton<O extends Merge<{}, Omit<Photon, typeof BasePhoton>>>(): O {
-        return null as any;
-    }
-
-    public use<P extends {}>(
-        this: Photon extends UniqueOf<P> ? App<Name, Description, Photon> : never,
-        photon: P,
-    ): App<Name, Description, Merge<Photon, P>> {
+    public use<A extends App<any, any, any>>(
+        this: Photon extends UniqueOf<PhotonOf<this>> ? App<Name, Description, Photon> : never,
+        moduleApp: IsModuleApp<A> extends true ? A : never,
+    ): App<Name, Description, Merge<Photon, PhotonOf<A>>> {
+        this.photon = merge(this.photon, moduleApp.photon);
         return this as any;
     }
 

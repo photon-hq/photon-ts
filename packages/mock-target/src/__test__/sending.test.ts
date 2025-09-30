@@ -6,7 +6,7 @@ import { Mock } from "../target.ts";
 describe("sending", () => {
     type IsApp<A> = A extends App<string, string> ? true : false;
 
-    const app = new App();
+    const app = new App("test", "test");
 
     function hi(): IsApp<typeof app> {
         return null as any;
@@ -25,9 +25,9 @@ describe("sending", () => {
 
             const c = app.onboard();
 
-            const a = app.onboard().send("hello world from photon").asPhoton();
-            const b = app.onboard().asPhoton();
-            app.use(a);
+            const a = new App().onboard().send("hello world from photon")
+            const b = new App().onboard()
+            app.use(a)
 
             await app.deploy(mockInstance.mockKey, mockInstance);
 
