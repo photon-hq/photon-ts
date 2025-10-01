@@ -1,14 +1,92 @@
 import type { Merge, NonEmptyString } from "type-fest";
 import { z } from "zod";
+import { defaultExtensions } from "../extensions.ts";
 import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
 import { BasePhoton, type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique, type UniqueOf } from "../types";
 import type { BaseModIn, BaseModOut, ModIn, ModOut, SomeBaseModifier, SomeModifier } from "./modifier.ts";
 
-export class App<Name extends string, Description extends string, Photon extends object = Record<string, never>> {
+export type ExtendedApp<
+    Name extends string,
+    Description extends string,
+    P extends object,
+    Exts extends Record<string, (...args: any[]) => SomeModifier<any, any> | SomeBaseModifier<any, any, any>>,
+> = {
+    deploy: AppInstance<Name, Description, P>["deploy"];
+    unwrap: () => AppInstance<Name, Description, P>;
+    extension<NewExt extends object>(
+        ext: NewExt,
+    ): ExtendedApp<Name, Description, P, Merge<Exts, NewExt extends { modifiers: infer M } ? M : NewExt>>;
+} & {
+    [K in keyof Exts]: (
+        ...args: Parameters<Exts[K]>
+    ) => ReturnType<Exts[K]> extends infer M
+        ? M extends SomeBaseModifier<any, any, any>
+            ? P extends BaseModIn<M>
+                ? ExtendedApp<Name, Description, ReturnWithUnique<P, M>, Exts>
+                : never
+            : M extends SomeModifier<any, any>
+              ? P extends ModIn<M>
+                  ? ExtendedApp<Name, Description, Merge<P, ModOut<M, P>>, Exts>
+                  : never
+              : never
+        : never;
+};
+
+const INTERNAL_CONSTRUCTOR = Symbol("INTERNAL_CONSTRUCTOR");
+export { INTERNAL_CONSTRUCTOR as __INTERNAL_CONSTRUCTOR_DO_NOT_USE_ };
+
+export function buildExtendedApi<
+    Name extends string,
+    Description extends string,
+    P extends object,
+    Exts extends Record<string, (...args: any[]) => SomeModifier<any, any> | SomeBaseModifier<any, any, any>>,
+>(
+    currentApp: AppInstance<Name, Description, P>,
+    extensions: Exts,
+): ExtendedApp<Name, Description, P, Exts> {
+    const api = {
+        deploy: currentApp.deploy.bind(currentApp),
+        unwrap: () => currentApp,
+        extension: <NewExts extends object>(
+            ext: NewExts,
+        ) => {
+            const modifiers = ("modifiers" in ext && ext.modifiers && typeof ext.modifiers === "object"
+                ? ext.modifiers
+                : ext) as Record<string, any>;
+            return buildExtendedApi(currentApp, { ...extensions, ...modifiers });
+        },
+    } as ExtendedApp<Name, Description, P, Exts>;
+
+    for (const [key, modifierFactory] of Object.entries(extensions)) {
+        (api as any)[key] = (...args: any[]) => {
+            const modifier = modifierFactory(...args);
+
+            let newApp: AppInstance<Name, Description, any>;
+            if ("base" in modifier) {
+                newApp = (currentApp as any).baseModifier(modifier as SomeBaseModifier<any, any, any>);
+            } else {
+                newApp = (currentApp as any).modifier(modifier as SomeModifier<any, any>);
+            }
+
+            return buildExtendedApi(newApp, extensions);
+        };
+    }
+
+    return api;
+}
+
+export class AppInstance<Name extends string, Description extends string, Photon extends object = Record<string, never>> {
     photon: Photon;
 
-    public constructor(_name: NonEmptyString<Name>, _description: NonEmptyString<Description>) {
+    public constructor(
+        _name: NonEmptyString<Name>,
+        _description: NonEmptyString<Description>,
+        secret: typeof INTERNAL_CONSTRUCTOR,
+    ) {
+        if (secret !== INTERNAL_CONSTRUCTOR) {
+            throw new Error("AppInstance cannot be constructed directly, use App() or createApp()");
+        }
         this.photon = {} as Photon;
     }
 
@@ -17,24 +95,24 @@ export class App<Name extends string, Description extends string, Photon extends
     }
 
     public use<P extends object>(
-        this: Photon extends UniqueOf<P> ? App<Name, Description, Photon> : never,
+        this: Photon extends UniqueOf<P> ? AppInstance<Name, Description, Photon> : never,
         _photon: P,
-    ): App<Name, Description, Merge<Photon, P>> {
+    ): AppInstance<Name, Description, Merge<Photon, P>> {
         return this as any;
     }
 
     public modifier<M extends SomeModifier<any, any>>(
-        this: Photon extends ModIn<M> ? App<Name, Description, Photon> : never,
+        this: Photon extends ModIn<M> ? AppInstance<Name, Description, Photon> : never,
         modifier: M,
-    ): App<Name, Description, Merge<Photon, ModOut<M, Photon>>> {
-        return modifier.main(this) as unknown as App<Name, Description, Merge<Photon, ModOut<M, Photon>>>;
+    ): AppInstance<Name, Description, Merge<Photon, ModOut<M, Photon>>> {
+        return modifier.main(this) as unknown as AppInstance<Name, Description, Merge<Photon, ModOut<M, Photon>>>;
     }
 
     public baseModifier<M extends SomeBaseModifier<any, any, any>>(
-        this: Photon extends BaseModIn<M> ? App<Name, Description, Photon> : never,
+        this: Photon extends BaseModIn<M> ? AppInstance<Name, Description, Photon> : never,
         modifier: M,
-    ): App<Name, Description, ReturnWithUnique<Photon, M>> {
-        const next = modifier.main(this) as unknown as App<Name, Description, Merge<Photon, BaseModOut<M>>>;
+    ): AppInstance<Name, Description, ReturnWithUnique<Photon, M>> {
+        const next = modifier.main(this) as unknown as AppInstance<Name, Description, Merge<Photon, BaseModOut<M>>>;
 
         (next.photon as any)[BasePhoton] = modifier.base;
 
@@ -42,7 +120,7 @@ export class App<Name extends string, Description extends string, Photon extends
     }
 
     private compilePhoton(): CompiledPhoton {
-        return z.parse(compiledPhotonSchema, this.photon);
+        return compiledPhotonSchema.parse(this.photon);
     }
 
     public async deploy(api_key: string, ...targets: Target[]): Promise<void>;
@@ -73,3 +151,14 @@ export class App<Name extends string, Description extends string, Photon extends
         }
     }
 }
+
+export const App = function <Name extends string, Description extends string>(
+    name: NonEmptyString<Name>,
+    description: NonEmptyString<Description>,
+) {
+    const app = new AppInstance(name, description, INTERNAL_CONSTRUCTOR);
+    return buildExtendedApi(app, defaultExtensions);
+} as unknown as new <Name extends string, Description extends string>(
+    name: NonEmptyString<Name>,
+    description: NonEmptyString<Description>,
+) => ExtendedApp<Name, Description, Record<string, never>, typeof defaultExtensions>;
