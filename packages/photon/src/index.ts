@@ -7,3 +7,4 @@ export * from "./gateway/types";
 export * from "./modifiers";
 export type { Target } from "./target.ts";
 export * from "./types";
+export * from './extension'

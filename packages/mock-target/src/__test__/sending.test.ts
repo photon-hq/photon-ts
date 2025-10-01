@@ -1,6 +1,6 @@
 import { describe, test } from "bun:test";
 import crypto from "node:crypto";
-import { createApp, defaultExtensions } from "photon";
+import {App, createApp, defaultExtensions, type SomeExtension} from "photon";
 import { promptModifier } from "../modifiers/prompt.ts";
 import { Mock } from "../target.ts";
 
@@ -13,6 +13,15 @@ describe("sending", () => {
             prompt: promptModifier,
         },
     });
+
+    const ext = {
+        modifiers: {
+            "prompt": promptModifier,
+        }
+    } satisfies SomeExtension
+
+    const app1 = new App("hi", "hi")
+    const app2 = app1.extension(ext).prompt("")
 
     test(
         "one-way sending from user",

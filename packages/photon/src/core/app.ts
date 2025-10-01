@@ -4,11 +4,12 @@ import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
 import { BasePhoton, type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique, type UniqueOf } from "../types";
 import type { BaseModIn, BaseModOut, ModIn, ModOut, SomeBaseModifier, SomeModifier } from "./modifier.ts";
+import type {ModifiersOf, SomeExtension} from "../extension";
 
 export class App<Name extends string, Description extends string, Photon extends object = Record<string, never>> {
     photon: Photon;
 
-    public constructor(_name: NonEmptyString<Name>, _description: NonEmptyString<Description>) {
+    public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>) {
         this.photon = {} as Photon;
     }
 
@@ -39,6 +40,24 @@ export class App<Name extends string, Description extends string, Photon extends
         (next.photon as any)[BasePhoton] = modifier.base;
 
         return next as any;
+    }
+
+    public extension<Ext extends SomeExtension>(ext: Ext): this & {
+        [K in keyof ModifiersOf<Ext>]: (
+            ...args: Parameters<ModifiersOf<Ext>[K]>
+        ) => ReturnType<ModifiersOf<Ext>[K]> extends infer M
+            ? M extends SomeBaseModifier<any, any, any>
+                ? Photon extends BaseModIn<M>
+                    ? App<Name, Description, ReturnWithUnique<Photon, M>>
+                    : never
+                : M extends SomeModifier<any, any>
+                    ? Photon extends ModIn<M>
+                        ? App<Name, Description, Merge<Photon, ModOut<M, Photon>>>
+                        : never
+                    : never
+            : never;
+    } {
+        return this as any
     }
 
     private compilePhoton(): CompiledPhoton {
