@@ -22,12 +22,12 @@ export type ExtensionBuilder<N extends string, D extends string, P extends {}, E
     ) => ReturnType<ModifiersOf<Ext>[K]> extends infer M
         ? M extends SomeBaseModifier<any, any, any>
             ? P extends BaseModIn<M>
-                ? App<N, D, ReturnWithUnique<P, M>, Ext> & ExtensionBuilder<N, D, P, Ext>
-                : "1111"
+                ? App<N, D, ReturnWithUnique<P, M>, Ext> & ExtensionBuilder<N, D, ReturnWithUnique<P, M>, Ext>
+                : never
             : M extends SomeModifier<any, any>
                 ? P extends ModIn<M>
-                    ? App<N, D, Merge<P, ModOut<M, P>>, Ext> & ExtensionBuilder<N, D, P, Ext>
-                    : "2222"
-                : "3333"
-        : "4444"
+                    ? App<N, D, Merge<P, ModOut<M, P>>, Ext> & ExtensionBuilder<N, D, ModOut<M, P>, Ext>
+                    : never
+                : never
+        : never
 }

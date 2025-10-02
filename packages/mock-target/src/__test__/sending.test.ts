@@ -22,7 +22,7 @@ describe("sending", () => {
     } satisfies SomeExtension
 
     const app1 = new App("hi", "hi")
-    const app2 = app1.extension(ext).onboard()
+    const app2 = app1.extension(ext).onboard().prompt("1")
 
     test(
         "one-way sending from user",
@@ -37,7 +37,7 @@ describe("sending", () => {
             const b = app.onboard();
             const c = app.onboard();
 
-            await a.deploy(mockInstance.mockKey, mockInstance);
+            await app2.deploy(mockInstance.mockKey, mockInstance);
 
             await mockInstance.sendMessage("hello, world");
 
