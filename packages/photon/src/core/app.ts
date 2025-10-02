@@ -39,16 +39,14 @@ export class App<
     public modifier<M extends SomeModifier<any, any>>(
         this: Photon extends ModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M,
-    ): App<Name, Description, Merge<Photon, ModOut<M, Photon>>> &
-        ExtensionBuilder<Name, Description, ModOut<M, Photon>, _Ext> {
+    ): App<Name, Description, Merge<Photon, ModOut<M, Photon>>, _Ext> {
         return modifier.main(this) as any;
     }
 
     public baseModifier<M extends SomeBaseModifier<any, any, any>>(
         this: Photon extends BaseModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M,
-    ): App<Name, Description, ReturnWithUnique<Photon, M>> &
-        ExtensionBuilder<Name, Description, ReturnWithUnique<Photon, M>, _Ext> {
+    ): App<Name, Description, ReturnWithUnique<Photon, M>> {
         const next = modifier.main(this) as any;
 
         (next.photon as any)[BasePhoton] = modifier.base;

@@ -1,20 +1,20 @@
+import type { Merge } from "type-fest";
+import type { App } from "../core/app.ts";
 import type {
     BaseModIn,
     ModIn,
     ModOut,
     SomeBaseModifier,
     SomeModifier,
-    SomeUniqueBaseModifier
+    SomeUniqueBaseModifier,
 } from "../core/some-modifier.ts";
-import type {DeepMerge, ReturnWithUnique} from "../types";
-import type {Merge} from "type-fest";
-import type {App} from "../core/app.ts";
+import type { DeepMerge, ReturnWithUnique } from "../types";
 
 export interface SomeExtension {
-    modifiers: Record<string, (...args: any[]) => SomeModifier<any, any> | SomeBaseModifier<any, any, any>>
+    modifiers: Record<string, (...args: any[]) => SomeModifier<any, any> | SomeBaseModifier<any, any, any>>;
 }
 
-export type ModifiersOf<T extends SomeExtension> = T['modifiers'];
+export type ModifiersOf<T extends SomeExtension> = T["modifiers"];
 
 export type ExtensionBuilder<N extends string, D extends string, P extends {}, Ext extends SomeExtension> = {
     [K in keyof ModifiersOf<Ext>]: (
@@ -25,9 +25,9 @@ export type ExtensionBuilder<N extends string, D extends string, P extends {}, E
                 ? App<N, D, ReturnWithUnique<P, M>, Ext> & ExtensionBuilder<N, D, ReturnWithUnique<P, M>, Ext>
                 : never
             : M extends SomeModifier<any, any>
-                ? P extends ModIn<M>
-                    ? App<N, D, Merge<P, ModOut<M, P>>, Ext> & ExtensionBuilder<N, D, ModOut<M, P>, Ext>
-                    : never
-                : never
-        : never
-}
+              ? P extends ModIn<M>
+                  ? App<N, D, Merge<P, ModOut<M, P>>, Ext> & ExtensionBuilder<N, D, Merge<P, ModOut<M, P>>, Ext>
+                  : never
+              : never
+        : never;
+};
