@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const compiledPhotonSchema = z
     .object({
-        onboard: z.object({}).optional(),
+        onboard: z.object({}).strip().optional(),
     })
     .strip();
 
