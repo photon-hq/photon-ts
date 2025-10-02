@@ -14,6 +14,15 @@ export type ExtendedApp<
 > = {
     deploy: AppInstance<Name, Description, P>["deploy"];
     unwrap: () => AppInstance<Name, Description, P>;
+    use<T extends object>(
+        arg: T,
+    ): T extends SomeModifier<any, any>
+        ? P extends ModIn<T>
+            ? ExtendedApp<Name, Description, Merge<P, ModOut<T, P>>, Exts>
+            : never
+        : P extends UniqueOf<T>
+          ? ExtendedApp<Name, Description, Merge<P, T>, Exts>
+          : never;
     extension<NewExt extends object>(
         ext: NewExt,
     ): ExtendedApp<Name, Description, P, Merge<Exts, NewExt extends { modifiers: infer M } ? M : NewExt>>;
@@ -43,6 +52,10 @@ export function buildExtendedApi<
     const api = {
         deploy: currentApp.deploy.bind(currentApp),
         unwrap: () => currentApp,
+        use: (arg: any) => {
+            const newApp = (currentApp as any).modifier(arg);
+            return buildExtendedApi(newApp, extensions);
+        },
         extension: <NewExts extends object>(ext: NewExts) => {
             const modifiers = (
                 "modifiers" in ext && ext.modifiers && typeof ext.modifiers === "object" ? ext.modifiers : ext

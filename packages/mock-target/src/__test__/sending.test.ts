@@ -22,7 +22,7 @@ describe("sending", () => {
     } satisfies SomeExtension;
 
     const app1 = new App("hi", "hi");
-    const app2 = app1.extension(ext).onboard().prompt("1").prompt("2");
+    const app2 = app1.extension(ext).onboard().use(promptModifier("1"));
 
     test(
         "one-way sending from user",
