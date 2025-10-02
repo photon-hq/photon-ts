@@ -2,11 +2,22 @@ import type { Merge, NonEmptyString } from "type-fest";
 import { z } from "zod";
 import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
-import { BasePhoton, type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique, type UniqueOf } from "../types";
+import {
+    BasePhoton,
+    type CompiledPhoton,
+    compiledPhotonSchema, type DeepMerge,
+    type ReturnWithUnique,
+    type UniqueOf
+} from "../types";
 import type { BaseModIn, BaseModOut, ModIn, ModOut, SomeBaseModifier, SomeModifier } from "./modifier.ts";
-import type {ModifiersOf, SomeExtension} from "../extension";
+import type {ExtensionBuilder, ModifiersOf, SomeExtension} from "../extension";
 
-export class App<Name extends string, Description extends string, Photon extends object = Record<string, never>> {
+export class App<
+    Name extends string,
+    Description extends string,
+    Photon extends {} = {},
+    _Ext extends SomeExtension = { modifiers: {} },
+> {
     photon: Photon;
 
     public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>) {
@@ -27,36 +38,22 @@ export class App<Name extends string, Description extends string, Photon extends
     public modifier<M extends SomeModifier<any, any>>(
         this: Photon extends ModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M,
-    ): App<Name, Description, Merge<Photon, ModOut<M, Photon>>> {
-        return modifier.main(this) as unknown as App<Name, Description, Merge<Photon, ModOut<M, Photon>>>;
+    ): App<Name, Description, Merge<Photon, ModOut<M, Photon>>> & ExtensionBuilder<Name, Description, Photon, _Ext> {
+        return modifier.main(this) as any
     }
 
     public baseModifier<M extends SomeBaseModifier<any, any, any>>(
         this: Photon extends BaseModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M,
-    ): App<Name, Description, ReturnWithUnique<Photon, M>> {
-        const next = modifier.main(this) as unknown as App<Name, Description, Merge<Photon, BaseModOut<M>>>;
+    ): App<Name, Description, ReturnWithUnique<Photon, M>> & ExtensionBuilder<Name, Description, Photon, _Ext> {
+        const next = modifier.main(this) as any
 
         (next.photon as any)[BasePhoton] = modifier.base;
 
         return next as any;
     }
 
-    public extension<Ext extends SomeExtension>(ext: Ext): this & {
-        [K in keyof ModifiersOf<Ext>]: (
-            ...args: Parameters<ModifiersOf<Ext>[K]>
-        ) => ReturnType<ModifiersOf<Ext>[K]> extends infer M
-            ? M extends SomeBaseModifier<any, any, any>
-                ? Photon extends BaseModIn<M>
-                    ? App<Name, Description, ReturnWithUnique<Photon, M>>
-                    : never
-                : M extends SomeModifier<any, any>
-                    ? Photon extends ModIn<M>
-                        ? App<Name, Description, Merge<Photon, ModOut<M, Photon>>>
-                        : never
-                    : never
-            : never;
-    } {
+    public extension<Ext extends SomeExtension>(ext: Ext): App<Name, Description, Photon, DeepMerge<Ext, _Ext>> & ExtensionBuilder<Name, Description, Photon, DeepMerge<Ext, _Ext>>  {
         return this as any
     }
 

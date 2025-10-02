@@ -20,14 +20,6 @@ type OutFn = <P extends InPhoton>(p: P) => OutPhoton<P>;
 export function promptModifier(content: string): SomeModifier<InPhoton, OutFn> {
     return {
         main(app) {
-            if (app.photon[BasePhoton] === "onboard") {
-                (app.photon as any).onboard.flow.push({
-                    type: "send",
-                    content: content,
-                });
-            } else if (app.photon[BasePhoton] === "tool") {
-            }
-
             return app as any;
         },
     };
