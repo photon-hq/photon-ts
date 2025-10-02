@@ -1,16 +1,17 @@
 import type { Merge, NonEmptyString } from "type-fest";
 import { z } from "zod";
+import type { ExtensionBuilder, ModifiersOf, SomeExtension } from "../extension";
 import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
 import {
     BasePhoton,
     type CompiledPhoton,
-    compiledPhotonSchema, type DeepMerge,
+    compiledPhotonSchema,
+    type DeepMerge,
     type ReturnWithUnique,
-    type UniqueOf
+    type UniqueOf,
 } from "../types";
 import type { BaseModIn, BaseModOut, ModIn, ModOut, SomeBaseModifier, SomeModifier } from "./some-modifier.ts";
-import type {ExtensionBuilder, ModifiersOf, SomeExtension} from "../extension";
 
 export class App<
     Name extends string,
@@ -38,22 +39,27 @@ export class App<
     public modifier<M extends SomeModifier<any, any>>(
         this: Photon extends ModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M,
-    ): App<Name, Description, Merge<Photon, ModOut<M, Photon>>> & ExtensionBuilder<Name, Description, Photon, _Ext> {
-        return modifier.main(this) as any
+    ): App<Name, Description, Merge<Photon, ModOut<M, Photon>>> &
+        ExtensionBuilder<Name, Description, ModOut<M, Photon>, _Ext> {
+        return modifier.main(this) as any;
     }
 
     public baseModifier<M extends SomeBaseModifier<any, any, any>>(
         this: Photon extends BaseModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M,
-    ): App<Name, Description, ReturnWithUnique<Photon, M>> & ExtensionBuilder<Name, Description, Photon, _Ext> {
-        const next = modifier.main(this) as any
+    ): App<Name, Description, ReturnWithUnique<Photon, M>> &
+        ExtensionBuilder<Name, Description, ReturnWithUnique<Photon, M>, _Ext> {
+        const next = modifier.main(this) as any;
 
         (next.photon as any)[BasePhoton] = modifier.base;
 
         return next as any;
     }
 
-    public extension<Ext extends SomeExtension>(ext: Ext): App<Name, Description, Photon, DeepMerge<Ext, _Ext>> & ExtensionBuilder<Name, Description, Photon, DeepMerge<Ext, _Ext>>  {
+    public extension<Ext extends SomeExtension>(
+        ext: Ext,
+    ): App<Name, Description, Photon, DeepMerge<Ext, _Ext>> &
+        ExtensionBuilder<Name, Description, Photon, DeepMerge<Ext, _Ext>> {
         for (const [key, modifierFactory] of Object.entries(ext.modifiers)) {
             (this as any)[key] = (...args: any[]) => {
                 const modifier = modifierFactory(...args);
@@ -61,13 +67,12 @@ export class App<
                 if ("base" in modifier) {
                     return (this as any).baseModifier(modifier as SomeBaseModifier<any, any, any>);
                 } else {
-                    return  (this as any).modifier(modifier as SomeModifier<any, any>);
+                    return (this as any).modifier(modifier as SomeModifier<any, any>);
                 }
-
             };
         }
 
-        return this as any
+        return this as any;
     }
 
     private compilePhoton(): CompiledPhoton {
