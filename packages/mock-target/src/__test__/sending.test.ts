@@ -23,11 +23,11 @@ describe("sending", () => {
 
             const mockInstance = new Mock(userId);
 
-            const c = app.onboard();
+            const c = app.onboard(() => {});
 
-            const a = new App().onboard().send("hello world from photon")
-            const b = new App().onboard()
-            app.use(a)
+            const a = new App().onboard(() => {});
+            const b = new App().onboard(() => {});
+            app.use(a);
 
             await app.deploy(mockInstance.mockKey, mockInstance);
 
