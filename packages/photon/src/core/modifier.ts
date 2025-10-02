@@ -1,18 +1,18 @@
 import type { Merge } from "type-fest";
-import type { App } from "./app.ts";
+import type { AppInstance } from "./app.ts";
 
 export interface SomeModifier<In extends {}, OutFn extends (p: In) => any> {
     main<Name extends string, Description extends string, P extends In>(
-        app: App<Name, Description, P>,
-    ): App<Name, Description, Merge<P, ReturnType<OutFn & ((p: P) => any)>>>;
+        app: AppInstance<Name, Description, P>,
+    ): AppInstance<Name, Description, Merge<P, ReturnType<OutFn & ((p: P) => any)>>>;
 }
 
 export interface SomeBaseModifier<In extends {}, Out extends {}, Base extends string> {
     base: Base;
 
     main<Name extends string, Description extends string, P extends In>(
-        app: App<Name, Description, P>,
-    ): App<Name, Description, Merge<P, Out>>;
+        app: AppInstance<Name, Description, P>,
+    ): AppInstance<Name, Description, Merge<P, Out>>;
 }
 
 export interface SomeUniqueBaseModifier<In extends {}, Out extends {}, Base extends string>
