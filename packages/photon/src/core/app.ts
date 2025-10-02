@@ -9,7 +9,7 @@ import {
     type ReturnWithUnique,
     type UniqueOf
 } from "../types";
-import type { BaseModIn, BaseModOut, ModIn, ModOut, SomeBaseModifier, SomeModifier } from "./modifier.ts";
+import type { BaseModIn, BaseModOut, ModIn, ModOut, SomeBaseModifier, SomeModifier } from "./some-modifier.ts";
 import type {ExtensionBuilder, ModifiersOf, SomeExtension} from "../extension";
 
 export class App<
@@ -54,6 +54,19 @@ export class App<
     }
 
     public extension<Ext extends SomeExtension>(ext: Ext): App<Name, Description, Photon, DeepMerge<Ext, _Ext>> & ExtensionBuilder<Name, Description, Photon, DeepMerge<Ext, _Ext>>  {
+        for (const [key, modifierFactory] of Object.entries(ext.modifiers)) {
+            (this as any)[key] = (...args: any[]) => {
+                const modifier = modifierFactory(...args);
+
+                if ("base" in modifier) {
+                    return (this as any).baseModifier(modifier as SomeBaseModifier<any, any, any>);
+                } else {
+                    return  (this as any).modifier(modifier as SomeModifier<any, any>);
+                }
+
+            };
+        }
+
         return this as any
     }
 

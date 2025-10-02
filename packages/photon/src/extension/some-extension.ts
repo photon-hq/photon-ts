@@ -5,7 +5,7 @@ import type {
     SomeBaseModifier,
     SomeModifier,
     SomeUniqueBaseModifier
-} from "../core/modifier.ts";
+} from "../core/some-modifier.ts";
 import type {DeepMerge, ReturnWithUnique} from "../types";
 import type {Merge} from "type-fest";
 import type {App} from "../core/app.ts";

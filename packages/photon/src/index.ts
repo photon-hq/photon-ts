@@ -1,5 +1,5 @@
 export { App } from "./core/app.ts";
-export type { SomeModifier } from "./core/modifier.ts";
+export type { SomeModifier } from "./core/some-modifier.ts";
 export { createApp } from "./create-app.ts";
 export { defaultExtensions } from "./extensions.ts";
 export { GatewayClient as Gateway } from "./gateway/client.ts";

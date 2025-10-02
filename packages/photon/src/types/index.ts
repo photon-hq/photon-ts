@@ -3,7 +3,7 @@ import type { Merge } from "type-fest";
 export * from "../modifiers/setup/type.ts";
 export * from "./compiled.ts";
 
-import type { BaseModIn, BaseModOf, BaseModOut, SomeUniqueBaseModifier } from "../core/modifier.ts";
+import type { BaseModIn, BaseModOf, BaseModOut, SomeUniqueBaseModifier } from "../core/some-modifier.ts";
 
 export type WithoutKey<K extends PropertyKey> = { [P in K]?: never };
 export type OmitDiscriminant<T, K extends keyof T> = T extends any ? Omit<T, K> : never;
@@ -23,7 +23,6 @@ export type ReturnWithUnique<P, M> = Merge<
 >;
 
 
-// helper: exact type equality check that handles `never`
 type IsEqual<X, Y> =
     (<T>() => T extends X ? 1 : 2) extends
         (<T>() => T extends Y ? 1 : 2)
@@ -33,9 +32,7 @@ type IsEqual<X, Y> =
             : false
         : false;
 
-// Non-distributive wrapper to keep unions intact
 type _DeepMerge<A, B> =
-// if either is never, return the other
     [A] extends [never] ? B :
         [B] extends [never] ? A :
             // if exactly the same type, keep it
@@ -55,5 +52,4 @@ type _DeepMerge<A, B> =
                             : B)
                         : B;
 
-// Public entry ensures non-distribution by boxing in tuples
 export type DeepMerge<A, B> = _DeepMerge<[A] extends [never] ? never : A, [B] extends [never] ? never : B>;

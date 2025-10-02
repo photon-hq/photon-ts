@@ -1,7 +1,7 @@
 import type { Merge, NonEmptyString } from "type-fest";
 
 import { App } from "./core/app.ts";
-import type { BaseModIn, ModIn, ModOut, SomeBaseModifier, SomeModifier } from "./core/modifier.ts";
+import type { BaseModIn, ModIn, ModOut, SomeBaseModifier, SomeModifier } from "./core/some-modifier.ts";
 import type { ReturnWithUnique } from "./types";
 
 export type ExtendedApp<
