@@ -1,12 +1,12 @@
-import type { SomeBaseModifier, SomeModifier, SomeUniqueBaseModifier } from "./some-modifier.ts";
-import type { IsUnique, ReturnWithUnique, WithoutKey } from "../types";
-import { App } from "../app.ts";
 import merge from "deepmerge";
+import { App } from "../app.ts";
+import type { IsUnique, ReturnWithUnique, WithoutKey } from "../types";
+import type { SomeUniqueBase } from "./some-base.ts";
 
 type InPhoton = WithoutKey<"onboard">;
 type OutPhoton = { onboard: { flow: [] } };
 
-export function onboardModifier(): SomeUniqueBaseModifier<InPhoton, OutPhoton, "onboard"> {
+export function onboardModifier(action: () => Promise<void>): SomeUniqueBase<InPhoton, OutPhoton, "onboard"> {
     return {
         unique: true,
         base: "onboard",
@@ -22,14 +22,16 @@ declare module "../app.ts" {
     interface App<Name extends string, Description extends string, Photon extends {} = {}> {
         onboard(
             this: Photon extends InPhoton ? App<Name, Description, Photon> : never,
+            action: () => Promise<void>,
         ): App<Name, Description, ReturnWithUnique<Photon, ReturnType<typeof onboardModifier>>>;
     }
 }
 
 App.prototype.onboard = function <Name extends string, Description extends string, Photon extends {} = {}>(
     this: Photon extends InPhoton ? App<Name, Description, Photon> : never,
+    action: () => Promise<void>,
 ): App<Name, Description, ReturnWithUnique<Photon, ReturnType<typeof onboardModifier>>> {
-    return this.baseModifier(onboardModifier()) as any;
+    return this.base(onboardModifier(action)) as any;
 };
 
 export {};

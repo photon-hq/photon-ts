@@ -1,14 +1,8 @@
+import merge from "deepmerge";
 import type { Merge, NonEmptyString } from "type-fest";
 import { z } from "zod";
 import { Gateway } from "./gateway/server.ts";
-import {
-    type BaseModIn,
-    type BaseModOut,
-    type ModIn,
-    type ModOut,
-    type SomeBaseModifier,
-    type SomeModifier,
-} from "./modifiers/some-modifier.ts";
+import { type BaseModIn, type BaseModOut, type SomeBase } from "./modifiers/some-base.ts";
 import type { Target } from "./target.ts";
 import {
     BasePhoton,
@@ -16,10 +10,8 @@ import {
     compiledPhotonSchema,
     type IsBroadString,
     type ReturnWithUnique,
-    type UniqueOf
+    type UniqueOf,
 } from "./types";
-import merge from "deepmerge";
-
 
 type IsModuleApp<A> = A extends App<infer N, any, any> ? IsBroadString<N> : never;
 type PhotonOf<A> = A extends App<any, any, infer P> ? P : never;
@@ -34,8 +26,8 @@ export class App<Name extends string, Description extends string, Photon extends
     public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>);
 
     public constructor(name?: NonEmptyString<Name>, description?: NonEmptyString<Description>) {
-        this.name = name
-        this.description = description
+        this.name = name;
+        this.description = description;
 
         this.photon = {} as Photon;
     }
@@ -48,14 +40,7 @@ export class App<Name extends string, Description extends string, Photon extends
         return this as any;
     }
 
-    public modifier<M extends SomeModifier<any, any>>(
-        this: Photon extends ModIn<M> ? App<Name, Description, Photon> : never,
-        modifier: M,
-    ): App<Name, Description, Merge<Photon, ModOut<M, Photon>>> {
-        return modifier.main(this) as unknown as App<Name, Description, Merge<Photon, ModOut<M, Photon>>>;
-    }
-
-    public baseModifier<M extends SomeBaseModifier<any, any, any>>(
+    public base<M extends SomeBase<any, any, any>>(
         this: Photon extends BaseModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M,
     ): App<Name, Description, ReturnWithUnique<Photon, M>> {
