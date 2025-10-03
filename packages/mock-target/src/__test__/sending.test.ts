@@ -1,19 +1,10 @@
 import { describe, test } from "bun:test";
 import crypto from "node:crypto";
-import { App, createApp, defaultExtensions, onboardModifier, type SomeExtension } from "photon";
+import { App, onboardModifier, type SomeExtension } from "photon";
 import { promptModifier } from "../modifiers/prompt.ts";
 import { Mock } from "../target.ts";
 
 describe("sending", () => {
-    const app = createApp({
-        name: "Test Bot",
-        description: "hi",
-        extensions: {
-            ...defaultExtensions,
-            prompt: promptModifier,
-        },
-    });
-
     const ext = {
         modifiers: {
             onboard: onboardModifier,
@@ -22,7 +13,10 @@ describe("sending", () => {
     } satisfies SomeExtension;
 
     const app1 = new App("hi", "hi");
-    const app2 = app1.extension(ext).onboard(() => {});
+    const app2 = app1
+        .extension(ext)
+        .onboard(() => {})
+        .prompt("");
 
     test(
         "one-way sending from user",
@@ -32,10 +26,6 @@ describe("sending", () => {
             console.log(`userId: ${userId}`);
 
             const mockInstance = new Mock(userId);
-
-            const a = app.onboard().prompt("mobai test").send("hello world from photon");
-            const b = app.onboard();
-            const c = app.onboard();
 
             await app2.deploy(mockInstance.mockKey, mockInstance);
 

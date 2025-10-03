@@ -7,7 +7,6 @@ export interface SomeExtension {
 }
 
 export type ModifiersOf<T extends SomeExtension> = T["modifiers"];
-
 export type ExtensionBuilder<N extends string, D extends string, P extends {}, E extends SomeExtension> = {
     [K in keyof ModifiersOf<E>]: (
         ...args: Parameters<ModifiersOf<E>[K]>
