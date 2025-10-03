@@ -1,7 +1,6 @@
 import merge from "deepmerge";
-import { App } from "../app.ts";
-import type { Promisable, ReturnWithUnique, WithoutKey } from "../types";
-import type { SomeUniqueModifier } from "./some-modifier.ts";
+import type { SomeUniqueModifier } from "../core/some-modifier.ts";
+import type { Promisable, WithoutKey } from "../types";
 
 type InPhoton = WithoutKey<"onboard">;
 type OutPhoton = { onboard: {} };
@@ -16,21 +15,3 @@ export function onboardModifier(action: () => Promisable<void>): SomeUniqueModif
         },
     };
 }
-
-declare module "../app.ts" {
-    interface App<Name extends string, Description extends string, Photon extends {} = {}> {
-        onboard(
-            this: Photon extends InPhoton ? App<Name, Description, Photon> : never,
-            action: () => Promisable<void>,
-        ): App<Name, Description, ReturnWithUnique<Photon, ReturnType<typeof onboardModifier>>>;
-    }
-}
-
-App.prototype.onboard = function <Name extends string, Description extends string, Photon extends {} = {}>(
-    this: Photon extends InPhoton ? App<Name, Description, Photon> : never,
-    action: () => Promisable<void>,
-): App<Name, Description, ReturnWithUnique<Photon, ReturnType<typeof onboardModifier>>> {
-    return this.modifier(onboardModifier(action)) as any;
-};
-
-export {};

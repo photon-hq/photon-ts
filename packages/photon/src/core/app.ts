@@ -7,14 +7,14 @@ import type { Target } from "../target.ts";
 import { type CompiledPhoton, compiledPhotonSchema, type DeepMerge, type IsBroadString, type UniqueOf } from "../types";
 import type { ModIn, ModOut, SomeModifier } from "./some-modifier.ts";
 
-type IsModuleApp<A> = A extends App<infer N, any, any> ? IsBroadString<N> : never;
-type PhotonOf<A> = A extends App<any, any, infer P> ? P : never;
+type IsModuleApp<A> = A extends App<infer N, any, any, any> ? IsBroadString<N> : never;
+type PhotonOf<A> = A extends App<any, any, infer P, any> ? P : never;
 
 export class App<
     Name extends string,
     Description extends string,
     Photon extends {} = {},
-    _Ext extends SomeExtension = { modifiers: {} },
+    Extension extends SomeExtension = { modifiers: {} },
 > {
     private readonly name: Name | undefined;
     private readonly description: Description | undefined;
@@ -31,7 +31,7 @@ export class App<
     }
 
     public use<A extends App<any, any, any>>(
-        this: Photon extends UniqueOf<PhotonOf<this>> ? App<Name, Description, Photon> : never,
+        this: Photon extends UniqueOf<PhotonOf<this>> ? App<Name, Description, Photon, Extension> : never,
         moduleApp: IsModuleApp<A> extends true ? A : never,
     ): App<Name, Description, Merge<Photon, PhotonOf<A>>> {
         this.photon = merge(this.photon, moduleApp.photon);
@@ -41,14 +41,15 @@ export class App<
     public modifier<M extends SomeModifier<any, any>>(
         this: Photon extends ModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M,
-    ): App<Name, Description, Merge<Photon, ModOut<M>>, _Ext> {
+    ): App<Name, Description, Merge<Photon, ModOut<M>>, Extension> &
+        ExtensionBuilder<Name, Description, Photon, Extension> {
         return modifier.main(this) as any;
     }
 
     public extension<Ext extends SomeExtension>(
         ext: Ext,
-    ): App<Name, Description, Photon, DeepMerge<Ext, _Ext>> &
-        ExtensionBuilder<Name, Description, Photon, DeepMerge<Ext, _Ext>> {
+    ): App<Name, Description, Photon, DeepMerge<Ext, Extension>> &
+        ExtensionBuilder<Name, Description, Photon, DeepMerge<Ext, Extension>> {
         for (const [key, modifierFactory] of Object.entries(ext.modifiers)) {
             (this as any)[key] = (...args: any[]) => {
                 const modifier = modifierFactory(...args);
@@ -65,16 +66,16 @@ export class App<
     }
 
     public async deploy(
-        this: IsModuleApp<this> extends true ? never : App<Name, Description, Photon>,
+        this: IsModuleApp<this> extends true ? never : App<Name, Description, Photon, Extension>,
         api_key: string,
         ...targets: Target[]
     ): Promise<void>;
     public async deploy(
-        this: IsModuleApp<this> extends true ? never : App<Name, Description, Photon>,
+        this: IsModuleApp<this> extends true ? never : App<Name, Description, Photon, Extension>,
         ...targets: Target[]
     ): Promise<void>;
     public async deploy(
-        this: IsModuleApp<this> extends true ? never : App<Name, Description, Photon>,
+        this: IsModuleApp<this> extends true ? never : App<Name, Description, Photon, Extension>,
         first: string | Target,
         ...rest: Target[]
     ): Promise<void> {
