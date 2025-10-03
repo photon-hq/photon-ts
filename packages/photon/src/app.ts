@@ -47,7 +47,7 @@ export class App<Name extends string, Description extends string, Photon extends
     }
 
     private compilePhoton(): CompiledPhoton {
-        return z.parse(compiledPhotonSchema, this.photon);
+        return z.parse(compiledPhotonSchema, merge(this.photon, { name: this.name, description: this.description }));
     }
 
     public async deploy(

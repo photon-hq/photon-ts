@@ -1,12 +1,12 @@
 import merge from "deepmerge";
 import { App } from "../app.ts";
-import type { IsUnique, Promisable, ReturnWithUnique, WithoutKey } from "../types";
+import type { Promisable, ReturnWithUnique, WithoutKey } from "../types";
 import type { SomeUniqueModifier } from "./some-modifier.ts";
 
 type InPhoton = WithoutKey<"onboard">;
 type OutPhoton = { onboard: {} };
 
-export function onboardModifier(action: () => Promisable<void>): SomeUniqueModifier<InPhoton, OutPhoton, "onboard"> {
+export function onboardModifier(action: () => Promisable<void>): SomeUniqueModifier<InPhoton, OutPhoton> {
     return {
         unique: true,
 
