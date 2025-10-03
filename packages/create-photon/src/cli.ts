@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
+import { resolve } from "node:path";
 import { create } from "create-create-x";
-import { resolve } from "path";
 
 const templateRoot = resolve(__dirname, "..", "templates");
 

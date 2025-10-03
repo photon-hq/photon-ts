@@ -1,18 +1,29 @@
 import { describe, test } from "bun:test";
-import crypto from "crypto";
-import { App, onboardModifier } from "photon";
+import crypto from "node:crypto";
+import { App, createApp, defaultExtensions, onboardModifier, type SomeExtension } from "photon";
+import { promptModifier } from "../modifiers/prompt.ts";
 import { Mock } from "../target.ts";
 
 describe("sending", () => {
-    type IsApp<A> = A extends App<string, string> ? true : false;
+    const app = createApp({
+        name: "Test Bot",
+        description: "hi",
+        extensions: {
+            ...defaultExtensions,
+            prompt: promptModifier,
+        },
+    });
 
-    const app = new App("test", "test");
+    const ext = {
+        modifiers: {
+            onboard: onboardModifier,
+            prompt: promptModifier,
+        },
+    } satisfies SomeExtension;
 
-    function hi(): IsApp<typeof app> {
-        return null as any;
-    }
-
-    const a = hi();
+    const app1 = new App("hi", "hi");
+    const app2 = app1.extension(ext).onboard().prompt("1");
+    const app3 = app1.baseModifier(onboardModifier()).modifier(promptModifier("2")).modifier(promptModifier("3"));
 
     test(
         "one-way sending from user",
@@ -23,13 +34,11 @@ describe("sending", () => {
 
             const mockInstance = new Mock(userId);
 
-            const c = app.onboard(() => {});
+            const a = app.onboard().prompt("mobai test").send("hello world from photon");
+            const b = app.onboard();
+            const c = app.onboard();
 
-            const a = new App().onboard(() => {});
-            const b = new App().onboard(() => {});
-            const d = app.use(a);
-
-            await app.deploy(mockInstance.mockKey, mockInstance);
+            await app2.deploy(mockInstance.mockKey, mockInstance);
 
             await mockInstance.sendMessage("hello, world");
 
