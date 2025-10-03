@@ -1,28 +1,11 @@
+import merge from "deepmerge";
 import type { Merge, NonEmptyString } from "type-fest";
 import { z } from "zod";
-import type { ExtensionBuilder, ModifiersOf, SomeExtension } from "../extension";
+import type { ExtensionBuilder, SomeExtension } from "../extension";
 import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
-import {
-    type CompiledPhoton,
-    compiledPhotonSchema,
-    type DeepMerge,
-    type IsBroadString,
-    type ReturnWithUnique,
-    type UniqueOf,
-} from "../types";
-import { Gateway } from "./gateway/server.ts";
-import {
-    type BaseModIn,
-    type BaseModOut,
-    type ModIn,
-    type ModOut,
-    type SomeBaseModifier,
-    type SomeModifier,
-} from "./modifiers/some-modifier.ts";
-import type { ModIn, ModOut, SomeBaseModifier, SomeModifier } from "./some-modifier.ts";
-import type { Target } from "./target.ts";
-import merge from "deepmerge";
+import { type CompiledPhoton, compiledPhotonSchema, type DeepMerge, type IsBroadString, type UniqueOf } from "../types";
+import type { ModIn, ModOut, SomeModifier } from "./some-modifier.ts";
 
 type IsModuleApp<A> = A extends App<infer N, any, any> ? IsBroadString<N> : never;
 type PhotonOf<A> = A extends App<any, any, infer P> ? P : never;
@@ -58,7 +41,7 @@ export class App<
     public modifier<M extends SomeModifier<any, any>>(
         this: Photon extends ModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M,
-    ): App<Name, Description, Merge<Photon, ModOut<M, Photon>>, _Ext> {
+    ): App<Name, Description, Merge<Photon, ModOut<M>>, _Ext> {
         return modifier.main(this) as any;
     }
 
@@ -70,11 +53,7 @@ export class App<
             (this as any)[key] = (...args: any[]) => {
                 const modifier = modifierFactory(...args);
 
-                if ("base" in modifier) {
-                    return (this as any).baseModifier(modifier as SomeBaseModifier<any, any, any>);
-                } else {
-                    return (this as any).modifier(modifier as SomeModifier<any, any>);
-                }
+                return (this as any).modifier(modifier as SomeModifier<any, any>);
             };
         }
 

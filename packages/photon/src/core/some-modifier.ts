@@ -1,5 +1,5 @@
 import type { Merge } from "type-fest";
-import { App } from "../app.ts";
+import type { App } from "./app.ts";
 
 export interface SomeModifier<In extends {}, Out extends {}> {
     main<Name extends string, Description extends string, P extends In>(
