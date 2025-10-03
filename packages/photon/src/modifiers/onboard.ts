@@ -1,15 +1,14 @@
 import merge from "deepmerge";
 import { App } from "../app.ts";
 import type { IsUnique, Promisable, ReturnWithUnique, WithoutKey } from "../types";
-import type { SomeUniqueBase } from "./some-base.ts";
+import type { SomeUniqueModifier } from "./some-modifier.ts";
 
 type InPhoton = WithoutKey<"onboard">;
 type OutPhoton = { onboard: {} };
 
-export function onboardModifier(action: () => Promisable<void>): SomeUniqueBase<InPhoton, OutPhoton, "onboard"> {
+export function onboardModifier(action: () => Promisable<void>): SomeUniqueModifier<InPhoton, OutPhoton, "onboard"> {
     return {
         unique: true,
-        base: "onboard",
 
         main(app) {
             (app as any).photon = merge(app.photon, { onboard: { action: action } });
@@ -31,7 +30,7 @@ App.prototype.onboard = function <Name extends string, Description extends strin
     this: Photon extends InPhoton ? App<Name, Description, Photon> : never,
     action: () => Promisable<void>,
 ): App<Name, Description, ReturnWithUnique<Photon, ReturnType<typeof onboardModifier>>> {
-    return this.base(onboardModifier(action)) as any;
+    return this.modifier(onboardModifier(action)) as any;
 };
 
 export {};

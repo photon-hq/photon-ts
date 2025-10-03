@@ -2,10 +2,9 @@ import merge from "deepmerge";
 import type { Merge, NonEmptyString } from "type-fest";
 import { z } from "zod";
 import { Gateway } from "./gateway/server.ts";
-import { type BaseModIn, type BaseModOut, type SomeBase } from "./modifiers/some-base.ts";
+import { type ModIn, type ModOut, type SomeModifier } from "./modifiers/some-modifier.ts";
 import type { Target } from "./target.ts";
 import {
-    BasePhoton,
     type CompiledPhoton,
     compiledPhotonSchema,
     type IsBroadString,
@@ -40,15 +39,11 @@ export class App<Name extends string, Description extends string, Photon extends
         return this as any;
     }
 
-    public base<M extends SomeBase<any, any, any>>(
-        this: Photon extends BaseModIn<M> ? App<Name, Description, Photon> : never,
+    public modifier<M extends SomeModifier<any, any>>(
+        this: Photon extends ModIn<M> ? App<Name, Description, Photon> : never,
         modifier: M,
     ): App<Name, Description, ReturnWithUnique<Photon, M>> {
-        const next = modifier.main(this) as unknown as App<Name, Description, Merge<Photon, BaseModOut<M>>>;
-
-        (next.photon as any)[BasePhoton] = modifier.base;
-
-        return next as any;
+        return modifier.main(this) as any;
     }
 
     private compilePhoton(): CompiledPhoton {

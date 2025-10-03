@@ -27,7 +27,7 @@ describe("sending", () => {
 
             const a = new App().onboard(() => {});
             const b = new App().onboard(() => {});
-            app.use(a);
+            const d = app.use(a);
 
             await app.deploy(mockInstance.mockKey, mockInstance);
 
