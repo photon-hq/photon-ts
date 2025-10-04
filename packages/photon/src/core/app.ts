@@ -1,10 +1,19 @@
-import type { Merge, NonEmptyString } from "type-fest";
+import type { NonEmptyString } from "type-fest";
 import { z } from "zod";
 import { defaultExtensions } from "../extensions.ts";
 import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
-import { BasePhoton, type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique, type UniqueOf } from "../types";
+import {
+    BasePhoton,
+    type CompiledPhoton,
+    compiledPhotonSchema,
+    type Merge,
+    type ReturnWithUnique,
+    type UniqueOf,
+} from "../types";
 import type { BaseModIn, BaseModOut, ModIn, ModOut, SomeBaseModifier, SomeModifier } from "./modifier.ts";
+
+type AsPhoton<T> = T extends infer O ? { [k in keyof O]: O[k] } : never;
 
 export type ExtendedApp<
     Name extends string,
@@ -18,10 +27,10 @@ export type ExtendedApp<
         arg: T,
     ): T extends SomeModifier<any, any>
         ? P extends ModIn<T>
-            ? ExtendedApp<Name, Description, Merge<P, ModOut<T, P>>, Exts>
+            ? ExtendedApp<Name, Description, AsPhoton<Merge<P, ModOut<T, P>>>, Exts>
             : never
         : P extends UniqueOf<T>
-          ? ExtendedApp<Name, Description, Merge<P, T>, Exts>
+          ? ExtendedApp<Name, Description, AsPhoton<Merge<P, T>>, Exts>
           : never;
     extension<NewExt extends object>(
         ext: NewExt,
@@ -34,7 +43,9 @@ export type ExtendedApp<
                 : never
             : M extends SomeModifier<any, any>
               ? P extends ModIn<M>
-                  ? (...args: Parameters<Exts[K]>) => ExtendedApp<Name, Description, Merge<P, ModOut<M, P>>, Exts>
+                  ? (
+                        ...args: Parameters<Exts[K]>
+                    ) => ExtendedApp<Name, Description, AsPhoton<Merge<P, ModOut<M, P>>>, Exts>
                   : never
               : never
         : never;

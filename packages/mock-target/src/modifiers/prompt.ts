@@ -6,11 +6,7 @@ type InPhoton = {
 };
 
 type OutPhoton<P extends InPhoton> = BaseOf<P> extends "onboard"
-    ? P extends { onboard: { flow: infer F } }
-        ? F extends readonly string[]
-            ? { onboard: { flow: [...F, "prompt"] } }
-            : { onboard: { flow: ["prompt"] } }
-        : { onboard: { flow: ["prompt"] } }
+    ? { [BasePhoton]: "onboard"; onboard: { flow: [{ type: "send"; content: string }] } }
     : BaseOf<P> extends "tool"
       ? { tool: [] }
       : never;

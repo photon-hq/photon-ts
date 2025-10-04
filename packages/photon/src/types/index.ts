@@ -1,4 +1,6 @@
-import type { Merge } from "type-fest";
+import type { Merge as _Merge } from "type-fest";
+
+export type Merge<A, B> = { [K in keyof _Merge<A, B>]: _Merge<A, B>[K] } & {};
 
 export * from "../modifiers/setup/type.ts";
 export * from "./compiled.ts";
@@ -13,7 +15,7 @@ export type WithBase<B extends string> = { [BasePhoton]: B };
 export type BaseOf<P> = P extends { [BasePhoton]: infer U } ? U : object;
 
 export const UniquePhoton: unique symbol = Symbol("unique");
-export type UniqueOf<P> = P extends { [UniquePhoton]: infer U } ? U : object;
+export type UniqueOf<P> = P extends { [UniquePhoton]: infer U } ? U : Record<string, never>;
 export type WithUnique<U extends object> = { [UniquePhoton]: U };
 export type IsUnique<M> = M extends SomeUniqueBaseModifier<any, any, any> ? true : false;
 
