@@ -106,7 +106,7 @@ export class AppInstance<
         secret: typeof INTERNAL_CONSTRUCTOR,
     ) {
         if (secret !== INTERNAL_CONSTRUCTOR) {
-            throw new Error("AppInstance cannot be constructed directly, use App() or createApp()");
+            throw new Error("AppInstance cannot be constructed directly, use App()");
         }
         this.photon = {} as Photon;
     }

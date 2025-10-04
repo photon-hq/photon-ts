@@ -1,17 +1,12 @@
 import { describe, test } from "bun:test";
 import crypto from "node:crypto";
-import { App, createApp, defaultExtensions, onboardModifier, type SomeExtension } from "photon";
+import { App, defaultExtensions, onboardModifier, type SomeExtension } from "photon";
 import { promptModifier } from "../modifiers/prompt.ts";
 import { Mock } from "../target.ts";
 
 describe("sending", () => {
-    const app = createApp({
-        name: "Test Bot",
-        description: "hi",
-        extensions: {
-            ...defaultExtensions,
-            prompt: promptModifier,
-        },
+    const app = new App("Test Bot", "hi").extension({
+        prompt: promptModifier,
     });
 
     const ext = {

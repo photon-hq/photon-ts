@@ -5,6 +5,5 @@ export * from "./gateway/types";
 export * from "./modifiers";
 export type { Target } from "./target.ts";
 export * from "./types";
-export { createApp } from "./create-app.ts";
 export { defaultExtensions } from "./extensions.ts";
 export type { SomeExtension } from "./extensions.ts";
