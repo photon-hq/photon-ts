@@ -3,10 +3,10 @@ import type { Merge, NonEmptyString } from "type-fest";
 import { z } from "zod";
 import type { ExtensionBuilder, SomeExtension } from "../extension";
 import { Gateway } from "../gateway/server.ts";
+import { defaultExtensions } from "../modifiers/index.ts";
 import type { Target } from "../target.ts";
 import { type CompiledPhoton, compiledPhotonSchema, type DeepMerge, type IsBroadString, type UniqueOf } from "../types";
 import type { ModIn, ModOut, SomeModifier } from "./some-modifier.ts";
-import { defaultExtensions } from "../modifiers/index.ts";
 
 type AsPhoton<T> = T extends infer O ? { [k in keyof O]: O[k] } : never;
 
@@ -43,8 +43,6 @@ export type App<
         : never;
 };
 
-const INTERNAL_CONSTRUCTOR = Symbol("INTERNAL_CONSTRUCTOR");
-
 export function buildExtendedApi<
     Name extends string,
     Description extends string,
@@ -55,7 +53,7 @@ export function buildExtendedApi<
         deploy: currentApp.deploy.bind(currentApp),
         unwrap: () => currentApp,
         use: (arg: any) => {
-            const newApp = (currentApp as any).modifier(arg);
+            const newApp = (currentApp as any).use(arg);
             return buildExtendedApi(newApp, extensions);
         },
         extension: <NewExts extends object>(ext: NewExts) => {
@@ -82,19 +80,14 @@ export class AppInstance<
     Description extends string,
     Photon extends object = Record<string, never>,
 > {
-    private readonly name: Name;
-    private readonly description: Description;
+    private readonly name: Name | undefined;
+    private readonly description: Description | undefined;
 
     photon: Photon;
 
-    public constructor(
-        name: NonEmptyString<Name>,
-        description: NonEmptyString<Description>,
-        secret: typeof INTERNAL_CONSTRUCTOR,
-    ) {
-        if (secret !== INTERNAL_CONSTRUCTOR) {
-            throw new Error("AppInstance cannot be constructed directly, use App()");
-        }
+    public constructor()
+    public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>)
+    public constructor(name?: NonEmptyString<Name>, description?: NonEmptyString<Description>) {
         this.name = name;
         this.description = description;
         this.photon = {} as Photon;
@@ -149,13 +142,20 @@ export class AppInstance<
 }
 
 // biome-ignore lint: This function needs to be callable with 'new' keyword
-export const App = function <Name extends string, Description extends string>(
-    name: NonEmptyString<Name>,
-    description: NonEmptyString<Description>,
+export const App = function <Name extends string = string, Description extends string = string>(
+    name?: NonEmptyString<Name>,
+    description?: NonEmptyString<Description>,
 ) {
-    const app = new AppInstance(name, description, INTERNAL_CONSTRUCTOR);
-    return buildExtendedApi(app, defaultExtensions);
-} as unknown as new <Name extends string, Description extends string>(
-    name: NonEmptyString<Name>,
-    description: NonEmptyString<Description>,
-) => App<Name, Description, Record<string, never>, typeof defaultExtensions>;
+    if (name && description) {
+        const app = new AppInstance(name, description);
+        return buildExtendedApi(app, defaultExtensions);
+    } else {
+        return buildExtendedApi(new AppInstance(), defaultExtensions);
+    }
+} as unknown as {
+    new (): App<string, string, Record<string, never>, typeof defaultExtensions>;
+    new <Name extends string, Description extends string>(
+        name: NonEmptyString<Name>,
+        description: NonEmptyString<Description>,
+    ): App<Name, Description, Record<string, never>, typeof defaultExtensions>;
+};

@@ -11,19 +11,13 @@ describe("sending", () => {
 
     const ext = {
         modifiers: {
-            onboard: onboardModifier,
             prompt: promptModifier,
         },
     } satisfies SomeExtension;
 
     const app1 = new App("hi", "hi");
     // const app2 = app1.extension(ext).onboard().use(promptModifier("1"));
-    const app2 = app1
-        .extension(ext)
-        .onboard(() => {})
-        .prompt("mobai test")
-        .prompt("ryan test")
-        .prompt("test");
+    const app2 = app1.extension(ext).prompt("mobai test").prompt("ryan test").prompt("test");
 
     test(
         "one-way sending from user",
@@ -34,11 +28,13 @@ describe("sending", () => {
 
             const mockInstance = new Mock(userId);
 
-            const a = app.onboard().prompt("mobai test");
-            const b = app.onboard();
-            const c = app.onboard();
+            const a = app.onboard(() => {
+            });
 
-            await app1.deploy(mockInstance.mockKey, mockInstance);
+            const a1 = new App().onboard(() => {})
+            const a2 = new App("1", "2")
+
+            await app2.use(a).deploy(mockInstance.mockKey, mockInstance);
 
             await mockInstance.sendMessage("hello, world");
 
