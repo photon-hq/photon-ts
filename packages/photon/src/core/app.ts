@@ -15,7 +15,7 @@ import type { BaseModIn, BaseModOut, ModIn, ModOut, SomeBaseModifier, SomeModifi
 
 type AsPhoton<T> = T extends infer O ? { [k in keyof O]: O[k] } : never;
 
-export type ExtendedApp<
+export type App<
     Name extends string,
     Description extends string,
     P extends object,
@@ -27,39 +27,36 @@ export type ExtendedApp<
         arg: T,
     ): T extends SomeModifier<any, any>
         ? P extends ModIn<T>
-            ? ExtendedApp<Name, Description, AsPhoton<Merge<P, ModOut<T, P>>>, Exts>
+            ? App<Name, Description, AsPhoton<Merge<P, ModOut<T, P>>>, Exts>
             : never
         : P extends UniqueOf<T>
-          ? ExtendedApp<Name, Description, AsPhoton<Merge<P, T>>, Exts>
+          ? App<Name, Description, AsPhoton<Merge<P, T>>, Exts>
           : never;
     extension<NewExt extends object>(
         ext: NewExt,
-    ): ExtendedApp<Name, Description, P, Merge<Exts, NewExt extends { modifiers: infer M } ? M : NewExt>>;
+    ): App<Name, Description, P, Merge<Exts, NewExt extends { modifiers: infer M } ? M : NewExt>>;
 } & {
     [K in keyof Exts]: ReturnType<Exts[K]> extends infer M
         ? M extends SomeBaseModifier<any, any, any>
             ? P extends BaseModIn<M>
-                ? (...args: Parameters<Exts[K]>) => ExtendedApp<Name, Description, ReturnWithUnique<P, M>, Exts>
+                ? (...args: Parameters<Exts[K]>) => App<Name, Description, ReturnWithUnique<P, M>, Exts>
                 : never
             : M extends SomeModifier<any, any>
               ? P extends ModIn<M>
-                  ? (
-                        ...args: Parameters<Exts[K]>
-                    ) => ExtendedApp<Name, Description, AsPhoton<Merge<P, ModOut<M, P>>>, Exts>
+                  ? (...args: Parameters<Exts[K]>) => App<Name, Description, AsPhoton<Merge<P, ModOut<M, P>>>, Exts>
                   : never
               : never
         : never;
 };
 
 const INTERNAL_CONSTRUCTOR = Symbol("INTERNAL_CONSTRUCTOR");
-export { INTERNAL_CONSTRUCTOR as __INTERNAL_CONSTRUCTOR_DO_NOT_USE_ };
 
 export function buildExtendedApi<
     Name extends string,
     Description extends string,
     P extends object,
     Exts extends Record<string, (...args: any[]) => SomeModifier<any, any> | SomeBaseModifier<any, any, any>>,
->(currentApp: AppInstance<Name, Description, P>, extensions: Exts): ExtendedApp<Name, Description, P, Exts> {
+>(currentApp: AppInstance<Name, Description, P>, extensions: Exts): App<Name, Description, P, Exts> {
     const api = {
         deploy: currentApp.deploy.bind(currentApp),
         unwrap: () => currentApp,
@@ -73,7 +70,7 @@ export function buildExtendedApi<
             ) as Record<string, any>;
             return buildExtendedApi(currentApp, { ...extensions, ...modifiers });
         },
-    } as ExtendedApp<Name, Description, P, Exts>;
+    } as App<Name, Description, P, Exts>;
 
     for (const [key, modifierFactory] of Object.entries(extensions)) {
         (api as any)[key] = (...args: any[]) => {
@@ -183,4 +180,4 @@ export const App = function <Name extends string, Description extends string>(
 } as unknown as new <Name extends string, Description extends string>(
     name: NonEmptyString<Name>,
     description: NonEmptyString<Description>,
-) => ExtendedApp<Name, Description, Record<string, never>, typeof defaultExtensions>;
+) => App<Name, Description, Record<string, never>, typeof defaultExtensions>;
