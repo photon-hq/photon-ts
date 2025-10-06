@@ -95,9 +95,6 @@ export class AppInstance<
     Description extends string,
     Photon extends object = Record<string, never>,
 > {
-    private readonly name: Name | undefined;
-    private readonly description: Description | undefined;
-
     photon: Photon;
 
     public constructor(
@@ -141,23 +138,12 @@ export class AppInstance<
     }
 
     private compilePhoton(): CompiledPhoton {
-        return z.parse(compiledPhotonSchema, merge(this.photon, { name: this.name, description: this.description }));
+        return z.parse(compiledPhotonSchema, this.photon);
     }
 
-    public async deploy(
-        this: IsModuleApp<this> extends true ? never : App<Name, Description, Photon, Extension>,
-        api_key: string,
-        ...targets: Target[]
-    ): Promise<void>;
-    public async deploy(
-        this: IsModuleApp<this> extends true ? never : App<Name, Description, Photon, Extension>,
-        ...targets: Target[]
-    ): Promise<void>;
-    public async deploy(
-        this: IsModuleApp<this> extends true ? never : App<Name, Description, Photon, Extension>,
-        first: string | Target,
-        ...rest: Target[]
-    ): Promise<void> {
+    public async deploy(api_key: string, ...targets: Target[]): Promise<void>;
+    public async deploy(...targets: Target[]): Promise<void>;
+    public async deploy(first: string | Target, ...rest: Target[]): Promise<void> {
         const isApiKeyProvided = typeof first === "string";
         const api_key = isApiKeyProvided ? first : process.env.PHOTON_API;
         const targets = isApiKeyProvided ? rest : [first, ...rest];

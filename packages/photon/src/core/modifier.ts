@@ -15,11 +15,18 @@ export interface SomeBaseModifier<In extends {}, Out extends {}, Base extends st
     ): AppInstance<Name, Description, Merge<P, Out>>;
 }
 
-export interface SomeUniqueModifier<In extends {}, Out extends {}> extends SomeModifier<In, Out> {
+export interface SomeUniqueBaseModifier<In extends {}, Out extends {}, Base extends string>
+    extends SomeBaseModifier<In, Out, Base> {
     unique: true;
 }
 
-type AnyModifier<In extends {}, Out extends {}> = SomeModifier<In, Out> | SomeUniqueModifier<In, Out>;
+export type ModIn<M> = M extends SomeModifier<infer I, any> ? I : never;
+export type ModOut<M, P> = M extends SomeModifier<any, infer F> ? (F extends (p: P) => infer R ? R : never) : never;
 
-export type ModIn<M> = M extends AnyModifier<infer I, any> ? I : never;
-export type ModOut<M> = M extends AnyModifier<any, infer O> ? O : never;
+type AnyBaseModifier<In extends {}, Out extends {}, Base extends string> =
+    | SomeBaseModifier<In, Out, Base>
+    | SomeUniqueBaseModifier<In, Out, Base>;
+
+export type BaseModIn<M> = M extends AnyBaseModifier<infer I, any, any> ? I : never;
+export type BaseModOut<M> = M extends AnyBaseModifier<any, infer O, any> ? O : never;
+export type BaseModOf<M> = M extends AnyBaseModifier<any, any, infer B> ? B : never;

@@ -29,6 +29,10 @@ describe("sending", () => {
 
             const mockInstance = new Mock(userId);
 
+            const a = app.onboard().prompt("mobai test").send("hello world from photon");
+            const b = app.onboard();
+            const c = app.onboard();
+
             await app2.deploy(mockInstance.mockKey, mockInstance);
 
             await mockInstance.sendMessage("hello, world");
