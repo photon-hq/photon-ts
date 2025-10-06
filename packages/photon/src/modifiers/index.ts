@@ -1,2 +1,6 @@
 export * from "./onboard.ts";
-export * from "./send.ts";
+import { onboardModifier } from "./onboard.ts";
+
+export const defaultExtensions = {
+    onboard: onboardModifier,
+};
