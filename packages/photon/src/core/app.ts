@@ -146,12 +146,12 @@ export const App = function <Name extends string = string, Description extends s
     name?: NonEmptyString<Name>,
     description?: NonEmptyString<Description>,
 ) {
-    if (name && description) {
-        const app = new AppInstance(name, description);
-        return buildExtendedApi(app, defaultExtensions);
-    } else {
-        return buildExtendedApi(new AppInstance(), defaultExtensions);
-    }
+    const app = name && description
+        ? new AppInstance(name, description)
+        : new AppInstance();
+
+    return buildExtendedApi(app, defaultExtensions);
+
 } as unknown as {
     new (): App<string, string, Record<string, never>, typeof defaultExtensions>;
     new <Name extends string, Description extends string>(
