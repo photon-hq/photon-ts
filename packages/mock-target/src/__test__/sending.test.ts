@@ -34,10 +34,9 @@ describe("sending", () => {
             });
 
             const a1 = new App().onboard(() => {})
-            a1.deploy(mockInstance.mockKey, mockInstance);
-            const a2 = new App("1", "2")
+            const a2 = new App("hi", "hi")
 
-            await app2.use(a).deploy(mockInstance.mockKey, mockInstance);
+            a2.use(a1)
 
             await mockInstance.sendMessage("hello, world");
 

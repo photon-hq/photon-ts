@@ -2,41 +2,43 @@ import merge from "deepmerge";
 import type { Merge, NonEmptyString } from "type-fest";
 import { z } from "zod";
 import { Gateway } from "../gateway/server.ts";
-import { defaultExtensions } from "../modifiers/index.ts";
+import {defaultExtensions, onboardModifier} from "../modifiers/index.ts";
 import type { Target } from "../target.ts";
-import { type CompiledPhoton, compiledPhotonSchema, type DeepMerge, type IsBroadString, type UniqueOf } from "../types";
+import {
+    type CompiledPhoton,
+    compiledPhotonSchema,
+    type DeepMerge,
+    type IsBroadString,
+    type ReturnWithUnique,
+    type UniqueOf
+} from "../types";
 import type { ModIn, ModOut, SomeModifier } from "./some-modifier.ts";
 import type {ModifiersOf, SomeExtension} from "../extension";
 
 type AsPhoton<T> = T extends infer O ? { [k in keyof O]: O[k] } : never;
 
-type IsModuleApp<A> = A extends AppInstance<infer N, any, any> ? IsBroadString<N> : never;
-type PhotonOf<A> = A extends AppInstance<any, any, infer P> ? P : never;
+type IsModuleApp<A> = A extends AppInstance<infer N, any, any> ? IsBroadString<N> : (A extends App<infer N, any, any, any> ? IsBroadString<N> : never);
+type PhotonOf<A> = A extends AppInstance<any, any, infer P> ? P : (A extends App<any, any, infer P, any> ? P : never);
 
 export type App<
     Name extends string,
     Description extends string,
-    P extends object,
+    Photon extends object,
     Ext extends SomeExtension,
 > = {
-    deploy: AppInstance<Name, Description, P>["deploy"];
-    use<T extends object>(
-        arg: T,
-    ): T extends SomeModifier<any, any>
-        ? P extends ModIn<T>
-            ? App<Name, Description, AsPhoton<Merge<P, ModOut<T>>>, Ext>
-            : never
-        : P extends UniqueOf<T>
-          ? App<Name, Description, AsPhoton<Merge<P, T>>, Ext>
-          : never;
+    deploy: AppInstance<Name, Description, Photon>["deploy"];
+    use<A extends App<any, any, any, any>>(
+        this: Photon extends UniqueOf<PhotonOf<A>> ? App<Name, Description, Photon, Ext> : never,
+        moduleApp: IsModuleApp<A> extends true ? A : never,
+    ): App<Name, Description, Merge<Photon, PhotonOf<A>>, Ext>
     extension<NewExt extends SomeExtension>(
         ext: NewExt,
-    ): App<Name, Description, P, DeepMerge<Ext, NewExt>>;
+    ): App<Name, Description, Photon, DeepMerge<Ext, NewExt>>;
 } & {
     [K in keyof ModifiersOf<Ext>]: ReturnType<ModifiersOf<Ext>[K]> extends infer M
         ? M extends SomeModifier<any, any>
-            ? P extends ModIn<M>
-                ? (...args: Parameters<ModifiersOf<Ext>[K]>) => App<Name, Description, AsPhoton<Merge<P, ModOut<M>>>, Ext>
+            ? Photon extends ModIn<M>
+                ? (...args: Parameters<ModifiersOf<Ext>[K]>) => App<Name, Description, AsPhoton<ReturnWithUnique<Photon, M>>, Ext>
                 : never
             : never
         : never;
@@ -60,7 +62,7 @@ export function buildExtendedApi<
         },
     } as App<Name, Description, P, Ext>;
 
-    for (const [key, modifierFactory] of Object.entries(extensions)) {
+    for (const [key, modifierFactory] of Object.entries(extensions.modifiers)) {
         (api as any)[key] = (...args: any[]) => {
             const modifier = modifierFactory(...args);
             const newApp = (currentApp as any).modifier(modifier as SomeModifier<any, any>);
@@ -90,7 +92,7 @@ export class AppInstance<
     }
 
     public use<A extends AppInstance<any, any, any>>(
-        this: Photon extends UniqueOf<PhotonOf<this>> ? AppInstance<Name, Description, Photon> : never,
+        this: Photon extends UniqueOf<PhotonOf<A>> ? AppInstance<Name, Description, Photon> : never,
         moduleApp: IsModuleApp<A> extends true ? A : never,
     ): AppInstance<Name, Description, Merge<Photon, PhotonOf<A>>> {
         this.photon = merge(this.photon, moduleApp.photon);
@@ -100,7 +102,7 @@ export class AppInstance<
     public modifier<M extends SomeModifier<any, any>>(
         this: Photon extends ModIn<M> ? AppInstance<Name, Description, Photon> : never,
         modifier: M,
-    ): AppInstance<Name, Description, Merge<Photon, ModOut<M>>> {
+    ): AppInstance<Name, Description, ReturnWithUnique<Photon, M>> {
         return modifier.main(this as any) as any;
     }
 
@@ -155,3 +157,7 @@ export const App = function <Name extends string = string, Description extends s
         description: NonEmptyString<Description>,
     ): App<Name, Description, Record<string, never>, typeof defaultExtensions>;
 };
+
+const a1 = new AppInstance().modifier(onboardModifier(() => {}))
+const a2 = new AppInstance("hi", "hi")
+a2.use(a1)

@@ -11,13 +11,13 @@ export type OmitDiscriminant<T, K extends keyof T> = T extends any ? Omit<T, K> 
 export type IsBroadString<T> = string extends T ? (T extends string ? true : false) : false;
 
 export const UniquePhoton: unique symbol = Symbol("unique");
-export type UniqueOf<P> = P extends { [UniquePhoton]: infer U } ? U : object;
+export type UniqueOf<P> = P extends { [UniquePhoton]: infer U } ? U : {};
 export type WithUnique<U extends {}> = { [UniquePhoton]: U };
 export type IsUnique<M> = M extends SomeUniqueModifier<any, any> ? true : false;
 // return-photon builder that conditionally accumulates unique
 export type ReturnWithUnique<P, M> = Merge<
     Merge<P, ModOut<M>>,
-    IsUnique<M> extends true ? WithUnique<Merge<UniqueOf<P>, ModIn<M>>> : object
+    IsUnique<M> extends true ? WithUnique<Merge<UniqueOf<P>, ModIn<M>>> : {}
 >;
 
 type IsEqual<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
