@@ -6,7 +6,9 @@ import { Mock } from "../target.ts";
 
 describe("sending", () => {
     const app = new App("Test Bot", "hi").extension({
-        prompt: promptModifier,
+        modifiers: {
+            prompt: promptModifier
+        }
     });
 
     const ext = {

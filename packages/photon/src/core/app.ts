@@ -6,7 +6,7 @@ import { defaultExtensions } from "../modifiers/index.ts";
 import type { Target } from "../target.ts";
 import { type CompiledPhoton, compiledPhotonSchema, type DeepMerge, type IsBroadString, type UniqueOf } from "../types";
 import type { ModIn, ModOut, SomeModifier } from "./some-modifier.ts";
-import type {SomeExtension} from "../extension";
+import type {ModifiersOf, SomeExtension} from "../extension";
 
 type AsPhoton<T> = T extends infer O ? { [k in keyof O]: O[k] } : never;
 
@@ -17,26 +17,26 @@ export type App<
     Name extends string,
     Description extends string,
     P extends object,
-    Exts extends Record<string, (...args: any[]) => SomeModifier<any, any>>,
+    Ext extends SomeExtension,
 > = {
     deploy: AppInstance<Name, Description, P>["deploy"];
     use<T extends object>(
         arg: T,
     ): T extends SomeModifier<any, any>
         ? P extends ModIn<T>
-            ? App<Name, Description, AsPhoton<Merge<P, ModOut<T>>>, Exts>
+            ? App<Name, Description, AsPhoton<Merge<P, ModOut<T>>>, Ext>
             : never
         : P extends UniqueOf<T>
-          ? App<Name, Description, AsPhoton<Merge<P, T>>, Exts>
+          ? App<Name, Description, AsPhoton<Merge<P, T>>, Ext>
           : never;
     extension<NewExt extends SomeExtension>(
         ext: NewExt,
-    ): App<Name, Description, P, Merge<Exts, NewExt extends { modifiers: infer M } ? M : NewExt>>;
+    ): App<Name, Description, P, DeepMerge<Ext, NewExt>>;
 } & {
-    [K in keyof Exts]: ReturnType<Exts[K]> extends infer M
+    [K in keyof ModifiersOf<Ext>]: ReturnType<ModifiersOf<Ext>[K]> extends infer M
         ? M extends SomeModifier<any, any>
             ? P extends ModIn<M>
-                ? (...args: Parameters<Exts[K]>) => App<Name, Description, AsPhoton<Merge<P, ModOut<M>>>, Exts>
+                ? (...args: Parameters<ModifiersOf<Ext>[K]>) => App<Name, Description, AsPhoton<Merge<P, ModOut<M>>>, Ext>
                 : never
             : never
         : never;
@@ -46,8 +46,8 @@ export function buildExtendedApi<
     Name extends string,
     Description extends string,
     P extends object,
-    Exts extends Record<string, (...args: any[]) => SomeModifier<any, any>>,
->(currentApp: AppInstance<Name, Description, P>, extensions: Exts): App<Name, Description, P, Exts> {
+    Ext extends SomeExtension,
+>(currentApp: AppInstance<Name, Description, P>, extensions: Ext): App<Name, Description, P, Ext> {
     const api = {
         deploy: currentApp.deploy.bind(currentApp),
         use: (arg: any) => {
@@ -56,9 +56,9 @@ export function buildExtendedApi<
         },
         extension: <NewExts extends SomeExtension>(ext: NewExts) => {
             const modifiers = ext.modifiers;
-            return buildExtendedApi(currentApp, { ...extensions, ...modifiers });
+            return buildExtendedApi(currentApp, merge(extensions, ext));
         },
-    } as App<Name, Description, P, Exts>;
+    } as App<Name, Description, P, Ext>;
 
     for (const [key, modifierFactory] of Object.entries(extensions)) {
         (api as any)[key] = (...args: any[]) => {
