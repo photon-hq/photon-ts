@@ -1,6 +1,6 @@
 import merge from "deepmerge";
-import type { SomeUniqueModifier } from "../core/some-modifier.ts";
-import type { Promisable, WithoutKey } from "../types";
+import type { SomeBaseModifier, SomeUniqueBaseModifier } from "../core/modifier.ts";
+import type { WithoutKey } from "../types";
 
 type InPhoton = WithoutKey<"onboard">;
 type OutPhoton = { onboard: {} };

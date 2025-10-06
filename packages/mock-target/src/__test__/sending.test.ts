@@ -1,10 +1,14 @@
 import { describe, test } from "bun:test";
 import crypto from "node:crypto";
-import { App, onboardModifier, type SomeExtension } from "photon";
+import { App, defaultExtensions, onboardModifier, type SomeExtension } from "photon";
 import { promptModifier } from "../modifiers/prompt.ts";
 import { Mock } from "../target.ts";
 
 describe("sending", () => {
+    const app = new App("Test Bot", "hi").extension({
+        prompt: promptModifier,
+    });
+
     const ext = {
         modifiers: {
             onboard: onboardModifier,
@@ -13,10 +17,8 @@ describe("sending", () => {
     } satisfies SomeExtension;
 
     const app1 = new App("hi", "hi");
-    const app2 = app1
-        .extension(ext)
-        .onboard(() => {})
-        .prompt("");
+    // const app2 = app1.extension(ext).onboard().use(promptModifier("1"));
+    const app2 = app1.extension(ext).onboard().prompt("mobai test").prompt("ryan test").prompt("test");
 
     test(
         "one-way sending from user",
