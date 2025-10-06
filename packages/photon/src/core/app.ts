@@ -1,12 +1,12 @@
 import merge from "deepmerge";
 import type { Merge, NonEmptyString } from "type-fest";
 import { z } from "zod";
-import type { ExtensionBuilder, SomeExtension } from "../extension";
 import { Gateway } from "../gateway/server.ts";
 import { defaultExtensions } from "../modifiers/index.ts";
 import type { Target } from "../target.ts";
 import { type CompiledPhoton, compiledPhotonSchema, type DeepMerge, type IsBroadString, type UniqueOf } from "../types";
 import type { ModIn, ModOut, SomeModifier } from "./some-modifier.ts";
+import type {SomeExtension} from "../extension";
 
 type AsPhoton<T> = T extends infer O ? { [k in keyof O]: O[k] } : never;
 
@@ -20,7 +20,6 @@ export type App<
     Exts extends Record<string, (...args: any[]) => SomeModifier<any, any>>,
 > = {
     deploy: AppInstance<Name, Description, P>["deploy"];
-    unwrap: () => AppInstance<Name, Description, P>;
     use<T extends object>(
         arg: T,
     ): T extends SomeModifier<any, any>
@@ -30,7 +29,7 @@ export type App<
         : P extends UniqueOf<T>
           ? App<Name, Description, AsPhoton<Merge<P, T>>, Exts>
           : never;
-    extension<NewExt extends object>(
+    extension<NewExt extends SomeExtension>(
         ext: NewExt,
     ): App<Name, Description, P, Merge<Exts, NewExt extends { modifiers: infer M } ? M : NewExt>>;
 } & {
@@ -51,15 +50,12 @@ export function buildExtendedApi<
 >(currentApp: AppInstance<Name, Description, P>, extensions: Exts): App<Name, Description, P, Exts> {
     const api = {
         deploy: currentApp.deploy.bind(currentApp),
-        unwrap: () => currentApp,
         use: (arg: any) => {
             const newApp = (currentApp as any).use(arg);
             return buildExtendedApi(newApp, extensions);
         },
-        extension: <NewExts extends object>(ext: NewExts) => {
-            const modifiers = (
-                "modifiers" in ext && ext.modifiers && typeof ext.modifiers === "object" ? ext.modifiers : ext
-            ) as Record<string, any>;
+        extension: <NewExts extends SomeExtension>(ext: NewExts) => {
+            const modifiers = ext.modifiers;
             return buildExtendedApi(currentApp, { ...extensions, ...modifiers });
         },
     } as App<Name, Description, P, Exts>;
