@@ -1,18 +1,28 @@
 import { describe, test } from "bun:test";
 import crypto from "node:crypto";
-import { createApp, defaultExtensions } from "photon";
+import { App, onboardModifier, type SomeExtension } from "photon";
 import { promptModifier } from "../modifiers/prompt.ts";
 import { Mock } from "../target.ts";
+import { z } from "zod";
 
 describe("sending", () => {
-    const app = createApp({
-        name: "Test Bot",
-        description: "hi",
-        extensions: {
-            ...defaultExtensions,
+    const app = new App("Test Bot", "hi").extension({
+        modifiers: {
+            prompt: promptModifier
+        },
+        photonType: z.object({})
+    });
+
+    const ext = {
+        modifiers: {
             prompt: promptModifier,
         },
-    });
+        photonType: z.object({})
+    } satisfies SomeExtension;
+
+    const app1 = new App("hi", "hi");
+    // const app2 = app1.extension(ext).onboard().use(promptModifier("1"));
+    const app2 = app1.extension(ext).prompt("mobai test").prompt("ryan test").prompt("test");
 
     test(
         "one-way sending from user",
@@ -23,11 +33,22 @@ describe("sending", () => {
 
             const mockInstance = new Mock(userId);
 
-            const a = app.onboard().prompt("mobai test").send("hello world from photon");
-            const b = app.onboard();
-            const c = app.onboard();
+            const a = app.onboard(() => {
+            });
 
-            await a.deploy(mockInstance.mockKey, mockInstance);
+            const a1 = new App().onboard(() => {}).modifier(promptModifier("1"))
+            const a3 = new App().onboard(() => {})
+            const a2 = new App("hi", "hi")
+
+            const c = a2.use(a1)
+
+            function hi(): typeof c {
+                return c
+            }
+
+            const d = hi()
+
+            await a2.deploy(mockInstance.mockKey, mockInstance)
 
             await mockInstance.sendMessage("hello, world");
 

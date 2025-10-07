@@ -91,3 +91,6 @@ atlassian-ide-plugin.xml
 .cursor
 .idea
 .vscode
+
+#TS
+*.tsbuildinfo
