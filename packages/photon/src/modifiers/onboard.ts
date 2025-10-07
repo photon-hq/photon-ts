@@ -3,7 +3,7 @@ import type { SomeUniqueModifier } from "../core/some-modifier.ts";
 import type { Promisable, WithoutKey } from "../types";
 
 type InPhoton = WithoutKey<"onboard">;
-type OutPhoton = { onboard: object };
+type OutPhoton = { onboard: {} };
 
 export function onboardModifier(action: () => Promisable<void> = () => {}): SomeUniqueModifier<InPhoton, OutPhoton> {
     return {

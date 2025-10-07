@@ -1,23 +1,19 @@
-import type {NonEmptyString} from "type-fest";
+import type { NonEmptyString } from "type-fest";
 import merge from "deepmerge";
-import type {ModIn, SomeModifier} from "./some-modifier.ts";
-import {type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique} from "../types";
-import {z} from "zod";
-import type {Target} from "../target.ts";
-import {Gateway} from "../gateway/server.ts";
+import type { ModIn, SomeModifier } from "./some-modifier.ts";
+import { type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique } from "../types";
+import { z } from "zod";
+import type { Target } from "../target.ts";
+import { Gateway } from "../gateway/server.ts";
 
-export class AppInstance<
-    Name extends string,
-    Description extends string,
-    Photon extends object = Record<string, never>,
-> {
+export class AppInstance<Name extends string, Description extends string, Photon extends {} = Record<string, never>> {
     private readonly name: Name | undefined;
     private readonly description: Description | undefined;
 
     photon: Photon;
 
-    public constructor()
-    public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>)
+    public constructor();
+    public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>);
     public constructor(name?: NonEmptyString<Name>, description?: NonEmptyString<Description>) {
         this.name = name;
         this.description = description;
