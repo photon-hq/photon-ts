@@ -12,12 +12,11 @@ import type {ModifiersOf, SomeExtension} from "../extension";
 import {AppInstance} from "./app-instance.ts";
 import type {Target} from "../target.ts";
 
-type AsPhoton<T> = T extends infer O ? { [k in keyof O]: O[k] } : never;
-
 type IsModuleApp<A> = A extends App<infer N, any, any, any> ? IsBroadString<N> : never;
 type PhotonOf<A> = A extends App<any, any, infer P, any> ? P : never
 
 export type App<Name extends string, Description extends string, Photon extends {}, Ext extends SomeExtension> = {
+    photon: Photon
     deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         api_key: string,
@@ -43,8 +42,8 @@ export type App<Name extends string, Description extends string, Photon extends 
         ? M extends SomeModifier<any, any>
             ? Photon extends ModIn<M>
                 ? (
-                      ...args: Parameters<ModifiersOf<Ext>[K]>
-                  ) => App<Name, Description, AsPhoton<ReturnWithUnique<Photon, M>>, Ext>
+                    ...args: Parameters<ModifiersOf<Ext>[K]>
+                ) => App<Name, Description, ReturnWithUnique<Photon, M>, Ext>
                 : never
             : never
         : never;
@@ -55,6 +54,7 @@ export function buildApp<Name extends string, Description extends string, P exte
     extensions: Ext,
 ): App<Name, Description, P, Ext> {
     (instance as any)["extension"] = <NewExts extends SomeExtension>(ext: NewExts) => {
+        instance.extensions.push(ext);
         const modifiers = ext.modifiers;
         return buildApp(instance, merge(extensions, ext));
     }

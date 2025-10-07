@@ -7,12 +7,16 @@ import type {Target} from "../target.ts";
 import {Gateway} from "../gateway/server.ts";
 import {buildApp} from "./app.ts";
 import {defaultExtensions} from "../modifiers";
+import type {SomeExtension} from "../extension";
 
 export class AppInstance<Name extends string, Description extends string, Photon extends {} = Record<string, never>> {
     private readonly name: Name | undefined;
     private readonly description: Description | undefined;
 
     photon: Photon;
+    extensions: SomeExtension[] = [
+        defaultExtensions
+    ]
 
     public constructor();
     public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>);
@@ -35,7 +39,12 @@ export class AppInstance<Name extends string, Description extends string, Photon
     }
 
     private compilePhoton(): CompiledPhoton {
-        return z.parse(compiledPhotonSchema, merge(this.photon, { name: this.name, description: this.description }));
+        const _photon = merge(this.photon, {name: this.name, description: this.description});
+
+        return this.extensions.reduce(
+            (acc, ext) => merge(acc, ext.photonType.strip().parse(_photon) as object),
+            {}
+        ) as unknown as CompiledPhoton
     }
 
     private async deploy(first: string | Target, ...rest: Target[]): Promise<void> {

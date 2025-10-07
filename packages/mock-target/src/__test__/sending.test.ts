@@ -3,18 +3,21 @@ import crypto from "node:crypto";
 import { App, onboardModifier, type SomeExtension } from "photon";
 import { promptModifier } from "../modifiers/prompt.ts";
 import { Mock } from "../target.ts";
+import { z } from "zod";
 
 describe("sending", () => {
     const app = new App("Test Bot", "hi").extension({
         modifiers: {
             prompt: promptModifier
-        }
+        },
+        photonType: z.object({})
     });
 
     const ext = {
         modifiers: {
             prompt: promptModifier,
         },
+        photonType: z.object({})
     } satisfies SomeExtension;
 
     const app1 = new App("hi", "hi");
@@ -36,7 +39,10 @@ describe("sending", () => {
             const a1 = new App().onboard(() => {}).modifier(promptModifier("1"))
             const a2 = new App("hi", "hi")
 
-            a2.use(a1)
+            a2.extension({
+                modifiers: {},
+                photonType: z.object({ prompt: z.string() }),
+            }).modifier(promptModifier("1"))
 
             await a2.deploy(mockInstance.mockKey, mockInstance)
 
