@@ -17,8 +17,8 @@ import type {ModifiersOf, SomeExtension} from "../extension";
 
 type AsPhoton<T> = T extends infer O ? { [k in keyof O]: O[k] } : never;
 
-type IsModuleApp<A> = A extends AppInstance<infer N, any, any> ? IsBroadString<N> : (A extends App<infer N, any, any, any> ? IsBroadString<N> : never);
-type PhotonOf<A> = A extends AppInstance<any, any, infer P> ? P : (A extends App<any, any, infer P, any> ? P : never);
+type IsModuleApp<A> = A extends App<infer N, any, any, any> ? IsBroadString<N> : never;
+type PhotonOf<A> = A extends App<any, any, infer P, any> ? P : never
 
 export type App<
     Name extends string,
@@ -50,17 +50,12 @@ export function buildExtendedApi<
     P extends object,
     Ext extends SomeExtension,
 >(currentApp: AppInstance<Name, Description, P>, extensions: Ext): App<Name, Description, P, Ext> {
-    const api = {
-        deploy: currentApp.deploy.bind(currentApp),
-        use: (arg: any) => {
-            const newApp = (currentApp as any).use(arg);
-            return buildExtendedApi(newApp, extensions);
-        },
-        extension: <NewExts extends SomeExtension>(ext: NewExts) => {
-            const modifiers = ext.modifiers;
-            return buildExtendedApi(currentApp, merge(extensions, ext));
-        },
-    } as App<Name, Description, P, Ext>;
+    const api = currentApp as unknown as App<Name, Description, P, Ext>;
+
+    (api as any)["extension"] = <NewExts extends SomeExtension>(ext: NewExts) => {
+        const modifiers = ext.modifiers;
+        return buildExtendedApi(currentApp, merge(extensions, ext));
+    }
 
     for (const [key, modifierFactory] of Object.entries(extensions.modifiers)) {
         (api as any)[key] = (...args: any[]) => {
@@ -91,10 +86,7 @@ export class AppInstance<
         this.photon = {} as Photon;
     }
 
-    public use<A extends AppInstance<any, any, any>>(
-        this: Photon extends UniqueOf<PhotonOf<A>> ? AppInstance<Name, Description, Photon> : never,
-        moduleApp: IsModuleApp<A> extends true ? A : never,
-    ): AppInstance<Name, Description, Merge<Photon, PhotonOf<A>>> {
+    public use(moduleApp: AppInstance<any, any, any>): any {
         this.photon = merge(this.photon, moduleApp.photon);
         return this as any;
     }
