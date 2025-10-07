@@ -27,7 +27,8 @@
                 "noUnusedImports": "off"
             },
             "complexity": {
-                "noUselessConstructor": "off"
+                "noUselessConstructor": "off",
+                "noBannedTypes": "off"
             }
         }
     },
