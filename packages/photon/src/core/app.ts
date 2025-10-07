@@ -49,21 +49,22 @@ export type App<Name extends string, Description extends string, Photon extends 
         : never;
 };
 
-export function buildApp<Name extends string, Description extends string, P extends {}, Ext extends SomeExtension>(
+export function buildApp<Name extends string, Description extends string, P extends {}>(
     instance: AppInstance<Name, Description, P>,
-    extensions: Ext,
-): App<Name, Description, P, Ext> {
+): App<Name, Description, P, any> {
+    const modifiers = instance.extensions.reduce((acc, ext) => merge(acc, ext.modifiers), {});
+
     (instance as any)["extension"] = <NewExts extends SomeExtension>(ext: NewExts) => {
         instance.extensions.push(ext);
         const modifiers = ext.modifiers;
-        return buildApp(instance, merge(extensions, ext));
+        return buildApp(instance);
     }
 
-    for (const [key, modifierFactory] of Object.entries(extensions.modifiers)) {
+    for (const [key, modifierFactory] of Object.entries(modifiers)) {
         (instance as any)[key] = (...args: any[]) => {
             const modifier = modifierFactory(...args);
             const newApp = (instance as any).modifier(modifier as SomeModifier<any, any>);
-            return buildApp(newApp, extensions);
+            return buildApp(newApp);
         };
     }
 
