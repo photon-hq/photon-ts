@@ -1,49 +1,40 @@
 import merge from "deepmerge";
-import type {Except, Merge, NonEmptyString, Simplify} from "type-fest";
-import {defaultExtensions} from "../modifiers";
-import {
-    type DeepMerge,
-    type IsBroadString, type OmitUnique,
-    type ReturnWithUnique,
-    type UniqueOf,
-} from "../types";
+import type { Except, Merge, NonEmptyString, Simplify } from "type-fest";
+import type { ModifiersOf, ModifiersType, SomeExtension } from "../extension";
+import type { defaultExtensions } from "../modifiers";
+import type { Target } from "../target.ts";
+import type { DeepMerge, IsBroadString, OmitUnique, ReturnWithUnique, UniqueOf } from "../types";
+import { AppInstance } from "./app-instance.ts";
 import type { ModIn, SomeModifier } from "./some-modifier.ts";
-import type {ModifiersOf, ModifiersType, SomeExtension} from "../extension";
-import {AppInstance} from "./app-instance.ts";
-import type {Target} from "../target.ts";
 
 type IsModuleApp<A> = A extends App<infer N, any, any, any> ? IsBroadString<N> : never;
-type PhotonOf<A> = A extends App<any, any, infer P, any> ? P : never
+type PhotonOf<A> = A extends App<any, any, infer P, any> ? P : never;
 
 export type App<Name extends string, Description extends string, Photon extends {}, Ext extends SomeExtension> = {
-    photon: Photon
+    photon: Photon;
     deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         api_key: string,
         ...targets: Target[]
-    ): Promise<void>
+    ): Promise<void>;
     deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         ...targets: Target[]
-    ): Promise<void>
+    ): Promise<void>;
     modifier<M extends SomeModifier<any, any>>(
         this: Photon extends ModIn<M> ? App<Name, Description, Photon, Ext> : never,
         modifier: M,
-    ): App<Name, Description, ReturnWithUnique<Photon, M>, Ext>
+    ): App<Name, Description, ReturnWithUnique<Photon, M>, Ext>;
     use<A extends App<any, any, any, any>>(
         this: Photon extends UniqueOf<PhotonOf<A>> ? App<Name, Description, Photon, Ext> : never,
         moduleApp: IsModuleApp<A> extends true ? A : never,
-    ): App<Name, Description, Simplify<OmitUnique<Merge<Photon, PhotonOf<A>>>>, Ext>
-    extension<NewExt extends SomeExtension>(
-        ext: NewExt,
-    ): App<Name, Description, Photon, DeepMerge<Ext, NewExt>>;
+    ): App<Name, Description, Simplify<OmitUnique<Merge<Photon, PhotonOf<A>>>>, Ext>;
+    extension<NewExt extends SomeExtension>(ext: NewExt): App<Name, Description, Photon, DeepMerge<Ext, NewExt>>;
 } & {
     [K in keyof ModifiersOf<Ext>]: ReturnType<ModifiersOf<Ext>[K]> extends infer M
         ? M extends SomeModifier<any, any>
             ? Photon extends ModIn<M>
-                ? (
-                    ...args: Parameters<ModifiersOf<Ext>[K]>
-                ) => App<Name, Description, ReturnWithUnique<Photon, M>, Ext>
+                ? (...args: Parameters<ModifiersOf<Ext>[K]>) => App<Name, Description, ReturnWithUnique<Photon, M>, Ext>
                 : never
             : never
         : never;
@@ -58,7 +49,7 @@ export function buildApp<Name extends string, Description extends string, P exte
         instance.extensions.push(ext);
         const modifiers = ext.modifiers;
         return buildApp(instance);
-    }
+    };
 
     for (const [key, modifierFactory] of Object.entries(modifiers)) {
         (instance as any)[key] = (...args: any[]) => {
