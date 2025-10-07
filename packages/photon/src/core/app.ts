@@ -17,13 +17,7 @@ type AsPhoton<T> = T extends infer O ? { [k in keyof O]: O[k] } : never;
 type IsModuleApp<A> = A extends App<infer N, any, any, any> ? IsBroadString<N> : never;
 type PhotonOf<A> = A extends App<any, any, infer P, any> ? P : never
 
-export type App<
-    Name extends string,
-    Description extends string,
-    Photon extends object,
-    Ext extends SomeExtension,
-> = {
-    photon: Photon
+export type App<Name extends string, Description extends string, Photon extends {}, Ext extends SomeExtension> = {
     deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         api_key: string,
@@ -48,18 +42,18 @@ export type App<
     [K in keyof ModifiersOf<Ext>]: ReturnType<ModifiersOf<Ext>[K]> extends infer M
         ? M extends SomeModifier<any, any>
             ? Photon extends ModIn<M>
-                ? (...args: Parameters<ModifiersOf<Ext>[K]>) => App<Name, Description, AsPhoton<ReturnWithUnique<Photon, M>>, Ext>
+                ? (
+                      ...args: Parameters<ModifiersOf<Ext>[K]>
+                  ) => App<Name, Description, AsPhoton<ReturnWithUnique<Photon, M>>, Ext>
                 : never
             : never
         : never;
 };
 
-export function buildApp<
-    Name extends string,
-    Description extends string,
-    P extends object,
-    Ext extends SomeExtension,
->(instance: AppInstance<Name, Description, P>, extensions: Ext): App<Name, Description, P, Ext> {
+export function buildApp<Name extends string, Description extends string, P extends {}, Ext extends SomeExtension>(
+    instance: AppInstance<Name, Description, P>,
+    extensions: Ext,
+): App<Name, Description, P, Ext> {
     (instance as any)["extension"] = <NewExts extends SomeExtension>(ext: NewExts) => {
         const modifiers = ext.modifiers;
         return buildApp(instance, merge(extensions, ext));
@@ -81,12 +75,9 @@ export const App = function <Name extends string = string, Description extends s
     name?: NonEmptyString<Name>,
     description?: NonEmptyString<Description>,
 ) {
-    const app = name && description
-        ? new AppInstance(name, description)
-        : new AppInstance();
+    const app = name && description ? new AppInstance(name, description) : new AppInstance();
 
     return buildApp(app, defaultExtensions);
-
 } as unknown as {
     new (): App<string, string, Record<string, never>, typeof defaultExtensions>;
     new <Name extends string, Description extends string>(

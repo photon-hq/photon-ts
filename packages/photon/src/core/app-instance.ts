@@ -8,18 +8,14 @@ import {Gateway} from "../gateway/server.ts";
 import {buildApp} from "./app.ts";
 import {defaultExtensions} from "../modifiers";
 
-export class AppInstance<
-    Name extends string,
-    Description extends string,
-    Photon extends object = Record<string, never>,
-> {
+export class AppInstance<Name extends string, Description extends string, Photon extends {} = Record<string, never>> {
     private readonly name: Name | undefined;
     private readonly description: Description | undefined;
 
     photon: Photon;
 
-    public constructor()
-    public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>)
+    public constructor();
+    public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>);
     public constructor(name?: NonEmptyString<Name>, description?: NonEmptyString<Description>) {
         this.name = name;
         this.description = description;

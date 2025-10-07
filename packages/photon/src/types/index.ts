@@ -38,8 +38,8 @@ type _DeepMerge<A, B> = [A] extends [never]
           ? B extends readonly unknown[]
               ? [...A, ...B]
               : B
-          : A extends object
-            ? B extends object
+          : A extends {}
+            ? B extends {}
                 ? {
                       [K in keyof A | keyof B]: K extends keyof A
                           ? K extends keyof B

@@ -1,6 +1,6 @@
 import type { SomeModifier } from "photon";
 
-type InPhoton = object;
+type InPhoton = {};
 
 type OutPhoton = { prompt: 1 };
 
