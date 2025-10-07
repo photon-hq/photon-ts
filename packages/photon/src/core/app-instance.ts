@@ -1,22 +1,20 @@
-import type {NonEmptyString} from "type-fest";
 import merge from "deepmerge";
-import type {ModIn, SomeModifier} from "./some-modifier.ts";
-import {type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique} from "../types";
-import {z} from "zod";
-import type {Target} from "../target.ts";
-import {Gateway} from "../gateway/server.ts";
-import {buildApp} from "./app.ts";
-import {defaultExtensions} from "../modifiers";
-import type {SomeExtension} from "../extension";
+import type { NonEmptyString } from "type-fest";
+import { z } from "zod";
+import type { SomeExtension } from "../extension";
+import { Gateway } from "../gateway/server.ts";
+import { defaultExtensions } from "../modifiers";
+import type { Target } from "../target.ts";
+import { type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique } from "../types";
+import { buildApp } from "./app.ts";
+import type { ModIn, SomeModifier } from "./some-modifier.ts";
 
 export class AppInstance<Name extends string, Description extends string, Photon extends {} = Record<string, never>> {
     private readonly name: Name | undefined;
     private readonly description: Description | undefined;
 
     photon: Photon;
-    extensions: SomeExtension[] = [
-        defaultExtensions
-    ]
+    extensions: SomeExtension[] = [defaultExtensions];
 
     public constructor();
     public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>);
@@ -30,7 +28,7 @@ export class AppInstance<Name extends string, Description extends string, Photon
         this: Photon extends ModIn<M> ? AppInstance<Name, Description, Photon> : never,
         modifier: M,
     ): any {
-        return buildApp(modifier.main(buildApp(this)))
+        return buildApp(modifier.main(buildApp(this)));
     }
 
     private use(moduleApp: AppInstance<any, any, any>): any {
@@ -39,12 +37,12 @@ export class AppInstance<Name extends string, Description extends string, Photon
     }
 
     private compilePhoton(): CompiledPhoton {
-        const _photon = merge(this.photon, {name: this.name, description: this.description});
+        const _photon = merge(this.photon, { name: this.name, description: this.description });
 
         return this.extensions.reduce(
             (acc, ext) => merge(acc, ext.photonType.strip().parse(_photon) as object),
-            {}
-        ) as unknown as CompiledPhoton
+            {},
+        ) as unknown as CompiledPhoton;
     }
 
     private async deploy(first: string | Target, ...rest: Target[]): Promise<void> {

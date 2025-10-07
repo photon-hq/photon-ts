@@ -1,23 +1,23 @@
 import { describe, test } from "bun:test";
 import crypto from "node:crypto";
 import { App, onboardModifier, type SomeExtension } from "photon";
+import { z } from "zod";
 import { promptModifier } from "../modifiers/prompt.ts";
 import { Mock } from "../target.ts";
-import { z } from "zod";
 
 describe("sending", () => {
     const app = new App("Test Bot", "hi").extension({
         modifiers: {
-            prompt: promptModifier
+            prompt: promptModifier,
         },
-        photonType: z.object({})
+        photonType: z.object({}),
     });
 
     const ext = {
         modifiers: {
             prompt: promptModifier,
         },
-        photonType: z.object({})
+        photonType: z.object({}),
     } satisfies SomeExtension;
 
     const app1 = new App("hi", "hi");
@@ -33,22 +33,21 @@ describe("sending", () => {
 
             const mockInstance = new Mock(userId);
 
-            const a = app.onboard(() => {
-            });
+            const a = app.onboard(() => {});
 
-            const a1 = new App().onboard(() => {}).modifier(promptModifier("1"))
-            const a3 = new App().onboard(() => {})
-            const a2 = new App("hi", "hi")
+            const a1 = new App().onboard(() => {}).modifier(promptModifier("1"));
+            const a3 = new App().onboard(() => {});
+            const a2 = new App("hi", "hi");
 
-            const c = a2.use(a1)
+            const c = a2.use(a1);
 
             function hi(): typeof c {
-                return c
+                return c;
             }
 
-            const d = hi()
+            const d = hi();
 
-            await a2.deploy(mockInstance.mockKey, mockInstance)
+            await a2.deploy(mockInstance.mockKey, mockInstance);
 
             await mockInstance.sendMessage("hello, world");
 
