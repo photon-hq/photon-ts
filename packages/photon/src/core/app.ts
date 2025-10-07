@@ -1,14 +1,14 @@
 import merge from "deepmerge";
-import type { Merge, NonEmptyString } from "type-fest";
+import type {Except, Merge, NonEmptyString, Simplify} from "type-fest";
 import {defaultExtensions} from "../modifiers";
 import {
     type DeepMerge,
-    type IsBroadString,
+    type IsBroadString, type OmitUnique,
     type ReturnWithUnique,
-    type UniqueOf
+    type UniqueOf,
 } from "../types";
 import type { ModIn, SomeModifier } from "./some-modifier.ts";
-import type {ModifiersOf, SomeExtension} from "../extension";
+import type {ModifiersOf, ModifiersType, SomeExtension} from "../extension";
 import {AppInstance} from "./app-instance.ts";
 import type {Target} from "../target.ts";
 
@@ -33,7 +33,7 @@ export type App<Name extends string, Description extends string, Photon extends 
     use<A extends App<any, any, any, any>>(
         this: Photon extends UniqueOf<PhotonOf<A>> ? App<Name, Description, Photon, Ext> : never,
         moduleApp: IsModuleApp<A> extends true ? A : never,
-    ): App<Name, Description, Merge<Photon, PhotonOf<A>>, Ext>
+    ): App<Name, Description, Simplify<OmitUnique<Merge<Photon, PhotonOf<A>>>>, Ext>
     extension<NewExt extends SomeExtension>(
         ext: NewExt,
     ): App<Name, Description, Photon, DeepMerge<Ext, NewExt>>;
@@ -52,7 +52,7 @@ export type App<Name extends string, Description extends string, Photon extends 
 export function buildApp<Name extends string, Description extends string, P extends {}>(
     instance: AppInstance<Name, Description, P>,
 ): App<Name, Description, P, any> {
-    const modifiers = instance.extensions.reduce((acc, ext) => merge(acc, ext.modifiers), {});
+    const modifiers: ModifiersType = instance.extensions.reduce((acc, ext) => merge(acc, ext.modifiers), {});
 
     (instance as any)["extension"] = <NewExts extends SomeExtension>(ext: NewExts) => {
         instance.extensions.push(ext);
@@ -78,7 +78,7 @@ export const App = function <Name extends string = string, Description extends s
 ) {
     const app = name && description ? new AppInstance(name, description) : new AppInstance();
 
-    return buildApp(app, defaultExtensions);
+    return buildApp(app);
 } as unknown as {
     new (): App<string, string, Record<string, never>, typeof defaultExtensions>;
     new <Name extends string, Description extends string>(

@@ -3,8 +3,10 @@ import type { App } from "../core/app.ts";
 import type { ModOut, SomeModifier, SomeUniqueModifier } from "../core/some-modifier.ts";
 import {z, type ZodRawShape} from "zod";
 
+export type ModifiersType = Record<string, (...args: any[]) => SomeModifier<any, any> | SomeUniqueModifier<any, any>>
+
 export interface SomeExtension {
-    modifiers: Record<string, (...args: any[]) => SomeModifier<any, any> | SomeUniqueModifier<any, any>>;
+    modifiers: ModifiersType;
     photonType: z.ZodObject<ZodRawShape>;
 }
 

@@ -37,12 +37,16 @@ describe("sending", () => {
             });
 
             const a1 = new App().onboard(() => {}).modifier(promptModifier("1"))
+            const a3 = new App().onboard(() => {})
             const a2 = new App("hi", "hi")
 
-            a2.extension({
-                modifiers: {},
-                photonType: z.object({ prompt: z.string() }),
-            }).modifier(promptModifier("1"))
+            const c = a2.use(a1)
+
+            function hi(): typeof c {
+                return c
+            }
+
+            const d = hi()
 
             await a2.deploy(mockInstance.mockKey, mockInstance)
 
