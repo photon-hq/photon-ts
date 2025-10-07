@@ -1,6 +1,6 @@
 import merge from "deepmerge";
 import type { Merge, NonEmptyString } from "type-fest";
-import {defaultExtensions} from "../modifiers/index.ts";
+import {defaultExtensions} from "../modifiers";
 import {
     type DeepMerge,
     type IsBroadString,
@@ -23,6 +23,7 @@ export type App<
     Photon extends object,
     Ext extends SomeExtension,
 > = {
+    photon: Photon
     deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         api_key: string,

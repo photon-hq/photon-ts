@@ -1,9 +1,11 @@
 import type { Merge } from "type-fest";
-import type { AppInstance } from "./app.ts";
+import type {App} from "./app.ts";
+import type {defaultExtensions} from "../modifiers";
+import type {AppInstance} from "./app-instance.ts";
 
 export interface SomeModifier<In extends {}, Out extends {}> {
-    main<Name extends string, Description extends string, P extends In>(
-        app: AppInstance<Name, Description, P>,
+    main<Name extends string, Description extends string, P extends In, Ext extends typeof defaultExtensions>(
+        app: App<Name, Description, P, Ext>,
     ): AppInstance<Name, Description, Merge<P, Out>>;
 }
 

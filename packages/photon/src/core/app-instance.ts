@@ -5,6 +5,8 @@ import {type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique} from "
 import {z} from "zod";
 import type {Target} from "../target.ts";
 import {Gateway} from "../gateway/server.ts";
+import {buildApp} from "./app.ts";
+import {defaultExtensions} from "../modifiers";
 
 export class AppInstance<
     Name extends string,
@@ -28,7 +30,7 @@ export class AppInstance<
         this: Photon extends ModIn<M> ? AppInstance<Name, Description, Photon> : never,
         modifier: M,
     ): AppInstance<Name, Description, ReturnWithUnique<Photon, M>> {
-        return modifier.main(this as any) as any;
+        return modifier.main(buildApp(this, defaultExtensions)) as any;
     }
 
     private use(moduleApp: AppInstance<any, any, any>): any {
