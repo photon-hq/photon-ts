@@ -29,13 +29,13 @@ export class AppInstance<Name extends string, Description extends string, Photon
     public modifier<M extends SomeModifier<any, any>>(
         this: Photon extends ModIn<M> ? AppInstance<Name, Description, Photon> : never,
         modifier: M,
-    ): AppInstance<Name, Description, ReturnWithUnique<Photon, M>> {
-        return modifier.main(buildApp(this, defaultExtensions)) as any;
+    ): any {
+        return buildApp(modifier.main(buildApp(this)))
     }
 
     private use(moduleApp: AppInstance<any, any, any>): any {
         this.photon = merge(this.photon, moduleApp.photon);
-        return this as any;
+        return buildApp(this);
     }
 
     private compilePhoton(): CompiledPhoton {
