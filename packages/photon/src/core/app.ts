@@ -31,7 +31,11 @@ export type App<
     deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         ...targets: Target[]
-    ): Promise<void>;
+    ): Promise<void>
+    modifier<M extends SomeModifier<any, any>>(
+        this: Photon extends ModIn<M> ? App<Name, Description, Photon, Ext> : never,
+        modifier: M,
+    ): App<Name, Description, ReturnWithUnique<Photon, M>, Ext>
     use<A extends App<any, any, any, any>>(
         this: Photon extends UniqueOf<PhotonOf<A>> ? App<Name, Description, Photon, Ext> : never,
         moduleApp: IsModuleApp<A> extends true ? A : never,
@@ -54,21 +58,21 @@ export function buildApp<
     Description extends string,
     P extends object,
     Ext extends SomeExtension,
->(currentApp: AppInstance<Name, Description, P>, extensions: Ext): App<Name, Description, P, Ext> {
-    (currentApp as any)["extension"] = <NewExts extends SomeExtension>(ext: NewExts) => {
+>(instance: AppInstance<Name, Description, P>, extensions: Ext): App<Name, Description, P, Ext> {
+    (instance as any)["extension"] = <NewExts extends SomeExtension>(ext: NewExts) => {
         const modifiers = ext.modifiers;
-        return buildApp(currentApp, merge(extensions, ext));
+        return buildApp(instance, merge(extensions, ext));
     }
 
     for (const [key, modifierFactory] of Object.entries(extensions.modifiers)) {
-        (currentApp as any)[key] = (...args: any[]) => {
+        (instance as any)[key] = (...args: any[]) => {
             const modifier = modifierFactory(...args);
-            const newApp = (currentApp as any).modifier(modifier as SomeModifier<any, any>);
+            const newApp = (instance as any).modifier(modifier as SomeModifier<any, any>);
             return buildApp(newApp, extensions);
         };
     }
 
-    return currentApp as any;
+    return instance as any;
 }
 
 // biome-ignore lint: This function needs to be callable with 'new' keyword
