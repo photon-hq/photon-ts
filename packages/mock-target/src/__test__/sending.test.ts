@@ -38,6 +38,8 @@ describe("sending", () => {
 
             a2.use(a1)
 
+            await a2.deploy(mockInstance.mockKey, mockInstance)
+
             await mockInstance.sendMessage("hello, world");
 
             await new Promise(() => {});
