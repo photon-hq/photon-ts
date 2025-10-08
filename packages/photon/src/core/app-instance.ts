@@ -3,15 +3,16 @@ import type { NonEmptyString } from "type-fest";
 import { z } from "zod";
 import type { SomeExtension } from "../extension";
 import { Gateway } from "../gateway/server.ts";
-import { defaultExtensions } from "../modifiers";
 import type { Target } from "../target.ts";
 import { type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique } from "../types";
 import { buildApp } from "./app.ts";
+import { defaultExtensions } from "./default-extension.ts";
 import type { ModIn, SomeModifier } from "./some-modifier.ts";
 
 export class AppInstance<Name extends string, Description extends string, Photon extends {} = Record<string, never>> {
     private readonly name: Name | undefined;
     private readonly description: Description | undefined;
+    private gateway!: Gateway;
 
     photon: Photon;
     extensions: SomeExtension[] = [defaultExtensions];

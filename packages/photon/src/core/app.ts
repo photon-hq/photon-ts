@@ -1,10 +1,10 @@
 import merge from "deepmerge";
 import type { Except, Merge, NonEmptyString, Simplify } from "type-fest";
 import type { ModifiersOf, ModifiersType, SomeExtension } from "../extension";
-import type { defaultExtensions } from "../modifiers";
 import type { Target } from "../target.ts";
 import type { DeepMerge, IsBroadString, OmitUnique, ReturnWithUnique, UniqueOf } from "../types";
 import { AppInstance } from "./app-instance.ts";
+import type { defaultExtensions } from "./default-extension.ts";
 import type { ModIn, SomeModifier } from "./some-modifier.ts";
 
 type IsModuleApp<A> = A extends App<infer N, any, any, any> ? IsBroadString<N> : never;

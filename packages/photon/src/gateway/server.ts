@@ -14,6 +14,7 @@ class GatewayServer extends GatewayBase {
                     "message",
                     {
                         role: "server",
+                        userId: this.userId,
                         ...data,
                     } satisfies Message,
                     (response: any) => {
