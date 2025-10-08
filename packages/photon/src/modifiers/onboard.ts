@@ -10,7 +10,7 @@ export function onboardModifier(action: () => Promisable<void> = () => {}): Some
         unique: true,
 
         main(app) {
-            (app as any).photon = merge(app.photon, { onboard: { action: action } });
+            app.photon = merge(app.photon, { onboard: { action: action } });
             return app as any;
         },
     };
