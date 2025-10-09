@@ -1,4 +1,4 @@
-import type { ActionsOf, SomeExtension } from "../extension";
+import type { ActionsOf, SomeExtension } from "../extensions";
 import type { Gateway } from "../gateway/server.ts";
 import type { App } from "./app.ts";
 import type { ActionOf, SomeAction } from "./some-action.ts";
