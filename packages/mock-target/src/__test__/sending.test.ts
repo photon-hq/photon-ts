@@ -7,6 +7,7 @@ import { Mock } from "../target.ts";
 
 describe("sending", () => {
     const app = new App("Test Bot", "hi").extension({
+        actions: {},
         modifiers: {
             prompt: promptModifier,
         },
@@ -14,6 +15,7 @@ describe("sending", () => {
     });
 
     const ext = {
+        actions: {},
         modifiers: {
             prompt: promptModifier,
         },
@@ -22,7 +24,9 @@ describe("sending", () => {
 
     const app1 = new App("hi", "hi");
     // const app2 = app1.extension(ext).onboard().use(promptModifier("1"));
-    const app2 = app1.extension(ext).prompt("mobai test").prompt("ryan test").prompt("test");
+    const app2 = app1.extension(ext).onboard((context) => {
+        context.send("hello");
+    });
 
     test(
         "one-way sending from user",
@@ -47,7 +51,7 @@ describe("sending", () => {
 
             const d = hi();
 
-            await a2.deploy(mockInstance.mockKey, mockInstance);
+            await app2.deploy(mockInstance.mockKey, mockInstance);
 
             await mockInstance.sendMessage("hello, world");
 

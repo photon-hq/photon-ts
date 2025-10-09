@@ -2,13 +2,15 @@ import merge from "deepmerge";
 import type { Except, Merge, NonEmptyString, Simplify } from "type-fest";
 import type { ModifiersOf, ModifiersType, SomeExtension } from "../extension";
 import type { Target } from "../target.ts";
-import type { DeepMerge, IsBroadString, OmitUnique, ReturnWithUnique, UniqueOf } from "../types";
+import type { DeepMerge, IsBroadString, OmitUnique, Promisable, ReturnWithUnique, UniqueOf } from "../types";
 import { AppInstance } from "./app-instance.ts";
+import type { Context } from "./context.ts";
 import type { defaultExtensions } from "./default-extension.ts";
-import type { ModIn, SomeModifier } from "./some-modifier.ts";
+import type { ModIn, ModOut, SomeModifier } from "./some-modifier.ts";
 
 type IsModuleApp<A> = A extends App<infer N, any, any, any> ? IsBroadString<N> : never;
 type PhotonOf<A> = A extends App<any, any, infer P, any> ? P : never;
+type ActionContext<Ext extends SomeExtension> = (context: Context<Ext>) => Promisable<void>;
 
 export type App<Name extends string, Description extends string, Photon extends {}, Ext extends SomeExtension> = {
     photon: Photon;
@@ -31,13 +33,17 @@ export type App<Name extends string, Description extends string, Photon extends 
     ): App<Name, Description, Simplify<OmitUnique<Merge<Photon, PhotonOf<A>>>>, Ext>;
     extension<NewExt extends SomeExtension>(ext: NewExt): App<Name, Description, Photon, DeepMerge<Ext, NewExt>>;
 } & {
-    [K in keyof ModifiersOf<Ext>]: ReturnType<ModifiersOf<Ext>[K]> extends infer M
-        ? M extends SomeModifier<any, any>
-            ? Photon extends ModIn<M>
-                ? (...args: Parameters<ModifiersOf<Ext>[K]>) => App<Name, Description, ReturnWithUnique<Photon, M>, Ext>
-                : never
-            : never
-        : never;
+    [K in keyof ModifiersOf<Ext>]: K extends "onboard"
+        ? (action?: ActionContext<Ext>) => App<Name, Description, Merge<Photon, { onboard: {} }>, Ext>
+        : ReturnType<ModifiersOf<Ext>[K]> extends infer M
+          ? M extends SomeModifier<any, any>
+              ? Photon extends ModIn<M>
+                  ? (
+                        ...args: Parameters<ModifiersOf<Ext>[K]>
+                    ) => App<Name, Description, ReturnWithUnique<Photon, M>, Ext>
+                  : never
+              : never
+          : never;
 };
 
 export function buildApp<Name extends string, Description extends string, P extends {}>(
@@ -77,3 +83,8 @@ export const App = function <Name extends string = string, Description extends s
         description: NonEmptyString<Description>,
     ): App<Name, Description, Record<string, never>, typeof defaultExtensions>;
 };
+
+const app = new App("1", "1");
+app.onboard((context) => {
+    context.send("hello");
+});
