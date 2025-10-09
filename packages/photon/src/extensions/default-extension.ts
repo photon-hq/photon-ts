@@ -1,7 +1,7 @@
 import { sendAction } from "../actions/send.ts";
-import type { SomeExtension } from "../extension";
 import { onboardModifier } from "../modifiers";
 import { compiledPhotonSchema } from "../types";
+import type { SomeExtension } from "./some-extension.ts";
 
 export const defaultExtensions = {
     modifiers: {

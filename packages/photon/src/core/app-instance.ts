@@ -1,12 +1,12 @@
 import merge from "deepmerge";
 import type { NonEmptyString } from "type-fest";
 import { z } from "zod";
-import type { SomeExtension } from "../extension";
+import type { SomeExtension } from "../extensions/index.ts";
 import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
 import { type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique } from "../types";
 import { buildApp } from "./app.ts";
-import { defaultExtensions } from "./default-extension.ts";
+import { defaultExtensions } from "../extensions";
 import type { ModIn, SomeModifier } from "./some-modifier.ts";
 
 export class AppInstance<Name extends string, Description extends string, Photon extends {} = Record<string, never>> {

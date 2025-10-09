@@ -4,6 +4,7 @@ import { App, onboardModifier, type SomeExtension } from "photon";
 import { z } from "zod";
 import { promptModifier } from "../modifiers/prompt.ts";
 import { Mock } from "../target.ts";
+import { sendAction } from "../../../photon/src/actions/send.ts";
 
 describe("sending", () => {
     const app = new App("Test Bot", "hi").extension({
@@ -15,7 +16,9 @@ describe("sending", () => {
     });
 
     const ext = {
-        actions: {},
+        actions: {
+            hi: sendAction
+        },
         modifiers: {
             prompt: promptModifier,
         },
@@ -25,7 +28,7 @@ describe("sending", () => {
     const app1 = new App("hi", "hi");
     // const app2 = app1.extension(ext).onboard().use(promptModifier("1"));
     const app2 = app1.extension(ext).onboard((context) => {
-        context.send("hello");
+        context.hi("");
     });
 
     test(

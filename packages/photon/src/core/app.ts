@@ -1,11 +1,10 @@
 import merge from "deepmerge";
 import type { Except, Merge, NonEmptyString, Simplify } from "type-fest";
-import type { ModifiersOf, ModifiersType, SomeExtension } from "../extension";
+import type { defaultExtensions, ModifiersOf, SomeExtension, ModifiersType } from "../extensions";
 import type { Target } from "../target.ts";
 import type { DeepMerge, IsBroadString, OmitUnique, Promisable, ReturnWithUnique, UniqueOf } from "../types";
 import { AppInstance } from "./app-instance.ts";
 import type { Context } from "./context.ts";
-import type { defaultExtensions } from "./default-extension.ts";
 import type { ModIn, ModOut, SomeModifier } from "./some-modifier.ts";
 
 type IsModuleApp<A> = A extends App<infer N, any, any, any> ? IsBroadString<N> : never;
@@ -77,11 +76,11 @@ export const App = function <Name extends string = string, Description extends s
 
     return buildApp(app);
 } as unknown as {
-    new (): App<string, string, Record<string, never>, typeof defaultExtensions>;
+    new (): App<string, string, {}, typeof defaultExtensions>;
     new <Name extends string, Description extends string>(
         name: NonEmptyString<Name>,
         description: NonEmptyString<Description>,
-    ): App<Name, Description, Record<string, never>, typeof defaultExtensions>;
+    ): App<Name, Description, {}, typeof defaultExtensions>;
 };
 
 const app = new App("1", "1");
