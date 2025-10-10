@@ -17,7 +17,7 @@ describe("sending", () => {
 
     const ext = {
         actions: {
-            hi: sendAction
+            hi: sendAction,
         },
         modifiers: {
             prompt: promptModifier,

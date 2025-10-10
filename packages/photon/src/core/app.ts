@@ -6,6 +6,7 @@ import type { DeepMerge, IsBroadString, OmitUnique, Promisable, ReturnWithUnique
 import { AppInstance } from "./app-instance.ts";
 import type { Context } from "./context.ts";
 import type { ModIn, ModOut, SomeModifier } from "./some-modifier.ts";
+import "./attach.ts";
 
 type IsModuleApp<A> = A extends App<infer N, any, any, any> ? IsBroadString<N> : never;
 type PhotonOf<A> = A extends App<any, any, infer P, any> ? P : never;
@@ -31,41 +32,8 @@ export type App<Name extends string, Description extends string, Photon extends 
         moduleApp: IsModuleApp<A> extends true ? A : never,
     ): App<Name, Description, Simplify<OmitUnique<Merge<Photon, PhotonOf<A>>>>, Ext>;
     extension<NewExt extends SomeExtension>(ext: NewExt): App<Name, Description, Photon, DeepMerge<Ext, NewExt>>;
-} & {
-    [K in keyof ModifiersOf<Ext>]: K extends "onboard"
-        ? (action?: ActionContext<Ext>) => App<Name, Description, Merge<Photon, { onboard: {} }>, Ext>
-        : ReturnType<ModifiersOf<Ext>[K]> extends infer M
-          ? M extends SomeModifier<any, any>
-              ? Photon extends ModIn<M>
-                  ? (
-                        ...args: Parameters<ModifiersOf<Ext>[K]>
-                    ) => App<Name, Description, ReturnWithUnique<Photon, M>, Ext>
-                  : never
-              : never
-          : never;
+    onboard(action?: ActionContext<Ext>): App<Name, Description, Merge<Photon, { onboard: {} }>, Ext>;
 };
-
-export function buildApp<Name extends string, Description extends string, P extends {}>(
-    instance: AppInstance<Name, Description, P>,
-): App<Name, Description, P, any> {
-    const modifiers: ModifiersType = instance.extensions.reduce((acc, ext) => merge(acc, ext.modifiers), {});
-
-    (instance as any)["extension"] = <NewExts extends SomeExtension>(ext: NewExts) => {
-        instance.extensions.push(ext);
-        const modifiers = ext.modifiers;
-        return buildApp(instance);
-    };
-
-    for (const [key, modifierFactory] of Object.entries(modifiers)) {
-        (instance as any)[key] = (...args: any[]) => {
-            const modifier = modifierFactory(...args);
-            const newApp = (instance as any).modifier(modifier as SomeModifier<any, any>);
-            return buildApp(newApp);
-        };
-    }
-
-    return instance as any;
-}
 
 // biome-ignore lint: This function needs to be callable with 'new' keyword
 export const App = function <Name extends string = string, Description extends string = string>(
@@ -74,7 +42,7 @@ export const App = function <Name extends string = string, Description extends s
 ) {
     const app = name && description ? new AppInstance(name, description) : new AppInstance();
 
-    return buildApp(app);
+    return app as unknown as App<Name, Description, {}, typeof defaultExtensions>;
 } as unknown as {
     new (): App<string, string, {}, typeof defaultExtensions>;
     new <Name extends string, Description extends string>(
@@ -82,8 +50,3 @@ export const App = function <Name extends string = string, Description extends s
         description: NonEmptyString<Description>,
     ): App<Name, Description, {}, typeof defaultExtensions>;
 };
-
-const app = new App("1", "1");
-app.onboard((context) => {
-    context.send("hello");
-});

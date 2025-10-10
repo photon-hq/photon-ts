@@ -5,14 +5,14 @@ import type { SomeExtension } from "../extensions/index.ts";
 import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
 import { type CompiledPhoton, compiledPhotonSchema, type ReturnWithUnique } from "../types";
-import { buildApp } from "./app.ts";
 import { defaultExtensions } from "../extensions";
 import type { ModIn, SomeModifier } from "./some-modifier.ts";
+import type { Merge } from "type-fest";
 
 export class AppInstance<Name extends string, Description extends string, Photon extends {} = Record<string, never>> {
-    private readonly name: Name | undefined;
-    private readonly description: Description | undefined;
-    private gateway!: Gateway;
+    public readonly name: Name | undefined;
+    public readonly description: Description | undefined;
+    public gateway!: Gateway;
 
     photon: Photon;
     extensions: SomeExtension[] = [defaultExtensions];
@@ -28,13 +28,21 @@ export class AppInstance<Name extends string, Description extends string, Photon
     public modifier<M extends SomeModifier<any, any>>(
         this: Photon extends ModIn<M> ? AppInstance<Name, Description, Photon> : never,
         modifier: M,
-    ): any {
-        return buildApp(modifier.main(buildApp(this)));
+    ): AppInstance<Name, Description, ReturnWithUnique<Photon, M>> {
+        return modifier.main(this) as unknown as AppInstance<Name, Description, ReturnWithUnique<Photon, M>>;
     }
 
-    private use(moduleApp: AppInstance<any, any, any>): any {
-        this.photon = merge(this.photon, moduleApp.photon);
-        return buildApp(this);
+    public extension<NewExt extends SomeExtension>(ext: NewExt): AppInstance<Name, Description, Photon> {
+        this.extensions.push(ext);
+        return this;
+    }
+
+    public use<ModuleName extends string, ModuleDescription extends string, ModulePhoton extends {}>(
+        moduleApp: AppInstance<ModuleName, ModuleDescription, ModulePhoton>,
+    ): AppInstance<Name, Description, Merge<Photon, ModulePhoton>> {
+        const merged = merge(this.photon as object, moduleApp.photon as object) as Merge<Photon, ModulePhoton>;
+        this.photon = merged as unknown as Photon;
+        return this as unknown as AppInstance<Name, Description, Merge<Photon, ModulePhoton>>;
     }
 
     private compilePhoton(): CompiledPhoton {
@@ -46,7 +54,7 @@ export class AppInstance<Name extends string, Description extends string, Photon
         ) as unknown as CompiledPhoton;
     }
 
-    private async deploy(first: string | Target, ...rest: Target[]): Promise<void> {
+    public async deploy(first: string | Target, ...rest: Target[]): Promise<void> {
         const isApiKeyProvided = typeof first === "string";
         const api_key = isApiKeyProvided ? first : process.env.PHOTON_API;
         const targets = isApiKeyProvided ? rest : [first, ...rest];
