@@ -4,8 +4,6 @@ export * from "./compiled.ts";
 
 import type { ModIn, ModOut, SomeUniqueModifier } from "../core/some-modifier.ts";
 
-export type Promisable<T> = T | Promise<T>;
-
 export type WithoutKey<K extends PropertyKey> = { [P in K]?: never };
 export type OmitDiscriminant<T, K extends keyof T> = T extends any ? Omit<T, K> : never;
 export type IsBroadString<T> = string extends T ? (T extends string ? true : false) : false;

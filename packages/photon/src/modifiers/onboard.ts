@@ -1,13 +1,12 @@
 import merge from "deepmerge";
-import type { AppInstance } from "../core/app-instance.ts";
 import type { SomeUniqueModifier } from "../core/some-modifier.ts";
-import type { Promisable, WithoutKey } from "../types";
+import type { WithoutKey } from "../types";
 import type { Merge } from "type-fest";
 
 type InPhoton = WithoutKey<"onboard">;
-type OutPhoton = { onboard: { action: () => Promisable<void>; flow: [] } };
+type OutPhoton = { onboard: { flow: [] } };
 
-export function onboardModifier(action: () => Promisable<void> = () => {}): SomeUniqueModifier<InPhoton, OutPhoton> {
+export function onboardModifier(action: (context: any) => void): SomeUniqueModifier<InPhoton, OutPhoton> {
     return {
         unique: true,
         main(app) {

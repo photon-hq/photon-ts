@@ -11,5 +11,4 @@ export interface SomeExtension {
     photonType?: z.ZodObject<ZodRawShape>;
 }
 
-export type ModifiersOf<T extends SomeExtension> = T extends { modifiers: infer M } ? M : never;
 export type ActionsOf<T extends SomeExtension> = T extends { actions: infer A } ? A : never;

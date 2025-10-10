@@ -1,48 +1,105 @@
 import merge from "deepmerge";
-import type { Except, Merge, NonEmptyString, Simplify } from "type-fest";
-import type { defaultExtensions, ModifiersOf, SomeExtension } from "../extensions";
+import type { Merge, NonEmptyString, Promisable, Simplify } from "type-fest";
+import { z } from "zod";
+import { defaultExtensions } from "../extensions";
+import type { SomeExtension } from "../extensions/index.ts";
+import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
-import type { DeepMerge, IsBroadString, OmitUnique, Promisable, ReturnWithUnique, UniqueOf } from "../types";
-import { AppInstance } from "./app-instance.ts";
+import {
+    type CompiledPhoton,
+    compiledPhotonSchema,
+    type DeepMerge,
+    type IsBroadString,
+    type OmitUnique,
+    type ReturnWithUnique,
+    type UniqueOf,
+} from "../types";
 import type { Context } from "./context.ts";
-import type { ModIn, ModOut, SomeModifier } from "./some-modifier.ts";
-import "./attach.ts";
 
 type IsModuleApp<A> = A extends App<infer N, any, any, any> ? IsBroadString<N> : never;
 type PhotonOf<A> = A extends App<any, any, infer P, any> ? P : never;
-type ActionContext<Ext extends SomeExtension> = (context: Context<Ext>) => Promisable<void>;
 
-export type App<Name extends string, Description extends string, Photon extends {}, Ext extends SomeExtension> = {
+export class App<
+    Name extends string,
+    Description extends string,
+    Photon extends {} = Record<string, never>,
+    Ext extends SomeExtension = typeof defaultExtensions,
+> {
+    public readonly name: Name | undefined;
+    public readonly description: Description | undefined;
+
     photon: Photon;
-    deploy(
+    extensions: SomeExtension[] = [defaultExtensions];
+
+    public constructor();
+    public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>);
+    public constructor(name?: NonEmptyString<Name>, description?: NonEmptyString<Description>) {
+        this.name = name;
+        this.description = description;
+        this.photon = {} as Photon;
+    }
+
+    public extension<NewExt extends SomeExtension>(
+        ext: NewExt,
+    ): App<Name, Description, Photon, DeepMerge<Ext, NewExt>> {
+        this.extensions.push(ext);
+        return this as any;
+    }
+
+    public use<A extends App<any, any, any, any>>(
+        this: Photon extends UniqueOf<PhotonOf<A>> ? App<Name, Description, Photon, Ext> : never,
+        moduleApp: IsModuleApp<A> extends true ? A : never,
+    ): App<Name, Description, Simplify<OmitUnique<Merge<Photon, PhotonOf<A>>>>, Ext> {
+        this.photon = merge(this.photon, moduleApp.photon);
+        return this as any;
+    }
+
+    private compilePhoton(): CompiledPhoton {
+        const _photon = merge(this.photon, { name: this.name, description: this.description });
+
+        return this.extensions
+            .filter(
+                (ext): ext is SomeExtension & { photonType: NonNullable<SomeExtension["photonType"]> } =>
+                    ext.photonType !== undefined,
+            )
+            .reduce(
+                (acc, ext) => merge(acc, ext.photonType.strip().parse(_photon) as object),
+                {},
+            ) as unknown as CompiledPhoton;
+    }
+
+    public async deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         api_key: string,
         ...targets: Target[]
     ): Promise<void>;
-    deploy(
+    public async deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         ...targets: Target[]
     ): Promise<void>;
-    use<A extends App<any, any, any, any>>(
-        this: Photon extends UniqueOf<PhotonOf<A>> ? App<Name, Description, Photon, Ext> : never,
-        moduleApp: IsModuleApp<A> extends true ? A : never,
-    ): App<Name, Description, Simplify<OmitUnique<Merge<Photon, PhotonOf<A>>>>, Ext>;
-    extension<NewExt extends SomeExtension>(ext: NewExt): App<Name, Description, Photon, DeepMerge<Ext, NewExt>>;
-    onboard(action?: ActionContext<Ext>): App<Name, Description, Merge<Photon, { onboard: {} }>, Ext>;
-};
+    public async deploy(first: string | Target, ...rest: Target[]): Promise<void> {
+        const isApiKeyProvided = typeof first === "string";
+        const api_key = isApiKeyProvided ? first : process.env.PHOTON_API;
+        const targets = isApiKeyProvided ? rest : [first, ...rest];
 
-// biome-ignore lint: This function needs to be callable with 'new' keyword
-export const App = function <Name extends string = string, Description extends string = string>(
-    name?: NonEmptyString<Name>,
-    description?: NonEmptyString<Description>,
-) {
-    const app = name && description ? new AppInstance(name, description) : new AppInstance();
+        if (!api_key) {
+            throw new Error(
+                "API key is required. Provide it as first argument or set PHOTON_API environment variable.",
+            );
+        }
 
-    return app as unknown as App<Name, Description, {}, typeof defaultExtensions>;
-} as unknown as {
-    new (): App<string, string, {}, typeof defaultExtensions>;
-    new <Name extends string, Description extends string>(
-        name: NonEmptyString<Name>,
-        description: NonEmptyString<Description>,
-    ): App<Name, Description, {}, typeof defaultExtensions>;
-};
+        const compiledPhoton = this.compilePhoton();
+
+        console.log("\nCompiled Photon:");
+        console.dir(compiledPhoton, { depth: null });
+        console.log("\n");
+
+        const gateway = await Gateway.connect(api_key);
+
+        await gateway.Server.register(compiledPhoton);
+
+        for (const target of targets) {
+            await target.start();
+        }
+    }
+}

@@ -22,11 +22,11 @@ describe("sending", () => {
         photonType: z.object({}),
     } satisfies SomeExtension;
 
-    const app1 = new App("hi", "hi");
+    const app1 = new App("hi", "hi")
     // const app2 = app1.extension(ext).onboard().use(promptModifier("1"));
-    const app2 = app1.onboard((context) => {
-        context.send("hello");
-    });
+    const app2 = app1.onboard((c) => {
+        c.type
+    }, "2");
 
     test(
         "one-way sending from user",
