@@ -12,7 +12,6 @@ import type { Merge } from "type-fest";
 export class AppInstance<Name extends string, Description extends string, Photon extends {} = Record<string, never>> {
     public readonly name: Name | undefined;
     public readonly description: Description | undefined;
-    public gateway!: Gateway;
 
     photon: Photon;
     extensions: SomeExtension[] = [defaultExtensions];
@@ -23,13 +22,6 @@ export class AppInstance<Name extends string, Description extends string, Photon
         this.name = name;
         this.description = description;
         this.photon = {} as Photon;
-    }
-
-    public modifier<M extends SomeModifier<any, any>>(
-        this: Photon extends ModIn<M> ? AppInstance<Name, Description, Photon> : never,
-        modifier: M,
-    ): AppInstance<Name, Description, ReturnWithUnique<Photon, M>> {
-        return modifier.main(this) as unknown as AppInstance<Name, Description, ReturnWithUnique<Photon, M>>;
     }
 
     public extension<NewExt extends SomeExtension>(ext: NewExt): AppInstance<Name, Description, Photon> {
@@ -48,10 +40,15 @@ export class AppInstance<Name extends string, Description extends string, Photon
     private compilePhoton(): CompiledPhoton {
         const _photon = merge(this.photon, { name: this.name, description: this.description });
 
-        return this.extensions.reduce(
-            (acc, ext) => merge(acc, ext.photonType.strip().parse(_photon) as object),
-            {},
-        ) as unknown as CompiledPhoton;
+        return this.extensions
+            .filter(
+                (ext): ext is SomeExtension & { photonType: NonNullable<SomeExtension["photonType"]> } =>
+                    ext.photonType !== undefined,
+            )
+            .reduce(
+                (acc, ext) => merge(acc, ext.photonType.strip().parse(_photon) as object),
+                {},
+            ) as unknown as CompiledPhoton;
     }
 
     public async deploy(first: string | Target, ...rest: Target[]): Promise<void> {

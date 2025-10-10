@@ -1,6 +1,6 @@
 import merge from "deepmerge";
 import type { Except, Merge, NonEmptyString, Simplify } from "type-fest";
-import type { defaultExtensions, ModifiersOf, SomeExtension, ModifiersType } from "../extensions";
+import type { defaultExtensions, ModifiersOf, SomeExtension } from "../extensions";
 import type { Target } from "../target.ts";
 import type { DeepMerge, IsBroadString, OmitUnique, Promisable, ReturnWithUnique, UniqueOf } from "../types";
 import { AppInstance } from "./app-instance.ts";
@@ -23,10 +23,6 @@ export type App<Name extends string, Description extends string, Photon extends 
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         ...targets: Target[]
     ): Promise<void>;
-    modifier<M extends SomeModifier<any, any>>(
-        this: Photon extends ModIn<M> ? App<Name, Description, Photon, Ext> : never,
-        modifier: M,
-    ): App<Name, Description, ReturnWithUnique<Photon, M>, Ext>;
     use<A extends App<any, any, any, any>>(
         this: Photon extends UniqueOf<PhotonOf<A>> ? App<Name, Description, Photon, Ext> : never,
         moduleApp: IsModuleApp<A> extends true ? A : never,

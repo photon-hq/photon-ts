@@ -19,16 +19,13 @@ describe("sending", () => {
         actions: {
             hi: sendAction,
         },
-        modifiers: {
-            prompt: promptModifier,
-        },
         photonType: z.object({}),
     } satisfies SomeExtension;
 
     const app1 = new App("hi", "hi");
     // const app2 = app1.extension(ext).onboard().use(promptModifier("1"));
-    const app2 = app1.extension(ext).onboard((context) => {
-        context.hi("");
+    const app2 = app1.onboard((context) => {
+        context.send("hello");
     });
 
     test(
@@ -42,7 +39,7 @@ describe("sending", () => {
 
             const a = app.onboard(() => {});
 
-            const a1 = new App().onboard(() => {}).modifier(promptModifier("1"));
+            const a1 = new App().onboard(() => {})
             const a3 = new App().onboard(() => {});
             const a2 = new App("hi", "hi");
 
