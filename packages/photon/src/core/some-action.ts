@@ -5,4 +5,4 @@ export interface SomeAction<T> {
     main<Ext extends typeof defaultExtensions>(context: Context<Ext>): Promise<T>;
 }
 
-export type ActionOf<A> = A extends SomeAction<infer T> ? T : never;
+export type ActionReturnOf<A> = A extends SomeAction<infer T> ? T : never;
