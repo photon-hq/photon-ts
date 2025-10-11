@@ -7,6 +7,7 @@ import type { CompiledPhoton, DeepMerge, IsBroadString, IsModuleApp, OmitUnique,
 import type { Context } from "./context.ts";
 import type { SomeAction } from "./some-action.ts";
 import type { SomeInvokable } from "./some-invokable.ts";
+import type { AnyModifier } from "./some-modifier.ts";
 
 export class App<
     Name extends string,
@@ -35,6 +36,12 @@ export class App<
         ext: NewExt,
     ): App<Name, Description, Photon, DeepMerge<Ext, NewExt>> {
         this.extensions.push(ext);
+        for (const [key, modifierFactory] of Object.entries(ext.modifiers)) {
+            (this as any)[key] = (...args: any[]) => {
+                const modifier = (modifierFactory as any)(...args) as AnyModifier<any, any>;
+                return modifier.main(this as any);
+            };
+        }
         return this as any;
     }
 
@@ -60,7 +67,7 @@ export class App<
         for (const [key, actionFactory] of Object.entries(actions)) {
             (instance as any)[key] = async (...args: any[]) => {
                 const action = (actionFactory as any)(...args) as SomeAction<any>;
-                return await action.main(this.context(userId) as any);
+                return await action.main(instance as any);
             };
         }
 
