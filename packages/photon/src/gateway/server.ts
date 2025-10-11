@@ -3,7 +3,6 @@ import type { App } from "../core/app.ts";
 import type { CompiledPhoton, OmitDiscriminant } from "../types";
 import { GatewayBase } from "./base.ts";
 import type { Message } from "./types";
-import "./utils.ts";
 
 class GatewayServer extends GatewayBase {
     constructor() {
@@ -14,14 +13,14 @@ class GatewayServer extends GatewayBase {
         invokableHandler: null as unknown as (key: string, userId: string) => Promise<void> | null,
         
         send: async (data: OmitDiscriminant<Extract<Message, { role: "server" }>, "role">) => {
-            return this.socket.asyncEmit("message", {
+            return this.socket.emitWithAck("message", {
                 role: "server",
                 ...data,
             } satisfies Message);
         },
 
         register: async (photon: CompiledPhoton) => {
-            await this.socket.asyncEmit("register", {
+            await this.socket.emitWithAck("register", {
                 apiKey: this.api_key,
                 photon: photon,
             });

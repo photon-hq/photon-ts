@@ -36,7 +36,6 @@ export class GatewayBase {
 
                 if (result.success) {
                     gateway.onMessage(result.data);
-
                     callback({ success: true });
                 } else {
                     console.error(result.error);
