@@ -1,7 +1,7 @@
+import { z } from "zod";
 import { sendAction } from "../actions/send.ts";
-import { onboardModifier } from "../modifiers";
-import { compiledPhotonSchema } from "../types";
 import type { SomeExtension } from "../core/some-extension.ts";
+import { compiledPhotonSchema } from "../types";
 
 export const defaultExtensions = {
     actions: {

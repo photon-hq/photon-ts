@@ -3,15 +3,9 @@ import type { Merge, NonEmptyString, Simplify } from "type-fest";
 import { defaultExtensions, type SomeExtension } from "../extensions";
 import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
-import {
-    type CompiledPhoton,
-    type DeepMerge,
-    type IsBroadString,
-    type OmitUnique,
-    type PhotonOf,
-    type UniqueOf,
-    type IsModuleApp
-} from "../types";
+import type { CompiledPhoton, DeepMerge, IsBroadString, IsModuleApp, OmitUnique, PhotonOf, UniqueOf } from "../types";
+import type { Context } from "./context.ts";
+import type { SomeInvokable } from "./some-invokable.ts";
 
 export class App<
     Name extends string,
@@ -21,9 +15,11 @@ export class App<
 > {
     public readonly name: Name | undefined;
     public readonly description: Description | undefined;
+    private gateway!: Gateway;
 
-    public photon: Photon;
-    extensions: SomeExtension[] = [defaultExtensions];
+    invokables: Record<string, SomeInvokable> = {};
+    photon: Photon;
+    extensions: SomeExtension[] = [];
 
     public constructor();
     public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>);
@@ -31,6 +27,7 @@ export class App<
         this.name = name;
         this.description = description;
         this.photon = {} as Photon;
+        this.extension(defaultExtensions);
     }
 
     public extension<NewExt extends SomeExtension>(
@@ -46,6 +43,33 @@ export class App<
     ): App<Name, Description, Simplify<OmitUnique<Merge<Photon, PhotonOf<A>>>>, Ext> {
         this.photon = merge(this.photon, moduleApp.photon);
         return this as any;
+    }
+
+    private context(userId: string): Context<Ext> {
+        const instance: Context<Ext> = {
+            _app: this,
+            gateway: this.gateway,
+            user: {
+                id: userId,
+            },
+        };
+
+        const actions = this.extensions.reduce((acc, ext) => merge(acc, ext.actions), {});
+
+        for (const [key, actionFactory] of Object.entries(actions)) {
+            (instance as any)[key] = (...args: any[]) => {};
+        }
+
+        return instance;
+    }
+
+    public invokable(key: string, invokable: SomeInvokable): void {
+        this.invokables[key] = invokable;
+    }
+
+    private async useInvokable(key: string, userId: string): Promise<void> {
+        const invokable = this.invokables[key];
+        await invokable(this.context(userId));
     }
 
     private compilePhoton(): CompiledPhoton {
@@ -71,10 +95,14 @@ export class App<
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         ...targets: Target[]
     ): Promise<void>;
-    public async deploy(first: string | Target, ...rest: Target[]): Promise<void> {
+    public async deploy(
+        this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
+        first: string | Target,
+        ...rest: Target[]
+    ): Promise<void> {
         const isApiKeyProvided = typeof first === "string";
-        const api_key = isApiKeyProvided ? first : process.env.PHOTON_API;
-        const targets = isApiKeyProvided ? rest : [first, ...rest];
+        const api_key = (isApiKeyProvided ? first : process.env.PHOTON_API) as unknown as string;
+        const targets = (isApiKeyProvided ? rest : [first, ...rest]) as unknown as Target[];
 
         if (!api_key) {
             throw new Error(
@@ -91,6 +119,8 @@ export class App<
         const gateway = await Gateway.connect(api_key);
 
         await gateway.Server.register(compiledPhoton);
+
+        this.gateway = gateway;
 
         for (const target of targets) {
             await target.start();
