@@ -4,6 +4,7 @@ import type { SomeExtension } from "../core/some-extension.ts";
 import { compiledPhotonSchema } from "../types";
 
 export const defaultExtensions = {
+    modifiers: {},
     actions: {
         send: sendAction,
     },

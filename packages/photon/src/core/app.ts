@@ -5,6 +5,7 @@ import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
 import type { CompiledPhoton, DeepMerge, IsBroadString, IsModuleApp, OmitUnique, PhotonOf, UniqueOf } from "../types";
 import type { Context } from "./context.ts";
+import type { SomeAction } from "./some-action.ts";
 import type { SomeInvokable } from "./some-invokable.ts";
 
 export class App<
@@ -46,7 +47,7 @@ export class App<
     }
 
     private context(userId: string): Context<Ext> {
-        const instance: Context<Ext> = {
+        const instance = {
             _app: this,
             gateway: this.gateway,
             user: {
@@ -57,10 +58,13 @@ export class App<
         const actions = this.extensions.reduce((acc, ext) => merge(acc, ext.actions), {});
 
         for (const [key, actionFactory] of Object.entries(actions)) {
-            (instance as any)[key] = (...args: any[]) => {};
+            (instance as any)[key] = async (...args: any[]) => {
+                const action = (actionFactory as any)(...args) as SomeAction<any>;
+                return await action.main(this.context(userId) as any);
+            };
         }
 
-        return instance;
+        return instance as any;
     }
 
     public invokable(key: string, invokable: SomeInvokable): void {
@@ -69,6 +73,9 @@ export class App<
 
     private async useInvokable(key: string, userId: string): Promise<void> {
         const invokable = this.invokables[key];
+        if (!invokable) {
+            throw new Error(`Invokable with key "${key}" not found`);
+        }
         await invokable(this.context(userId));
     }
 
@@ -116,11 +123,9 @@ export class App<
         console.dir(compiledPhoton, { depth: null });
         console.log("\n");
 
-        const gateway = await Gateway.connect(api_key);
+        this.gateway = await Gateway.connect(api_key);
 
-        await gateway.Server.register(compiledPhoton);
-
-        this.gateway = gateway;
+        await this.gateway.Server.register(compiledPhoton);
 
         for (const target of targets) {
             await target.start();

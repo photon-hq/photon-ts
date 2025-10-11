@@ -1,10 +1,10 @@
 import type { ZodObject } from "zod";
-import type { SomeAction } from "../core/some-action.ts";
-
-export type ActionsType = Record<string, (...args: any[]) => SomeAction<any>>;
+import type { SomeAction } from "./some-action.ts";
+import type { AnyModifier } from "./some-modifier.ts";
 
 export interface SomeExtension {
-    actions: ActionsType;
+    modifiers: Record<string, (...args: any[]) => AnyModifier<any, any>>;
+    actions: Record<string, (...args: any[]) => SomeAction<any>>;
     photonType?: ZodObject<any>;
 }
 

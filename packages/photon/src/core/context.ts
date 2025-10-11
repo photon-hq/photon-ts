@@ -12,7 +12,7 @@ export type Context<Ext extends SomeExtension> = {
 } & {
     [K in keyof ActionsOf<Ext>]: ReturnType<ActionsOf<Ext>[K]> extends infer M
         ? M extends SomeAction<any>
-            ? (...args: Parameters<ActionsOf<Ext>[K]>) => ActionReturnOf<M>
+            ? (...args: Parameters<ActionsOf<Ext>[K]>) => Promise<ActionReturnOf<M>>
             : never
         : never;
 };

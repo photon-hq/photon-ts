@@ -1,5 +1,5 @@
 import { App } from "photon";
 
-const a1 = new App().onboard((context) => {
-    context.send("")
-})
+const a1 = new App().onboard(async (context) => {
+    const c = await context.send("");
+});
