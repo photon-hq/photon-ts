@@ -6,14 +6,6 @@ import type { onboardModifier } from "../modifiers";
 import type { ReturnWithUnique } from "../types";
 import type { SomeExtension } from "./some-extension";
 
-type BuildModifierReturn<
-    M extends (...args: any[]) => SomeModifier<any, any>,
-    N extends string,
-    D extends string,
-    P extends {},
-    E extends SomeExtension,
-> = P extends ModIn<ReturnType<M>> ? App<N, D, ReturnWithUnique<P, ReturnType<M>>, E> : never;
-
 type Registry<N extends string, D extends string, P extends {}, E extends SomeExtension> = {
     onboard: <A extends string>(
         action: (context: Context<E> & { type: A }) => void,

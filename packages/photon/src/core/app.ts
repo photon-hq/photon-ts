@@ -1,23 +1,17 @@
 import merge from "deepmerge";
-import type { Merge, NonEmptyString, Promisable, Simplify } from "type-fest";
-import { z } from "zod";
-import { defaultExtensions } from "../extensions";
-import type { SomeExtension } from "../extensions/index.ts";
+import type { Merge, NonEmptyString, Simplify } from "type-fest";
+import { defaultExtensions, type SomeExtension } from "../extensions";
 import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
 import {
     type CompiledPhoton,
-    compiledPhotonSchema,
     type DeepMerge,
     type IsBroadString,
     type OmitUnique,
-    type ReturnWithUnique,
+    type PhotonOf,
     type UniqueOf,
+    type IsModuleApp
 } from "../types";
-import type { Context } from "./context.ts";
-
-type IsModuleApp<A> = A extends App<infer N, any, any, any> ? IsBroadString<N> : never;
-type PhotonOf<A> = A extends App<any, any, infer P, any> ? P : never;
 
 export class App<
     Name extends string,
@@ -28,7 +22,7 @@ export class App<
     public readonly name: Name | undefined;
     public readonly description: Description | undefined;
 
-    photon: Photon;
+    public photon: Photon;
     extensions: SomeExtension[] = [defaultExtensions];
 
     public constructor();

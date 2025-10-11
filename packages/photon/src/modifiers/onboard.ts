@@ -10,8 +10,7 @@ export function onboardModifier(action: (context: any) => void): SomeUniqueModif
     return {
         unique: true,
         main(app) {
-            const newPhoton = merge(app.photon, { onboard: { action, flow: [] } });
-            (app as any).photon = newPhoton;
+            (app as any).photon = merge(app.photon, { onboard: { action, flow: [] } });
             return app as any;
         },
     };
