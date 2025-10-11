@@ -1,6 +1,7 @@
 import type { CompiledPhoton, OmitDiscriminant } from "../types";
 import { GatewayBase } from "./base.ts";
 import type { Message } from "./types";
+import "./utils.ts"
 
 class GatewayServer extends GatewayBase {
     constructor() {
@@ -9,42 +10,23 @@ class GatewayServer extends GatewayBase {
 
     readonly Server = {
         send: async (data: OmitDiscriminant<Extract<Message, { role: "server" }>, "role">) => {
-            return new Promise<void>((resolve, reject) => {
-                this.socket.emit(
-                    "message",
-                    {
-                        role: "server",
-                        userId: this.userId,
-                        ...data,
-                    } satisfies Message,
-                    (response: any) => {
-                        if (response.success) {
-                            resolve();
-                        } else {
-                            reject(new Error(response.error));
-                        }
-                    },
-                );
-            });
+            return this.socket.asyncEmit(
+                "message",
+                {
+                    role: "server",
+                    ...data,
+                } satisfies Message,
+            );
         },
 
         register: async (photon: CompiledPhoton) => {
-            return new Promise<void>((resolve, reject) => {
-                this.socket.emit(
-                    "register",
-                    {
-                        apiKey: this.api_key,
-                        photon: photon,
-                    },
-                    (response: any) => {
-                        if (response.success) {
-                            resolve();
-                        } else {
-                            reject(new Error(response.error));
-                        }
-                    },
-                );
-            });
+            await this.socket.asyncEmit(
+                "register",
+                {
+                    apiKey: this.api_key,
+                    photon: photon,
+                }
+            );
         },
     };
 }
