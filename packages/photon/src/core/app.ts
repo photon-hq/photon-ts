@@ -1,79 +1,144 @@
 import merge from "deepmerge";
-import type { Except, Merge, NonEmptyString, Simplify } from "type-fest";
-import type { ModifiersOf, ModifiersType, SomeExtension } from "../extension";
-import type { defaultExtensions } from "../modifiers";
+import type { Merge, NonEmptyString, Simplify } from "type-fest";
+import { defaultExtensions, type SomeExtension } from "../extensions";
+import { Gateway } from "../gateway/server.ts";
 import type { Target } from "../target.ts";
-import type { DeepMerge, IsBroadString, OmitUnique, ReturnWithUnique, UniqueOf } from "../types";
-import { AppInstance } from "./app-instance.ts";
-import type { ModIn, SomeModifier } from "./some-modifier.ts";
+import type { CompiledPhoton, DeepMerge, IsBroadString, IsModuleApp, OmitUnique, PhotonOf, UniqueOf } from "../types";
+import type { Context } from "./context.ts";
+import type { SomeAction } from "./some-action.ts";
+import type { SomeInvokable } from "./some-invokable.ts";
+import type { AnyModifier } from "./some-modifier.ts";
 
-type IsModuleApp<A> = A extends App<infer N, any, any, any> ? IsBroadString<N> : never;
-type PhotonOf<A> = A extends App<any, any, infer P, any> ? P : never;
-
-export type App<Name extends string, Description extends string, Photon extends {}, Ext extends SomeExtension> = {
+export class App<
+    Name extends string,
+    Description extends string,
+    Photon extends {} = Record<string, never>,
+    Ext extends SomeExtension = typeof defaultExtensions,
+> {
+    public readonly name: Name | undefined;
+    public readonly description: Description | undefined;
+    
+    private gateway!: Gateway;
+    private invokables: Record<string, SomeInvokable> = {};
+    
     photon: Photon;
-    deploy(
+    extensions: SomeExtension[] = [];
+
+    public constructor();
+    public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>);
+    public constructor(name?: NonEmptyString<Name>, description?: NonEmptyString<Description>) {
+        this.name = name;
+        this.description = description;
+        this.photon = {} as Photon;
+        this.extension(defaultExtensions);
+    }
+
+    public extension<NewExt extends SomeExtension>(
+        ext: NewExt,
+    ): App<Name, Description, Photon, DeepMerge<Ext, NewExt>> {
+        this.extensions.push(ext);
+        for (const [key, modifierFactory] of Object.entries(ext.modifiers)) {
+            (this as any)[key] = (...args: any[]) => {
+                const modifier = (modifierFactory as any)(...args) as AnyModifier<any, any>;
+                return modifier.main(this as any);
+            };
+        }
+        return this as any;
+    }
+
+    public use<A extends App<any, any, any, any>>(
+        this: Photon extends UniqueOf<PhotonOf<A>> ? App<Name, Description, Photon, Ext> : never,
+        moduleApp: IsModuleApp<A> extends true ? A : never,
+    ): App<Name, Description, Simplify<OmitUnique<Merge<Photon, PhotonOf<A>>>>, Ext> {
+        this.photon = merge(this.photon, moduleApp.photon);
+        return this as any;
+    }
+
+    private context(userId: string): Context<Ext> {
+        const instance = {
+            _app: this,
+            gateway: this.gateway,
+            user: {
+                id: userId,
+            },
+        };
+
+        const actions = this.extensions.reduce((acc, ext) => merge(acc, ext.actions), {});
+
+        for (const [key, actionFactory] of Object.entries(actions)) {
+            (instance as any)[key] = async (...args: any[]) => {
+                const action = (actionFactory as any)(...args) as SomeAction<any>;
+                return await action.main(instance as any);
+            };
+        }
+
+        return instance as any;
+    }
+
+    public invokable(key: string, invokable: SomeInvokable): void {
+        this.invokables[key] = invokable;
+    }
+
+    private async useInvokable(key: string, userId: string): Promise<void> {
+        const invokable = this.invokables[key];
+        if (!invokable) {
+            throw new Error(`Invokable with key "${key}" not found`);
+        }
+        await invokable(this.context(userId));
+    }
+
+    private compilePhoton(): CompiledPhoton {
+        const _photon = merge(this.photon, { name: this.name, description: this.description });
+
+        return this.extensions
+            .filter(
+                (ext): ext is SomeExtension & { photonType: NonNullable<SomeExtension["photonType"]> } =>
+                    ext.photonType !== undefined,
+            )
+            .reduce(
+                (acc, ext) => merge(acc, ext.photonType.strip().parse(_photon) as object),
+                {},
+            ) as unknown as CompiledPhoton;
+    }
+
+    public async deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         api_key: string,
         ...targets: Target[]
     ): Promise<void>;
-    deploy(
+    public async deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         ...targets: Target[]
     ): Promise<void>;
-    modifier<M extends SomeModifier<any, any>>(
-        this: Photon extends ModIn<M> ? App<Name, Description, Photon, Ext> : never,
-        modifier: M,
-    ): App<Name, Description, ReturnWithUnique<Photon, M>, Ext>;
-    use<A extends App<any, any, any, any>>(
-        this: Photon extends UniqueOf<PhotonOf<A>> ? App<Name, Description, Photon, Ext> : never,
-        moduleApp: IsModuleApp<A> extends true ? A : never,
-    ): App<Name, Description, Simplify<OmitUnique<Merge<Photon, PhotonOf<A>>>>, Ext>;
-    extension<NewExt extends SomeExtension>(ext: NewExt): App<Name, Description, Photon, DeepMerge<Ext, NewExt>>;
-} & {
-    [K in keyof ModifiersOf<Ext>]: ReturnType<ModifiersOf<Ext>[K]> extends infer M
-        ? M extends SomeModifier<any, any>
-            ? Photon extends ModIn<M>
-                ? (...args: Parameters<ModifiersOf<Ext>[K]>) => App<Name, Description, ReturnWithUnique<Photon, M>, Ext>
-                : never
-            : never
-        : never;
-};
+    public async deploy(
+        this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
+        first: string | Target,
+        ...rest: Target[]
+    ): Promise<void> {
+        const isApiKeyProvided = typeof first === "string";
+        const api_key = (isApiKeyProvided ? first : process.env.PHOTON_API) as unknown as string;
+        const targets = (isApiKeyProvided ? rest : [first, ...rest]) as unknown as Target[];
 
-export function buildApp<Name extends string, Description extends string, P extends {}>(
-    instance: AppInstance<Name, Description, P>,
-): App<Name, Description, P, any> {
-    const modifiers: ModifiersType = instance.extensions.reduce((acc, ext) => merge(acc, ext.modifiers), {});
+        if (!api_key) {
+            throw new Error(
+                "API key is required. Provide it as first argument or set PHOTON_API environment variable.",
+            );
+        }
 
-    (instance as any)["extension"] = <NewExts extends SomeExtension>(ext: NewExts) => {
-        instance.extensions.push(ext);
-        const modifiers = ext.modifiers;
-        return buildApp(instance);
-    };
+        const compiledPhoton = this.compilePhoton();
 
-    for (const [key, modifierFactory] of Object.entries(modifiers)) {
-        (instance as any)[key] = (...args: any[]) => {
-            const modifier = modifierFactory(...args);
-            const newApp = (instance as any).modifier(modifier as SomeModifier<any, any>);
-            return buildApp(newApp);
-        };
+        console.log("\nCompiled Photon:");
+        console.dir(compiledPhoton, { depth: null });
+        console.log("\n");
+
+        this.gateway = await Gateway.connect(api_key);
+        
+        this.gateway.Server.registerInvokableHandler(this.useInvokable)
+
+        await this.gateway.Server.register(compiledPhoton);
+
+        for (const target of targets) {
+            await target.start();
+        }
     }
-
-    return instance as any;
 }
-
-// biome-ignore lint: This function needs to be callable with 'new' keyword
-export const App = function <Name extends string = string, Description extends string = string>(
-    name?: NonEmptyString<Name>,
-    description?: NonEmptyString<Description>,
-) {
-    const app = name && description ? new AppInstance(name, description) : new AppInstance();
-
-    return buildApp(app);
-} as unknown as {
-    new (): App<string, string, Record<string, never>, typeof defaultExtensions>;
-    new <Name extends string, Description extends string>(
-        name: NonEmptyString<Name>,
-        description: NonEmptyString<Description>,
-    ): App<Name, Description, Record<string, never>, typeof defaultExtensions>;
-};
