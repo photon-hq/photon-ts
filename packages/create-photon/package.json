@@ -16,8 +16,7 @@
         "templates"
     ],
     "dependencies": {
-        "create-create-x": "^0.1.2",
-        "socket.io-client": "^4.8.1"
+        "create-create-x": "^0.1.2"
     },
     "devDependencies": {
         "shx": "^0.4.0",

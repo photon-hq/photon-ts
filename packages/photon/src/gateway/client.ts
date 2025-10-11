@@ -15,32 +15,41 @@ class GatewayClient extends GatewayBase {
 
         send: async (data: OmitDiscriminant<Extract<Message, { role: "client" }>, "role">) => {
             return new Promise<void>((resolve, reject) => {
-                this.socket.emit(
-                    "message",
-                    {
-                        role: "client",
-                        ...data,
-                    } satisfies Message,
-                    (response: any) => {
-                        if (response.success) {
-                            resolve();
-                        } else {
-                            reject(new Error(response.error));
-                        }
-                    },
-                );
+                const message: Message = {
+                    role: "client",
+                    ...data,
+                };
+
+                const protoMessage = this.serializeMessage(message);
+                const streamMessage = { message: protoMessage };
+
+                this.stream.write(streamMessage, (error: Error | null | undefined) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
             });
         },
 
         registerUser: async (data: RegisterUser) => {
             return new Promise<void>((resolve, reject) => {
-                this.socket.emit("registerUser", data, (response: any) => {
-                    if (response.success) {
-                        resolve();
-                    } else {
-                        reject(new Error(response.error));
-                    }
-                });
+                this.client.RegisterUser(
+                    {
+                        api_key: data.apiKey,
+                        user_id: data.userId,
+                    },
+                    (error: Error | null, response: any) => {
+                        if (error) {
+                            reject(error);
+                        } else if (response.success) {
+                            resolve();
+                        } else {
+                            reject(new Error(response.error || "User registration failed"));
+                        }
+                    },
+                );
             });
         },
     };

@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package photon.gateway;
+
+// Message content types
+message PlainTextContent {
+    string content = 1;
+}
+
+message DraftingContent {}
+
+message MessageContent {
+    oneof content_type {
+        PlainTextContent plain_text = 1;
+        DraftingContent drafting = 2;
+    }
+}
+
+// Message definitions
+message ClientMessage {
+    string user_id = 1;
+    string payload_json = 2; // JSON string of record<string, unknown>
+    repeated string keys_to_payload_message = 3;
+    MessageContent message_content = 4;
+}
+
+message ServerMessage {
+    string user_id = 1;
+    MessageContent message_content = 2;
+}
+
+message Message {
+    oneof message_type {
+        ClientMessage client = 1;
+        ServerMessage server = 2;
+    }
+}
+
+// Register request
+message RegisterRequest {
+    string api_key = 1;
+    string photon_json = 2; // JSON string of CompiledPhoton
+}
+
+message RegisterResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+// Register user request
+message RegisterUserRequest {
+    string api_key = 1;
+    string user_id = 2;
+}
+
+message RegisterUserResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+// Invoke request
+message InvokeRequest {
+    string key = 1;
+    string user_id = 2;
+}
+
+message InvokeResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+// Send message request
+message SendMessageRequest {
+    Message message = 1;
+}
+
+message SendMessageResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+// Stream message for bidirectional streaming
+message StreamMessage {
+    Message message = 1;
+}
+
+// Gateway service definition
+service GatewayService {
+    // Register a photon instance
+    rpc Register(RegisterRequest) returns (RegisterResponse);
+    
+    // Register a user
+    rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
+    
+    // Send a message (unary RPC)
+    rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+    
+    // Invoke a handler
+    rpc Invoke(InvokeRequest) returns (InvokeResponse);
+    
+    // Bidirectional streaming for real-time messages
+    rpc MessageStream(stream StreamMessage) returns (stream StreamMessage);
+}
+
