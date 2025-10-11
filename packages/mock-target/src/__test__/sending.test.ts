@@ -17,10 +17,10 @@ describe("sending", () => {
                 .onboard(async (context) => {
                     await context.send("hello, world");
                 })
-                .deploy(mockInstance.apiKey, mockInstance)
+                .deploy(mockInstance.apiKey, mockInstance);
 
             await mockInstance.sendMessage("hello, world");
-            
+
             await new Promise(() => {});
         },
         60 * 60 * 1000,

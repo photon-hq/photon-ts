@@ -1,4 +1,4 @@
-import type {App} from "../core/app.ts";
+import type { App } from "../core/app.ts";
 import type { IsBroadString } from "./base.ts";
 
 export type PhotonOf<A> = A extends App<any, any, infer P, any> ? P : never;

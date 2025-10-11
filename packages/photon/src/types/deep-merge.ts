@@ -17,14 +17,13 @@ type _DeepMerge<A, B> = [A] extends [never]
           : A extends {}
             ? B extends {}
                 ? {
-                      [K in keyof A | keyof B]:
-                          K extends keyof A
-                              ? K extends keyof B
-                                  ? DeepMerge<A[K], B[K]>
-                                  : A[K]
-                              : K extends keyof B
-                                ? B[K]
-                                : never;
+                      [K in keyof A | keyof B]: K extends keyof A
+                          ? K extends keyof B
+                              ? DeepMerge<A[K], B[K]>
+                              : A[K]
+                          : K extends keyof B
+                            ? B[K]
+                            : never;
                   }
                 : B
             : B;

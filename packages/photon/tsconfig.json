@@ -25,7 +25,7 @@
         "noUnusedLocals": false,
         "noUnusedParameters": false,
         "noPropertyAccessFromIndexSignature": false,
-      "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true
     },
     "include": ["src"]
 }

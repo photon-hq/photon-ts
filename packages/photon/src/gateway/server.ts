@@ -11,7 +11,7 @@ class GatewayServer extends GatewayBase {
 
     readonly Server = {
         invokableHandler: null as unknown as (key: string, userId: string) => Promise<void> | null,
-        
+
         send: async (data: OmitDiscriminant<Extract<Message, { role: "server" }>, "role">) => {
             return this.socket.emitWithAck("message", {
                 role: "server",
@@ -27,7 +27,7 @@ class GatewayServer extends GatewayBase {
         },
 
         registerInvokableHandler: (handler: (key: string, userId: string) => Promise<void>) => {
-            this.Server.invokableHandler = handler
+            this.Server.invokableHandler = handler;
         },
     };
 }

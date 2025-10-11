@@ -17,10 +17,10 @@ export class App<
 > {
     public readonly name: Name | undefined;
     public readonly description: Description | undefined;
-    
+
     private gateway!: Gateway;
     private invokables: Record<string, SomeInvokable> = {};
-    
+
     photon: Photon;
     extensions: SomeExtension[] = [];
 
@@ -132,8 +132,8 @@ export class App<
         console.log("\n");
 
         this.gateway = await Gateway.connect(api_key);
-        
-        this.gateway.Server.registerInvokableHandler(this.useInvokable)
+
+        this.gateway.Server.registerInvokableHandler(this.useInvokable);
 
         await this.gateway.Server.register(compiledPhoton);
 
