@@ -1,0 +1,16 @@
+{
+  "name": "@photon/local-message",
+  "description": "Read iMessage DB and send messages via AppleScript (local macOS only)",
+  "private": true,
+  "scripts": {
+    "test": "bun test"
+  },
+  "module": "src/index.ts",
+  "type": "module",
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "photon": "workspace:*"
+  }
+}
