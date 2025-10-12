@@ -20,6 +20,8 @@ describe("sending", () => {
                 })
                 .everyMessage(async (context) => {
                     await context.send("hello, world from every message");
+                }, {
+                    mode: "break"
                 })
                 .deploy(mockInstance.apiKey, mockInstance);
 
