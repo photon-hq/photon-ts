@@ -2,7 +2,7 @@ import type { any } from "zod/v3";
 import type { App } from "../core/app.ts";
 import type { CompiledPhoton, OmitDiscriminant } from "../types";
 import { GatewayBase } from "./base.ts";
-import type { Message } from "./types";
+import type { Message, Invokable } from "./types";
 
 class GatewayServer extends GatewayBase {
     constructor() {
@@ -26,8 +26,11 @@ class GatewayServer extends GatewayBase {
             });
         },
 
-        registerInvokableHandler: (handler: (key: string, userId: string) => Promise<void>) => {
-            this.Server.invokableHandler = handler;
+        registerInvokableHandler: (handler: (invocation: Invokable) => Promise<void>) => {
+            this.socket.on("invoke", async (data: Invokable, callback) => {
+                await handler(data);
+                callback({ success: true });
+            });
         },
     };
 }

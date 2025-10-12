@@ -1,7 +1,6 @@
 import { io, type Socket } from "socket.io-client";
 import { z } from "zod";
 import type { Target } from "../target.ts";
-import { Gateway } from "./server.ts";
 import { type Message, messageSchema } from "./types";
 
 export class GatewayBase {
@@ -41,17 +40,6 @@ export class GatewayBase {
                     console.error(result.error);
                 }
             });
-
-            if (gateway instanceof Gateway) {
-                gateway.socket.on("invoke", async (data: { key: string; userId: string }, callback) => {
-                    if (gateway.Server.invokableHandler) {
-                        await gateway.Server.invokableHandler(data.key, data.userId);
-                        callback({ success: true });
-                    } else {
-                        console.error("No invokable handler registered");
-                    }
-                });
-            }
         });
 
         return gateway as T;

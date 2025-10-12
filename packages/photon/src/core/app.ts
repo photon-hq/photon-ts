@@ -8,6 +8,8 @@ import type { Context } from "./context.ts";
 import type { SomeAction } from "./some-action.ts";
 import type { SomeInvokable } from "./some-invokable.ts";
 import type { AnyModifier } from "./some-modifier.ts";
+import type { Invokable } from "../gateway/types";
+import { da } from "zod/v4/locales";
 
 export class App<
     Name extends string,
@@ -54,13 +56,14 @@ export class App<
         return this as any;
     }
 
-    private context(userId: string): Context<Ext> {
+    private context(userId: string, data: any = {}): Context<Ext> {
         const instance = {
             _app: this,
             gateway: this.gateway,
             user: {
                 id: userId,
             },
+            ...data
         };
 
         const actions = this.extensions.reduce((acc, ext) => merge(acc, ext.actions), {});
@@ -79,12 +82,12 @@ export class App<
         this.invokables[key] = invokable;
     }
 
-    private async useInvokable(key: string, userId: string): Promise<void> {
-        const invokable = this.invokables[key];
+    private async useInvokable(data: Invokable): Promise<void> {
+        const invokable = this.invokables[data.key];
         if (!invokable) {
-            throw new Error(`Invokable with key "${key}" not found`);
+            throw new Error(`Invokable with key "${data.key}" not found`);
         }
-        await invokable(this.context(userId));
+        await invokable(this.context(data.userId, data.additionalData));
     }
 
     private compilePhoton(): CompiledPhoton {
