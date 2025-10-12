@@ -26,8 +26,8 @@ export class Mock implements Target {
         return true;
     }
 
-    onMessage(data: Message & { role: "server" }): void {
-        console.log(`[Edge] received server message: ${data.type === "plain_text" ? data.content : data.type}`);
+    onMessage(data: Message & { role: "assistant" }): void {
+        console.log(`[Edge] received assistant message: ${data.type === "plain_text" ? data.content : data.type}`);
     }
 
     public async sendMessage(msg: string) {
@@ -38,7 +38,5 @@ export class Mock implements Target {
             payload: { message: msg },
             keysToPayloadMessage: ["message"],
         });
-
-        console.log(`[user:${this.userId}] send message: ${msg}`);
     }
 }
