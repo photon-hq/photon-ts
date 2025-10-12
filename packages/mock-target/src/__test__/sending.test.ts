@@ -15,11 +15,11 @@ describe("sending", () => {
 
             await new App("test", "test")
                 .onboard(async (context) => {
-                    await context.send("hello, world");
+                    await context.send("hello, world from server");
                 })
                 .deploy(mockInstance.apiKey, mockInstance);
 
-            await mockInstance.sendMessage("hello, world");
+            await mockInstance.sendMessage("hello, world from user");
 
             await new Promise(() => {});
         },

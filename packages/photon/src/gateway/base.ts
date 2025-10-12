@@ -58,7 +58,7 @@ export class GatewayBase {
     }
 
     private async onMessage(data: Message) {
-        if (data.role === "server") {
+        if (data.role === "assistant") {
             if (this.target) {
                 this.target.onMessage(data);
             }

@@ -13,12 +13,12 @@ class GatewayClient extends GatewayBase {
             this.target = target;
         },
 
-        send: async (data: OmitDiscriminant<Extract<Message, { role: "client" }>, "role">) => {
+        send: async (data: OmitDiscriminant<Extract<Message, { role: "user" }>, "role">) => {
             return new Promise<void>((resolve, reject) => {
                 this.socket.emit(
                     "message",
                     {
-                        role: "client",
+                        role: "user",
                         ...data,
                     } satisfies Message,
                     (response: any) => {
