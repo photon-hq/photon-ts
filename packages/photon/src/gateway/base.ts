@@ -1,12 +1,8 @@
 import { io, type Socket } from "socket.io-client";
-import { z } from "zod";
-import type { Target } from "../target.ts";
-import { type Message, messageSchema } from "./types";
 
 export class GatewayBase {
     protected socket!: Socket;
     protected api_key!: string;
-    protected target: Target | null = null;
 
     protected constructor() {}
 
@@ -29,27 +25,8 @@ export class GatewayBase {
             gateway.socket.on("disconnect", () => {
                 console.log("Disconnected:", gateway.socket.id);
             });
-
-            gateway.socket.on("message", (data, callback) => {
-                const result = z.safeParse(messageSchema, data);
-
-                if (result.success) {
-                    gateway.onMessage(result.data);
-                    callback({ success: true });
-                } else {
-                    console.error(result.error);
-                }
-            });
         });
 
         return gateway as T;
-    }
-
-    private async onMessage(data: Message) {
-        if (data.role === "assistant") {
-            if (this.target) {
-                this.target.onMessage(data);
-            }
-        }
     }
 }

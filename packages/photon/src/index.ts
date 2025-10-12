@@ -6,5 +6,5 @@ export { GatewayClient as Gateway } from "./gateway/client.ts";
 export { Gateway as GatewayServer } from "./gateway/server.ts";
 export * from "./gateway/types";
 export * from "./modifiers";
-export type { Target } from "./target.ts";
+export { Target } from "./target.ts";
 export * from "./types";
