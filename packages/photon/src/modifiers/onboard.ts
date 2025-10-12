@@ -22,10 +22,10 @@ export function onboardModifier(action: (context: any) => Promisable<void>): Som
             });
             
             return app as any;
-        },
+        }
     };
 }
 
-export type OnboardRegistry<A extends App<any, any>, E extends SomeExtension> = (
+export type OnboardRegistry<A extends App<any, any, any, any>, E extends SomeExtension> = (
     action: (context: Context<E> & { messages: MessageContent[] }) => void,
 ) => ModifierReturn<typeof onboardModifier, A>;
