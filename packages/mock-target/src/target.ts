@@ -38,7 +38,5 @@ export class Mock implements Target {
             payload: { message: msg },
             keysToPayloadMessage: ["message"],
         });
-
-        console.log(`[user:${this.userId}] send message: ${msg}`);
     }
 }

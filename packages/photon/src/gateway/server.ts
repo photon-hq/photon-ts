@@ -25,11 +25,8 @@ class GatewayServer extends GatewayBase {
         },
 
         registerInvokableHandler: (handler: (invocation: Invokable) => Promise<any>) => {
-            console.log("Registering invokable handler on socket:", this.socket.id);
-            console.log("Socket connected:", this.socket.connected);
             this.socket.on("invoke", async (data: Invokable, callback) => {
                 const result = await handler(data);
-                console.log(result)
                 callback({ success: true, result });
             });
         },
