@@ -1,10 +1,11 @@
 import type { App } from "../core/app";
 import type { SomeExtension } from "../core/some-extension";
-import type { OnboardRegistry } from "../modifiers";
+import type { EveryMessageRegistry, OnboardRegistry } from "../modifiers";
 import type { ExtensionsOf } from "../types";
 
 type Registry<A extends App<any, any>, E extends SomeExtension> = {
-    onboard: OnboardRegistry<A, E>
+    onboard: OnboardRegistry<A, E>;
+    everyMessage: EveryMessageRegistry<A, E>;
 };
 
 type MethodsFromRegistry<A extends App<any, any, any, any>> = {
