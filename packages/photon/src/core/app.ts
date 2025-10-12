@@ -22,9 +22,9 @@ export class App<
 
     private gateway!: Gateway;
     private invokables: Record<string, SomeInvokable> = {};
+    private extensions: SomeExtension[] = [];
 
     photon: Photon;
-    extensions: SomeExtension[] = [];
 
     public constructor();
     public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>);
