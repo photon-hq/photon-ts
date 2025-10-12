@@ -2,14 +2,13 @@ import merge from "deepmerge";
 import type { Merge, NonEmptyString, Simplify } from "type-fest";
 import { defaultExtensions, type SomeExtension } from "../extensions";
 import { Gateway } from "../gateway/server.ts";
+import type { Invokable } from "../gateway/types";
 import type { Target } from "../target.ts";
 import type { CompiledPhoton, DeepMerge, IsBroadString, IsModuleApp, OmitUnique, PhotonOf, UniqueOf } from "../types";
 import type { Context } from "./context.ts";
 import type { SomeAction } from "./some-action.ts";
 import type { SomeInvokable } from "./some-invokable.ts";
 import type { AnyModifier } from "./some-modifier.ts";
-import type { Invokable } from "../gateway/types";
-import { da } from "zod/v4/locales";
 
 export class App<
     Name extends string,
@@ -22,9 +21,9 @@ export class App<
 
     private gateway!: Gateway;
     private invokables: Record<string, SomeInvokable> = {};
+    private extensions: SomeExtension[] = [];
 
     photon: Photon;
-    extensions: SomeExtension[] = [];
 
     public constructor();
     public constructor(name: NonEmptyString<Name>, description: NonEmptyString<Description>);
@@ -63,7 +62,7 @@ export class App<
             user: {
                 id: userId,
             },
-            ...data
+            ...data,
         };
 
         const actions = this.extensions.reduce((acc, ext) => merge(acc, ext.actions), {});

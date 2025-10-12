@@ -2,8 +2,9 @@ import type { App } from "../core/app";
 import type { SomeExtension } from "../core/some-extension";
 import type { EveryMessageRegistry, OnboardRegistry } from "../modifiers";
 import type { ExtensionsOf } from "../types";
+import type { defaultExtensions } from "./default-extension";
 
-type Registry<A extends App<any, any, any, any>, E extends SomeExtension> = {
+type Registry<A extends App<any, any, any, any>, E extends typeof defaultExtensions> = {
     onboard: OnboardRegistry<A, E>;
     everyMessage: EveryMessageRegistry<A, E>;
 };

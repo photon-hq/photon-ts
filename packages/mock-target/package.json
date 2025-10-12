@@ -1,8 +1,10 @@
 {
     "name": "@photon/mock",
-    "private": true,
     "scripts": {
         "test": "bun test"
+    },
+    "exports": {
+        ".": "./src/index.ts"
     },
     "module": "src/index.ts",
     "type": "module",

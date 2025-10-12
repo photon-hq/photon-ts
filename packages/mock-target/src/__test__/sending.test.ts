@@ -12,7 +12,6 @@ describe("sending", () => {
             console.log(`userId: ${userId}`);
 
             const mockInstance = new Mock(userId);
-            
 
             await new App("test", "test")
                 .onboard(async (context) => {
