@@ -22,7 +22,7 @@ export function onboardModifier(action: (context: any) => Promisable<void>): Som
             });
 
             return app as any;
-        }
+        },
     };
 }
 

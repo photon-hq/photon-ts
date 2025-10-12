@@ -4,9 +4,7 @@ import type { DescriptionOf, ExtensionsOf, NameOf, PhotonOf, ReturnWithUnique } 
 import type { App } from "./app.ts";
 
 export interface SomeModifier<In extends {}, Out extends {}> {
-    main(
-        app: App<string, string, any, typeof defaultExtensions>,
-    ): App<any, any, any, any>;
+    main(app: App<string, string, any, typeof defaultExtensions>): App<any, any, any, any>;
 }
 
 export interface SomeUniqueModifier<In extends {}, Out extends {}> extends SomeModifier<In, Out> {
