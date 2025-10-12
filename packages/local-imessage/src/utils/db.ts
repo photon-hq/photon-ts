@@ -23,7 +23,7 @@ function getMessageBody(
 ): string {
   // If we have text, use it directly
   if (text && text.trim() !== "") {
-    return sanitizeText(text, format);
+    return text;
   }
 
   // If we have attributedBody, try to parse it
@@ -41,32 +41,7 @@ function convertAppleTimestamp(appleTimestamp: number): string {
   return new Date(unixTimestamp * 1000).toLocaleString();
 }
 
-function sanitizeText(text: string, format: boolean = false): string {
-  // Remove object replacement characters
-  const sanitized = text.replace(/\ufffc/g, "");
-
-  if (!format) {
-    return sanitized
-      .replace(/'/g, "'")
-      .replace(/'/g, "'")
-      .replace(/"/g, '"')
-      .replace(/"/g, '"')
-      .replace(/…/g, "...");
-  }
-
-  // Format URLs as links when format is true
-  const urlRegex =
-    /(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/g;
-
-  console.log("Sanitizing text without formatting:", text);
-  console.log("Sanitizing text with formatting:", sanitized);
-
-  return sanitized.replace(urlRegex, '<a href="$&" target="_blank">$&</a>');
-}
-
 function parseAttributedBody(attributedBody: Uint8Array): string {
-  console.log("Parsing attributed body...");
-
   try {
     const extractorPath = join(__dirname, "../../extract_attributed");
 
@@ -81,11 +56,6 @@ function parseAttributedBody(attributedBody: Uint8Array): string {
       swiftResult.stdout.trim() &&
       !swiftResult.stdout.includes("[Rich message content]")
     ) {
-      console.log(
-        "Swift CLI parsed attributed body successfully.",
-        swiftResult.stdout.trim()
-      );
-
       return swiftResult.stdout.trim();
     }
 
@@ -148,7 +118,6 @@ function parseChat(row: any, format: boolean = false): Chat {
 export {
   defaultPath,
   convertAppleTimestamp,
-  sanitizeText,
   parseAttributedBody,
   getMessageBody,
   parseChat,

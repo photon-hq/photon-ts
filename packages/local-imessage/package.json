@@ -7,6 +7,9 @@
   },
   "module": "src/index.ts",
   "type": "module",
+  "os": [
+    "darwin"
+  ],
   "peerDependencies": {
     "typescript": "^5"
   },

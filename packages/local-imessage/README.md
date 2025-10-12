@@ -27,46 +27,6 @@ Before using this API, you need to enable Full Disk Access:
 4. **Restart your terminal** application
 5. Verify iMessage is enabled on your Mac
 
-## 🛡️ Safe vs Unsafe Functions
-
-### Safe Functions (Recommended)
-
-Return `DatabaseResult<T>` objects with success/error information:
-
-```typescript
-import { safeGetRecentChats, checkPermissions } from "./lib/db";
-
-// Check permissions first
-const permissionCheck = checkPermissions();
-if (!permissionCheck.success) {
-  console.log("Permission required:", permissionCheck.error);
-  return;
-}
-
-// Get chats safely
-const result = safeGetRecentChats({ limit: 10 });
-if (result.success) {
-  console.log("Found chats:", result.data);
-} else {
-  console.log("Error:", result.error);
-}
-```
-
-### Unsafe Functions
-
-Throw errors directly (use with try/catch):
-
-```typescript
-import { getRecentChats } from "./lib/db";
-
-try {
-  const chats = getRecentChats({ limit: 10 });
-  console.log("Found chats:", chats);
-} catch (error) {
-  console.error("Error:", error.message);
-}
-```
-
 ## 📚 API Reference
 
 ### Core Functions

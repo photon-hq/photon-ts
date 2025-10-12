@@ -1,5 +1,6 @@
 import { Gateway, type Message, type Target } from "photon";
 
+// TODO: use real iMessage database
 export class ImessageService implements Target {
   private readonly userId: string;
   private gateway!: Gateway;
