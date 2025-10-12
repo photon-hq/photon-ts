@@ -2,7 +2,7 @@ import type { any } from "zod/v3";
 import type { App } from "../core/app.ts";
 import type { CompiledPhoton, OmitDiscriminant } from "../types";
 import { GatewayBase } from "./base.ts";
-import type { Message, Invokable } from "./types";
+import type { Invokable, Message } from "./types";
 
 class GatewayServer extends GatewayBase {
     constructor() {
@@ -10,8 +10,6 @@ class GatewayServer extends GatewayBase {
     }
 
     readonly Server = {
-        invokableHandler: null as unknown as (key: string, userId: string) => Promise<void> | null,
-
         send: async (data: OmitDiscriminant<Extract<Message, { role: "assistant" }>, "role">) => {
             return this.socket.emitWithAck("message", {
                 role: "assistant",
@@ -26,10 +24,13 @@ class GatewayServer extends GatewayBase {
             });
         },
 
-        registerInvokableHandler: (handler: (invocation: Invokable) => Promise<void>) => {
+        registerInvokableHandler: (handler: (invocation: Invokable) => Promise<any>) => {
+            console.log("Registering invokable handler on socket:", this.socket.id);
+            console.log("Socket connected:", this.socket.connected);
             this.socket.on("invoke", async (data: Invokable, callback) => {
-                await handler(data);
-                callback({ success: true });
+                const result = await handler(data);
+                console.log(result)
+                callback({ success: true, result });
             });
         },
     };

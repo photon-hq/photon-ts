@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const messageContentSchema = z.discriminatedUnion("type", [
+export const messageContentSchema = z.discriminatedUnion("type", [
     z.object({
         type: z.literal("plain_text"),
         content: z.string(),
@@ -23,3 +23,4 @@ export const messageSchema = z
     .and(messageContentSchema);
 
 export type Message = z.infer<typeof messageSchema>;
+export type MessageContent = z.infer<typeof messageContentSchema>;

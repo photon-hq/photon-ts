@@ -82,12 +82,12 @@ export class App<
         this.invokables[key] = invokable;
     }
 
-    private async useInvokable(data: Invokable): Promise<void> {
+    private async useInvokable(data: Invokable): Promise<any> {
         const invokable = this.invokables[data.key];
         if (!invokable) {
             throw new Error(`Invokable with key "${data.key}" not found`);
         }
-        await invokable(this.context(data.userId, data.additionalData));
+        return await invokable(this.context(data.userId, data.additionalData));
     }
 
     private compilePhoton(): CompiledPhoton {
@@ -136,7 +136,7 @@ export class App<
 
         this.gateway = await Gateway.connect(api_key);
 
-        this.gateway.Server.registerInvokableHandler(this.useInvokable);
+        this.gateway.Server.registerInvokableHandler(this.useInvokable.bind(this));
 
         await this.gateway.Server.register(compiledPhoton);
 

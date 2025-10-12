@@ -20,5 +20,3 @@ export const preAction = z.object({
 })
 
 export type PreAction = z.infer<typeof preAction>;
-
-export type PreActionRunner = (context: Context<SomeExtension>, args: PreActionArgs) => Promise<string[]>;
