@@ -12,17 +12,19 @@ describe("sending", () => {
             console.log(`userId: ${userId}`);
 
             const mockInstance = new Mock(userId);
-            
 
             await new App("test", "test")
                 .onboard(async (context) => {
                     await context.send("hello, world from server");
                 })
-                .everyMessage(async (context) => {
-                    await context.send("hello, world from every message");
-                }, {
-                    mode: "break"
-                })
+                .everyMessage(
+                    async (context) => {
+                        await context.send("hello, world from every message");
+                    },
+                    {
+                        mode: "break",
+                    },
+                )
                 .deploy(mockInstance.apiKey, mockInstance);
 
             await mockInstance.sendMessage("hello, world from user");

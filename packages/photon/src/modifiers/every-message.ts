@@ -46,5 +46,5 @@ export function everyMessageModifier(
 
 export type EveryMessageRegistry<A extends App<any, any>, E extends SomeExtension> = (
     action: (context: Context<E> & { messages: MessageContent[] }) => void,
-    options?: Options
+    options?: Options,
 ) => ModifierReturn<typeof everyMessageModifier, A>;

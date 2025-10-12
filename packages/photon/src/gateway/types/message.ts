@@ -4,7 +4,7 @@ export const messageContentSchema = z.discriminatedUnion("type", [
     z.object({
         type: z.literal("plain_text"),
         content: z.string(),
-    })
+    }),
 ]);
 
 export const messageSchema = z
