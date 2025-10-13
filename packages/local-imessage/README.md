@@ -1,93 +1,73 @@
 # @photon/local-imessage
 
-TypeScript/Bun implementation for reading iMessage database on macOS, based on Swift implementation logic.
+TypeScript/Bun toolkit for reading the macOS iMessage database, plus a Photon gateway target example for bridging local data.
 
-## 🚀 Features
+## Why it matters
 
-- **Complete iMessage database access** - Read chats, messages, and attachments
-- **Swift-compatible implementation** - Follows the original Swift logic exactly
-- **Graceful error handling** - Safe functions that handle permissions elegantly
-- **TypeScript support** - Full type safety with comprehensive interfaces
-- **Bun optimized** - Uses `bun:sqlite` for optimal performance
-- **Permission management** - Clear guidance for macOS Full Disk Access
+- Uses `bun:sqlite` to talk to `chat.db` and pull chats, messages, and attachments
+- Handles Apple timestamps and rich text via the bundled Swift `extract_attributed` helper
+- Provides an `ImessageDatabase` class that owns connection lifecycle, querying, and safe shutdown
+- Ships an `ImessageService` implementation that shows how to plug iMessage into the Photon Gateway
+- macOS-only design with friendly permission hints and wrapped errors
 
-## 📋 Requirements
+## Prerequisites
 
-- **macOS** with iMessage enabled
-- **Full Disk Access** permission for your terminal app
-- **Bun** runtime environment
+- macOS with iMessage enabled
+- [Bun](https://bun.com) ≥ 1.2
+- Your terminal must have **Full Disk Access** (System Settings → Privacy & Security → Full Disk Access)
 
-## 🔐 Permission Setup
-
-Before using this API, you need to enable Full Disk Access:
-
-1. Open **System Settings**
-2. Go to **Privacy & Security** > **Full Disk Access**
-3. Add your terminal app (Terminal.app, iTerm2, or VS Code terminal)
-4. **Restart your terminal** application
-5. Verify iMessage is enabled on your Mac
-
-## 📚 API Reference
-
-### Core Functions
-
-#### `checkPermissions(): DatabaseResult<boolean>`
-
-Check if the app has necessary permissions to access iMessage database.
-
-#### `safeConnect(dbPath?: string): DatabaseResult<Database>`
-
-Safely connect to the iMessage database.
-
-#### `safeGetRecentChats(opts?: GetChatsOptions): DatabaseResult<Chat[]>`
-
-Get recent chat conversations.
-
-```typescript
-interface GetChatsOptions {
-  limit?: number; // Default: 200
-  format?: boolean; // Default: false (format URLs as links)
-}
-```
-
-#### `safeGetChatMessages(chatId: number, opts?: GetMessagesOptions): DatabaseResult<ChatMessage[]>`
-
-Get messages from a specific chat.
-
-```typescript
-interface GetMessagesOptions {
-  limit?: number; // Default: 100
-  offset?: number; // Default: 0
-  format?: boolean; // Default: false
-}
-```
-
-## 🧪 Testing
+## Quick start
 
 ```bash
-# Install dependencies
+# Install dependencies from the repository root
 bun install
-
-# Run all tests
-bun test
-
-# Run specific test file
-bun test src/__test__/db.test.ts
 ```
 
-## 📖 Example Usage
+```typescript
+import { ImessageDatabase } from "@photon/local-imessage/src/lib/db";
 
-See `src/example-safe.ts` for comprehensive examples of how to use the API safely with proper error handling.
+const db = new ImessageDatabase();
 
-## ⚠️ Important Notes
+const chats = db.getRecentChats({ limit: 5, format: true });
+console.log(chats);
 
-- **macOS only** - This API only works on macOS with iMessage
-- **Read-only** - Database is opened in read-only mode for safety
-- **Permissions required** - Full Disk Access is mandatory
-- **Performance** - Uses efficient SQL queries with proper JOINs
+if (chats[0]) {
+  const messages = db.getChatMessages(chats[0].id, { limit: 10, format: true });
+  console.log(messages);
+}
+
+db.closeConnection();
+```
+
+> `ImessageDatabase` connects to `~/Library/Messages/chat.db` during construction and raises a `DatabaseError` if it fails (including whether permission is required).
+
+## API overview
+
+- `new ImessageDatabase()` – initialize and connect (macOS only)
+- `getLatestMessage()` – return the most recent message or `null`
+- `getRecentChats({ limit, format })` – list chats ordered by recent activity
+- `getChat(chatId)` – fetch details for a single chat
+- `getChatMessages(chatId, { limit, format })` – retrieve chat messages (optionally formatting rich text)
+- `getMessages(chatIdOrGuid, { limit, format })` – fetch messages by chat ID or GUID
+- `getAttachment(attachmentId)` – resolve attachment metadata by ID
+- `closeConnection()` – close the database connection explicitly
+
+Every query runs in read-only mode. Missing permissions or a non-existent database will raise a `DatabaseError` with a human-friendly message.
+
+## Photon integration
+
+`src/target.ts` contains `ImessageService`, an implementation of the Photon `Target` interface. It demonstrates how to start a local target, register a user, and forward messages—ready for you to swap in real iMessage data flows.
+
+## Testing
 
 ```bash
-bun run src/index.ts
+bun test
 ```
 
-This project was created using `bun init` in bun v1.2.21. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+Integration checks only run on macOS with the proper permissions because they need access to the real Messages database.
+
+## References
+
+- `src/__test__/imessage.ts` – interactive sample script
+- `src/utils/db.ts` – helpers for database paths, rich text parsing, and timestamp conversion
+- `src/lib/log.ts` – permission hint utilities
