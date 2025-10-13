@@ -13,6 +13,8 @@ export class Mock extends Target {
     onMessage(data: Message & { role: "assistant" }): void {
         console.log(`[Edge] received assistant message: ${data.type === "plain_text" ? data.content : data.type}`);
     }
+    
+    async postStart(): Promise<void> {}
 
     public async sendMessage(msg: string) {
         await this.gateway.Client.send({

@@ -13,6 +13,8 @@ export abstract class Target implements _Target {
         
         this.gateway.Client.registerOnMessage(this.onMessage.bind(this))
         
+        await this.postStart();
+        
         return true;
     }
 
@@ -23,4 +25,5 @@ export abstract class Target implements _Target {
     }
     
     abstract onMessage(data: Message & { role: "assistant" }): void
+    abstract postStart(): Promise<void>;
 }
