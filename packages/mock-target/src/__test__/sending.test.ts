@@ -27,6 +27,7 @@ describe("sending", () => {
                 )
                 .deploy(mockInstance.apiKey, mockInstance);
 
+            await mockInstance.registerUser(userId);
             await mockInstance.sendMessage("hello, world from user");
 
             await new Promise(() => {});

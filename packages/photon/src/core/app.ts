@@ -4,7 +4,7 @@ import { da } from "zod/v4/locales";
 import { defaultExtensions, type SomeExtension } from "../extensions";
 import { Gateway } from "../gateway/server.ts";
 import type { Invokable } from "../gateway/types";
-import type { Target } from "../target.ts";
+import type { _Target } from "../target.ts";
 import type { CompiledPhoton, DeepMerge, IsBroadString, IsModuleApp, OmitUnique, PhotonOf, UniqueOf } from "../types";
 import type { Context } from "./context.ts";
 import type { SomeAction } from "./some-action.ts";
@@ -107,20 +107,20 @@ export class App<
     public async deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
         api_key: string,
-        ...targets: Target[]
+        ...targets: _Target[]
     ): Promise<void>;
     public async deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
-        ...targets: Target[]
+        ...targets: _Target[]
     ): Promise<void>;
     public async deploy(
         this: IsBroadString<Name> extends true ? never : App<Name, Description, Photon, Ext>,
-        first: string | Target,
-        ...rest: Target[]
+        first: string | _Target,
+        ...rest: _Target[]
     ): Promise<void> {
         const isApiKeyProvided = typeof first === "string";
         const api_key = (isApiKeyProvided ? first : process.env.PHOTON_API) as unknown as string;
-        const targets = (isApiKeyProvided ? rest : [first, ...rest]) as unknown as Target[];
+        const targets = (isApiKeyProvided ? rest : [first, ...rest]) as unknown as _Target[];
 
         if (!api_key) {
             throw new Error(
@@ -141,7 +141,7 @@ export class App<
         await this.gateway.Server.register(compiledPhoton);
 
         for (const target of targets) {
-            await target.start();
+            await target.start(api_key);
         }
     }
 }
