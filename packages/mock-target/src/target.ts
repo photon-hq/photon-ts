@@ -6,14 +6,14 @@ export class Mock extends Target {
     readonly apiKey = `pho_${crypto.randomUUID()}`;
 
     constructor(userId: string) {
-        super()
+        super();
         this.userId = userId;
     }
 
     onMessage(data: Message & { role: "assistant" }): void {
         console.log(`[Edge] received assistant message: ${data.type === "plain_text" ? data.content : data.type}`);
     }
-    
+
     async postStart(): Promise<void> {}
 
     public async sendMessage(msg: string) {

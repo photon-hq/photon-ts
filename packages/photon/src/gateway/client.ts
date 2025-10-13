@@ -2,7 +2,7 @@ import z from "zod";
 import type { Target } from "../target.ts";
 import type { OmitDiscriminant } from "../types";
 import { GatewayBase } from "./base.ts";
-import { messageSchema, type Message, type RegisterUser } from "./types";
+import { type Message, messageSchema, type RegisterUser } from "./types";
 
 class GatewayClient extends GatewayBase {
     constructor() {
@@ -13,17 +13,17 @@ class GatewayClient extends GatewayBase {
         send: async (data: OmitDiscriminant<Extract<Message, { role: "user" }>, "role">) => {
             return await this.socket.emitWithAck("message", {
                 role: "user",
-                ...data
-            } satisfies Message)
+                ...data,
+            } satisfies Message);
         },
 
-        registerUser: async (data: Omit<RegisterUser, 'apiKey'>) => {
+        registerUser: async (data: Omit<RegisterUser, "apiKey">) => {
             return await this.socket.emitWithAck("registerUser", {
                 apiKey: this.api_key,
-                ...data
-            } satisfies RegisterUser)
+                ...data,
+            } satisfies RegisterUser);
         },
-        
+
         registerOnMessage: (action: (data: Message & { role: "assistant" }) => void) => {
             this.socket.on("message", (data, callback) => {
                 const result = z.safeParse(messageSchema, data);
@@ -37,7 +37,7 @@ class GatewayClient extends GatewayBase {
                     console.error(result.error);
                 }
             });
-        }
+        },
     };
 }
 

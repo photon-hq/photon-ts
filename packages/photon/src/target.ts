@@ -10,11 +10,11 @@ export abstract class Target implements _Target {
 
     async start(apiKey: string): Promise<boolean> {
         this.gateway = await GatewayClient.connect(apiKey);
-        
-        this.gateway.Client.registerOnMessage(this.onMessage.bind(this))
-        
+
+        this.gateway.Client.registerOnMessage(this.onMessage.bind(this));
+
         await this.postStart();
-        
+
         return true;
     }
 
@@ -23,7 +23,7 @@ export abstract class Target implements _Target {
             userId,
         });
     }
-    
-    abstract onMessage(data: Message & { role: "assistant" }): void
+
+    abstract onMessage(data: Message & { role: "assistant" }): void;
     abstract postStart(): Promise<void>;
 }
