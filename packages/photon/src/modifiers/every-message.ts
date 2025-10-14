@@ -5,7 +5,7 @@ import type { SomeExtension } from "../core/some-extension.ts";
 import type { MessageContent } from "../gateway/types/message.ts";
 import type { PreAction, WithoutKey } from "../types";
 
-type InPhoton = {};
+type InPhoton = { preActions?: Record<string, PreAction> & WithoutKey<"everyMessage"> };
 type OutPhoton = { preActions: { everyMessage: PreAction } };
 
 type Options = {
