@@ -1,6 +1,6 @@
 import merge from "deepmerge";
-import type { Merge, Promisable } from "type-fest";
-import type { App, Context, ModifierReturn, SomeUniqueModifier } from "../core";
+import type { Promisable } from "type-fest";
+import type { App, Context, ModifierReturn, SomeModifier } from "../core";
 import type { SomeExtension } from "../core/some-extension.ts";
 import type { MessageContent } from "../gateway/types/message.ts";
 import type { PreAction, WithoutKey } from "../types";
@@ -19,9 +19,8 @@ const defaultOptions: Options = {
 export function everyMessageModifier(
     action: (context: any) => Promisable<void>,
     options: Options = defaultOptions,
-): SomeUniqueModifier<InPhoton, OutPhoton> {
+): SomeModifier<InPhoton, OutPhoton> {
     return {
-        unique: true,
         main(app) {
             (app.photon as any) = merge(app.photon, {
                 preActions: { everyMessage: { args: [], invokable: "everyMessage" } },

@@ -9,7 +9,7 @@ import type { CompiledPhoton, DeepMerge, IsBroadString, IsModuleApp, OmitUnique,
 import type { Context } from "./context.ts";
 import type { SomeAction } from "./some-action.ts";
 import type { SomeInvokable } from "./some-invokable.ts";
-import type { AnyModifier } from "./some-modifier.ts";
+import type { SomeModifier } from "./some-modifier.ts";
 
 export class App<
     Name extends string,
@@ -41,7 +41,7 @@ export class App<
         this.extensions.push(ext);
         for (const [key, modifierFactory] of Object.entries(ext.modifiers)) {
             (this as any)[key] = (...args: any[]) => {
-                const modifier = (modifierFactory as any)(...args) as AnyModifier<any, any>;
+                const modifier = (modifierFactory as any)(...args) as SomeModifier<any, any>;
                 return modifier.main(this as any);
             };
         }

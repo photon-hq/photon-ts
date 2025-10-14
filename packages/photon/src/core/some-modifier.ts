@@ -7,16 +7,11 @@ export interface SomeModifier<In extends {}, Out extends {}> {
     main(app: App<string, string, any, typeof defaultExtensions>): App<any, any, any, any>;
 }
 
-export interface SomeUniqueModifier<In extends {}, Out extends {}> extends SomeModifier<In, Out> {
-    unique: true;
-}
-
-export type AnyModifier<In extends {}, Out extends {}> = SomeModifier<In, Out> | SomeUniqueModifier<In, Out>;
-export type ModIn<M> = M extends AnyModifier<infer I, any> ? I : never;
-export type ModOut<M> = M extends AnyModifier<any, infer O> ? O : never;
+export type ModIn<M> = M extends SomeModifier<infer I, any> ? I : never;
+export type ModOut<M> = M extends SomeModifier<any, infer O> ? O : never;
 
 export type ModifierReturn<
-    M extends (...args: any[]) => AnyModifier<any, any>,
+    M extends (...args: any[]) => SomeModifier<any, any>,
     A extends App<any, any, any, any>,
 > = PhotonOf<A> extends ModIn<ReturnType<M>>
     ? App<NameOf<A>, DescriptionOf<A>, ReturnWithUnique<PhotonOf<A>, ReturnType<M>>, ExtensionsOf<A>>
