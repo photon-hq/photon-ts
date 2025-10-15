@@ -7,20 +7,23 @@ export const messageContentSchema = z.discriminatedUnion("type", [
     }),
 ]);
 
-export const messageSchema = z
-    .discriminatedUnion("role", [
-        z.object({
-            role: z.literal("user"),
-            userId: z.string(),
-            payload: z.record(z.string(), z.unknown()),
-            keysToPayloadMessage: z.array(z.string()),
-        }),
-        z.object({
-            role: z.literal("assistant"),
-            userId: z.string(),
-        }),
-    ])
+export const assistantMessageSchema = z
+    .object({
+        role: z.literal("assistant"),
+        userId: z.string(),
+    })
     .and(messageContentSchema);
 
-export type Message = z.infer<typeof messageSchema>;
+export const userMessageSchema = z
+    .object({
+        role: z.literal("user"),
+        userId: z.string(),
+        payload: z.record(z.string(), z.unknown()),
+        keysToPayloadMessage: z.array(z.string()),
+    })
+    .and(messageContentSchema);
+
+
+export type AssistantMessage = z.infer<typeof assistantMessageSchema>;
+export type UserMessage = z.infer<typeof userMessageSchema>;
 export type MessageContent = z.infer<typeof messageContentSchema>;

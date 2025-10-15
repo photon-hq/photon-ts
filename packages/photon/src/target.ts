@@ -17,8 +17,16 @@ export abstract class Target implements _Target {
         
         return true;
     }
+    
+    async userId(externalUserId: string): Promise<string> {
+        return ""
+    }
+    
+    async externalUserId(user_id: string): Promise<string> {
+        return ""
+    }
 
-    async registerUser(userId: string): Promise<void> {
+    protected async _registerUser_(userId: string): Promise<void> {
         return await this.gateway.Client.registerUser({
             userId,
         });
