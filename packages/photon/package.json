@@ -19,8 +19,5 @@
         "test": "bun test"
     },
     "type": "module",
-    "types": "./src/index.ts",
-    "dependencies": {
-        "deepmerge": "^4.3.1"
-    }
+    "types": "./src/index.ts"
 }

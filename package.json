@@ -19,7 +19,7 @@
         "packages/*"
     ],
     "dependencies": {
-        "type-fest": "^5.0.1",
+        "type-fest": "^5.1.0",
         "zod": "^4.1.12"
     }
 }

@@ -1,5 +1,5 @@
-import { GatewayClient } from "./gateway/client";
-import type { Message } from "./gateway/types";
+import { GatewayClient } from "../gateway/client";
+import type { Message } from "../gateway/types";
 
 export interface _Target {
     start(apiKey: string): Promise<boolean>;
