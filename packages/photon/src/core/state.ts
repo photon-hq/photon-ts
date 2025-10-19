@@ -1,11 +1,46 @@
 import type { ZodType, z } from "zod";
+import { aware } from "../utils";
+import type { Context } from "./context";
 
-interface State<T> {
-    (): T;
-    (value: T): void;
-    default(value: T): this;
+export type StatesMap = Record<string, Record<string, any>>;
+
+export type State<T, maybeUndef extends boolean> = (maybeUndef extends true ? ((T | undefined) & {
+    default(value: T): State<T, false>; // set default value
+}) : T) & {
+  update(value: T): void; // update value
+};
+
+export function state<T extends ZodType>(key: string, type: T): State<z.infer<T>, true> {
+    return aware(context => {
+        let currentValue = getState(context, key) as z.infer<T> | undefined;
+        
+        const s: State<z.infer<T>, true> = {} as any;
+        
+        Object.defineProperties(s, {
+            update: {
+                value(value: z.infer<T>) {
+                    currentValue = value;
+                    context.states[context.scope] = {
+                        ...context.states[context.scope],
+                        [key]: value
+                    };
+                }
+            },
+            default: {
+                value(value: z.infer<T>) {
+                    currentValue = value;
+                    return s
+                }
+            }
+        })
+        
+        Object.assign(s, currentValue)
+        
+        return s
+    })
 }
 
-export function state<T extends ZodType>(key: string, type: T): State<z.infer<T>> {
-    return null as any
+function getState(context: Context, key: string): any | undefined {
+    const states = context.states[context.scope] ?? {}
+    return (states[key] as any) ?? undefined;
 }
