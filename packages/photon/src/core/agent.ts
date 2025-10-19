@@ -1,29 +1,21 @@
 import type { Promisable } from "type-fest";
 import type { Context } from "./context";
 import type { HandoffOptions } from "./handoff-options";
+import type { Deployable } from "../deploy";
 
 type Builder = (context: Context) => Promisable<void>;
 
-export function $(name: string, builder: Builder): void;
-export function $(builder: Builder, options?: HandoffOptions): void;
+export function $(builder: Builder): Agent & Deployable;
+export function $(name: string, builder: Builder, options?: HandoffOptions): Agent;
 export function $(
     nameOrBuilder: string | Builder,
-    builderOrOptions?: Builder | HandoffOptions,
-): void {
-    let name: string | undefined;
-    let builder: Builder;
-    let options: HandoffOptions | undefined;
+    builder?: Builder,
+    options?: HandoffOptions
+): any {
+    
+    
+}
 
-    if (typeof nameOrBuilder === "string") {
-        name = nameOrBuilder;
-        builder = builderOrOptions as Builder;
-    } else {
-        builder = nameOrBuilder;
-        options = builderOrOptions as HandoffOptions | undefined;
-    }
-
-    // TODO: implement registration using name, builder, and options
-    void name;
-    void builder;
-    void options;
+class Agent {
+    
 }
