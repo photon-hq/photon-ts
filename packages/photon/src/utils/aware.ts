@@ -5,7 +5,7 @@ const als = new AsyncLocalStorage<Context>();
 
 export function aware(context: Context, handler: (context: Context) => void): void
 export function aware<T>(handler: (context: Context) => T): T
-export function aware(context: Context | ((context: Context) => any), handler?: (context: Context) => any): void {
+export function aware(context: Context | ((context: Context) => any), handler?: (context: Context) => any): any {
     if (typeof context === 'function') {
         handler = context;
         context = null as any;
@@ -13,7 +13,7 @@ export function aware(context: Context | ((context: Context) => any), handler?: 
 
     if (context && handler) {
         als.run(context as Context, () => {
-            handler!(context as Context);
+            handler(context as Context);
         })
 
         return

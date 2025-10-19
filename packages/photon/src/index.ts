@@ -1,6 +1,5 @@
-export * from './core'
-export { GatewayClient as Gateway } from './gateway/client';
-export * from './gateway/types'
-export * from './deploy'
-export * from './modifiers'
-export * from './actions'
+export * from "./actions";
+export * from "./core";
+export * from "./deploy";
+export { GatewayClient as Gateway } from "./gateway/client";
+export * from "./modifiers";
