@@ -6,5 +6,3 @@ const AgentConfigSchema = z.object({
 })
 
 export type AgentConfig = z.infer<typeof AgentConfigSchema>;
-
-export type RootAgentConfig = AgentConfig & { id: "" }

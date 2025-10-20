@@ -1,17 +1,31 @@
-import type { Promisable } from "type-fest";
-import type { Context } from "./context";
+import type { NonEmptyString, Promisable } from "type-fest";
 import type { HandoffOptions } from "./handoff-options";
-import type { Deployable } from "../deploy";
+import { Deployable } from "../deploy";
+import { buildCompiler } from "./compiler";
 
-export type Builder = (context: Context) => Promisable<void>;
+export type Builder = () => Promisable<void>;
 
 export function $(builder: Builder): Deployable;
-export function $(name: string, builder: Builder, options?: HandoffOptions): void;
+export function $<N extends string>(name: NonEmptyString<N>, builder: Builder, options?: HandoffOptions): void;
 export function $(
-    nameOrBuilder: string | Builder,
+    nameOrBuilder: NonEmptyString<string> | Builder,
     builder?: Builder,
     options?: HandoffOptions
 ): any {
-    
-    
+    if (typeof nameOrBuilder === "function") {
+        const rootBuilder = nameOrBuilder;
+        
+        const rootCompiler = buildCompiler(rootBuilder)
+        
+        return new Deployable(rootCompiler)
+    }
+
+    const name = nameOrBuilder;
+    if (!builder) {
+        throw new Error("Builder is required when providing a name");
+    }
+
+    const scopedBuilder = builder;
+    const scopedOptions = options;
+    // Impl for #2
 }

@@ -19,7 +19,7 @@ export function grpcRequestToContext(request: GrpcContextRequestType): {
   const data = request.context
 
   const states: Record<string, Record<string, any>> = {}
-  
+
   try {
     for (const [key, value] of Object.entries(data.states)) {
       states[key] = JSON.parse(value.json_data)
@@ -30,7 +30,7 @@ export function grpcRequestToContext(request: GrpcContextRequestType): {
 
   return {
     context: {
-      scope: data.scope,
+      scope_name: data.scope,
       user: {
         id: data.user.id,
         photon: data.user.photon ?? null,
@@ -82,7 +82,7 @@ export function createErrorResponse(
  */
 function contextToGrpcData(context: Context): GrpcContextDataType {
   const grpcStates: Record<string, { json_data: string }> = {}
-  
+
   try {
     for (const [key, value] of Object.entries(context.states)) {
       grpcStates[key] = {
@@ -94,7 +94,7 @@ function contextToGrpcData(context: Context): GrpcContextDataType {
   }
 
   return {
-    scope: context.scope,
+    scope: context.scope_name,
     user: {
       id: context.user.id,
       photon: context.user.photon ?? undefined,
@@ -107,4 +107,3 @@ function contextToGrpcData(context: Context): GrpcContextDataType {
     }
   }
 }
-

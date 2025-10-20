@@ -13,15 +13,15 @@ export type State<T, maybeUndef extends boolean> = (maybeUndef extends true ? ((
 export function state<T extends ZodType>(key: string, type: T): State<z.infer<T>, true> {
     return aware(context => {
         let currentValue = getState(context, key) as z.infer<T> | undefined;
-        
+
         const s: State<z.infer<T>, true> = {} as any;
-        
+
         Object.defineProperties(s, {
             update: {
                 value(value: z.infer<T>) {
                     currentValue = value;
-                    context.states[context.scope] = {
-                        ...context.states[context.scope],
+                    context.states[context.scope_name] = {
+                        ...context.states[context.scope_name],
                         [key]: value
                     };
                 }
@@ -33,14 +33,14 @@ export function state<T extends ZodType>(key: string, type: T): State<z.infer<T>
                 }
             }
         })
-        
+
         Object.assign(s, currentValue)
-        
+
         return s
     })
 }
 
 function getState(context: Context, key: string): any | undefined {
-    const states = context.states[context.scope] ?? {}
+    const states = context.states[context.scope_name] ?? {}
     return (states[key] as any) ?? undefined;
 }
