@@ -19,5 +19,12 @@
         "test": "bun test"
     },
     "type": "module",
-    "types": "./src/index.ts"
+    "types": "./src/index.ts",
+    "dependencies": {
+        "@grpc/grpc-js": "^1.14.0",
+        "@grpc/proto-loader": "^0.8.0"
+    },
+    "devDependencies": {
+        "@types/node": "^24.8.1"
+    }
 }
