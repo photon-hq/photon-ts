@@ -1,4 +1,4 @@
-import type { AgentDef } from "../deploy/agent-def"
+import type { AgentConfig } from "../deploy/agent-config"
 import type { StatesMap } from "./state"
 
 export type Context = {
@@ -9,5 +9,5 @@ export type Context = {
         email: string | null
     }
     states: StatesMap
-    agentDef: AgentDef
+    agentConfig: AgentConfig
 }

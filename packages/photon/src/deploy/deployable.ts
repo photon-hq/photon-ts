@@ -1,7 +1,7 @@
 import type { Builder } from "../core/agent";
-import type { RootAgentDef } from "./agent-def";
-import type { _Target } from "./target"
 import type { Context } from "../core/context";
+import type { RootAgentConfig } from "./agent-config";
+import type { _Target } from "./target";
 
 export class Deployable {
     private readonly builder: Builder;
@@ -10,8 +10,8 @@ export class Deployable {
         this.builder = builder;
     }
 
-    private compile(context: Context): RootAgentDef  {
-        return null as any
+    private compile(context: Context): RootAgentConfig {
+        return null as any;
     }
 
     async deploy(projectKey: string | undefined = process.env.PROJECT_KEY, ...targets: _Target[]): Promise<void> {
