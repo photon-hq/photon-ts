@@ -1,22 +1,12 @@
 /**
  * Deployable - Elegant deployment of Photon agents
  *
- * Usage:
- * ```typescript
- * const agent = buildAgent((builder) => {
- *     builder.instructions("You are a helpful assistant");
- * });
- *
- * await agent.deploy({
- *     projectId: "my-project",
- *     projectSecret: "secret",
- * });
- * ```
  */
 
 import type { Compiler } from "../core/compiler";
 import type { _Target } from "../target/target";
 import { Gateway } from "../gateway";
+import type { Context } from "../core";
 
 const DEFAULT_GATEWAY_ADDRESS = "gateway.photon.codes:443";
 
@@ -26,23 +16,36 @@ export interface DeployConfigType {
 }
 
 export class Deployable {
-    private readonly compiler: Compiler;
+    private compilers: Record<string, Compiler>;
     private gateway?: Gateway;
 
-    constructor(compiler: Compiler) {
-        this.compiler = compiler;
+    constructor(rootCompiler: Compiler) {
+        this.compilers = {
+            "": rootCompiler
+        };
+    }
+    
+    async compile(context: Context): Promise<Context> {
+        const compiler = this.compilers[context.scopeName]
+        if (!compiler) {
+            throw new Error(`Compiler not found for scope '${context.scopeName}'`);
+        }
+        return await compiler(context);
     }
 
     /**
      * Deploy to Gateway with elegant API
      */
-    async deploy(config: DeployConfigType): Promise<void> {
-        if (!config.projectId) {
-            throw new Error("projectId is required");
+    async deploy(config?: DeployConfigType, ...targets: _Target[]): Promise<void> {
+        const projectId = config?.projectId ?? process.env.PROJECT_ID
+        const projectSecret = config?.projectSecret ?? process.env.PROJECT_SECRET
+        
+        if (!(projectId)) {
+            throw new Error("Project ID is required");
         }
 
-        if (!config.projectSecret) {
-            throw new Error("projectSecret is required");
+        if (!(projectSecret)) {
+            throw new Error("Project Secret is required");
         }
 
         // Get gateway address: env var > default
@@ -51,15 +54,15 @@ export class Deployable {
         // Connect to Gateway
         this.gateway = await Gateway.connect({
             gatewayAddress,
-            projectId: config.projectId,
-            projectSecret: config.projectSecret,
+            projectId: projectId,
+            projectSecret: projectSecret,
         });
 
         // Register compiler
-        await this.gateway.Server.registerCompiler(this.compiler);
+        await this.gateway.Server.registerCompiler(this.compile);
 
         console.log(`[Photon] Deployed successfully`);
-        console.log(`[Photon] - Project ID: ${config.projectId}`);
+        console.log(`[Photon] - Project ID: ${projectId}`);
         console.log(`[Photon] - Gateway: ${gatewayAddress}`);
     }
 
