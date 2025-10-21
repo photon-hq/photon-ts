@@ -1,7 +1,5 @@
 import { aware } from "../utils";
 
-export function send(content: string) {
-    aware(context => {
-        
-    })
+export function send(_content: string) {
+    aware((_context) => {});
 }

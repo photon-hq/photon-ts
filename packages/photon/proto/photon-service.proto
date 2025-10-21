@@ -1,0 +1,152 @@
+/**
+ * Photon Service Proto Definition
+ */
+
+syntax = "proto3";
+
+package photon;
+
+// SDK Service - Handles requests from Gateway
+service SDKService {
+  // Gateway requests SDK to compile context
+  rpc CompileContext (CompileContextRequest) returns (CompileContextResponse);
+  
+  // Gateway requests SDK to run action
+  rpc RunAction (RunActionRequest) returns (RunActionResponse);
+}
+
+// Gateway Service - Handles requests from SDK
+service GatewayService {
+  // SDK registers itself with Gateway
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  
+  // SDK unregisters itself from Gateway
+  rpc Unregister (UnregisterRequest) returns (UnregisterResponse);
+  
+  // SDK sends message to user via Gateway
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
+  
+  // SDK reports health status
+  rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+// Compile Context Request (Gateway → SDK)
+message CompileContextRequest {
+  string request_id = 1;
+  string project_id = 2;
+  Context context = 3;
+}
+
+// Compile Context Response (SDK → Gateway)
+message CompileContextResponse {
+  string request_id = 1;
+  bool success = 2;
+  optional string error = 3;
+  optional Context context = 4;
+}
+
+// Run Action Request (Gateway → SDK)
+message RunActionRequest {
+  string request_id = 1;
+  string action_name = 2;
+  map<string, string> params = 3;
+  Context context = 4;
+}
+
+// Run Action Response (SDK → Gateway)
+message RunActionResponse {
+  string request_id = 1;
+  bool success = 2;
+  optional string error = 3;
+  optional string result = 4;
+}
+
+// Register Request (SDK → Gateway)
+message RegisterRequest {
+  string project_id = 1;
+  string token = 2;
+  string instance_id = 3;
+  string sdk_version = 4;
+  string sdk_address = 5;
+  repeated string capabilities = 6;
+}
+
+// Register Response (Gateway → SDK)
+message RegisterResponse {
+  bool success = 1;
+  optional string error = 2;
+  Config config = 3;
+}
+
+message Config {
+  string gateway_address = 1;
+  int32 heartbeat_interval = 2;
+}
+
+// Send Message Request (SDK → Gateway)
+message SendMessageRequest {
+  string user_id = 1;
+  Message message = 2;
+}
+
+// Send Message Response (Gateway → SDK)
+message SendMessageResponse {
+  bool success = 1;
+  optional string error = 2;
+  string message_id = 3;
+}
+
+message Message {
+  string role = 1;
+  string content = 2;
+  optional string timestamp = 3;
+  map<string, string> metadata = 4;
+}
+
+// Heartbeat Request (SDK → Gateway)
+message HeartbeatRequest {
+  string instance_id = 1;
+  string status = 2;
+  map<string, string> metrics = 3;
+}
+
+// Heartbeat Response (Gateway → SDK)
+message HeartbeatResponse {
+  bool success = 1;
+  optional string command = 2;
+}
+
+// Unregister Request (SDK → Gateway)
+message UnregisterRequest {
+  string instance_id = 1;
+  string reason = 2;
+}
+
+// Unregister Response (Gateway → SDK)
+message UnregisterResponse {
+  bool success = 1;
+  optional string error = 2;
+}
+
+// Context Data Structure (Shared)
+message Context {
+  string scope = 1;
+  User user = 2;
+  map<string, States> states = 3;
+  optional AgentConfig agent_config = 4;
+}
+
+message User {
+  string id = 1;
+  optional string photon = 2;
+  optional string email = 3;
+}
+
+message States {
+  string json_data = 1;
+}
+
+message AgentConfig {
+  string id = 1;
+  repeated string instructions = 2;
+}

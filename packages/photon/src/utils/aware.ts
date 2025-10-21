@@ -37,3 +37,15 @@ export function aware<T>(
 
     return handler(context);
 }
+
+/**
+ * Get current context from AsyncLocalStorage
+ * Must be called within an aware() scope
+ */
+export function getContext(): Context {
+    const context = als.getStore();
+    if (!context) {
+        throw new Error("No context available. Must be called within aware() scope.");
+    }
+    return context;
+}

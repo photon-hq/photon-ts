@@ -4,14 +4,16 @@ import type { Context } from "./context";
 
 export type StatesMap = Record<string, Record<string, any>>;
 
-export type State<T, maybeUndef extends boolean> = (maybeUndef extends true ? ((T | undefined) & {
-    default(value: T): State<T, false>; // set default value
-}) : T) & {
-  update(value: T): void; // update value
+export type State<T, maybeUndef extends boolean> = (maybeUndef extends true
+    ? (T | undefined) & {
+          default(value: T): State<T, false>; // set default value
+      }
+    : T) & {
+    update(value: T): void; // update value
 };
 
-export function state<T extends ZodType>(key: string, type: T): State<z.infer<T>, true> {
-    return aware(context => {
+export function state<T extends ZodType>(key: string, _type: T): State<z.infer<T>, true> {
+    return aware((context) => {
         let currentValue = getState(context, key) as z.infer<T> | undefined;
 
         const s: State<z.infer<T>, true> = {} as any;
@@ -22,25 +24,25 @@ export function state<T extends ZodType>(key: string, type: T): State<z.infer<T>
                     currentValue = value;
                     context.states[context.scope_name] = {
                         ...context.states[context.scope_name],
-                        [key]: value
+                        [key]: value,
                     };
-                }
+                },
             },
             default: {
                 value(value: z.infer<T>) {
                     currentValue = value;
-                    return s
-                }
-            }
-        })
+                    return s;
+                },
+            },
+        });
 
-        Object.assign(s, currentValue)
+        Object.assign(s, currentValue);
 
-        return s
-    })
+        return s;
+    });
 }
 
 function getState(context: Context, key: string): any | undefined {
-    const states = context.states[context.scope_name] ?? {}
+    const states = context.states[context.scope_name] ?? {};
     return (states[key] as any) ?? undefined;
 }

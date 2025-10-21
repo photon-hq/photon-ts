@@ -1,5 +1,5 @@
 /**
- * Context Service Proto Loader (SDK)
+ * Photon Service Proto Loader
  */
 
 import { dirname, join } from "node:path";
@@ -9,7 +9,7 @@ import { loadSync, type Options as ProtoLoaderOptions } from "@grpc/proto-loader
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const PROTO_PATH = join(__dirname, "../../../../proto/context-service.proto");
+const PROTO_PATH = join(__dirname, "../../proto/photon-service.proto");
 
 const PROTO_OPTIONS: ProtoLoaderOptions = {
     keepCase: true,
@@ -19,9 +19,6 @@ const PROTO_OPTIONS: ProtoLoaderOptions = {
     oneofs: true,
 };
 
-/**
- * Load the Proto definition
- */
 let protoCache: GrpcObject | null = null;
 
 function loadProto(): GrpcObject {
@@ -33,14 +30,28 @@ function loadProto(): GrpcObject {
 }
 
 /**
- * Obtain the ContextService service definition (Server side)
+ * Get SDK Service definition (for SDK server)
  */
-export function getContextServiceDefinition(): ServiceDefinition {
+export function getSDKServiceDefinition(): ServiceDefinition {
     const proto = loadProto();
-    const service = (proto.photon as any)?.context?.ContextService?.service;
+    const service = (proto.photon as any)?.SDKService?.service;
 
     if (!service) {
-        throw new Error("ContextService definition not found");
+        throw new Error("SDKService definition not found");
+    }
+
+    return service;
+}
+
+/**
+ * Get Gateway Service client constructor (SDK connects to Gateway)
+ */
+export function getGatewayServiceClient(): any {
+    const proto = loadProto();
+    const service = (proto.photon as any)?.GatewayService;
+
+    if (!service) {
+        throw new Error("GatewayService not found");
     }
 
     return service;
