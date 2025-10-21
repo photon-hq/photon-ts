@@ -12,9 +12,9 @@
  */
 
 import * as grpc from "@grpc/grpc-js";
-import { contextToProto, protoToContext } from "../context/converter";
+import { contextToProto, protoToContext } from "../utils";
 import type { Compiler } from "../core/compiler";
-import { getGatewayServiceClient } from "../grpc/proto-loader";
+import { getServerServiceClient } from "../grpc/proto-loader";
 import { GatewayBase, type GatewayConfig, MAX_MESSAGE_SIZE } from "./base";
 
 // Invokable types (for actions/tools)
@@ -50,7 +50,7 @@ export class Gateway extends GatewayBase {
      */
     static override async connect(config: GatewayConfig): Promise<Gateway> {
         const gateway = new Gateway();
-        const GatewayServiceClient = getGatewayServiceClient();
+        const GatewayServiceClient = getServerServiceClient();
 
         // Set config
         (gateway as any).config = config;
@@ -80,7 +80,7 @@ export class Gateway extends GatewayBase {
          * Usage:
          * await gateway.Server.register(myCompiler)
          */
-        register: async (compiler: Compiler): Promise<void> => {
+        registerCompiler: async (compiler: Compiler): Promise<void> => {
             this.compiler = compiler;
 
             return new Promise((resolve, reject) => {
@@ -372,7 +372,7 @@ export class Gateway extends GatewayBase {
                     this.setupStreamHandlers();
 
                     if (this.compiler) {
-                        await this.Server.register(this.compiler);
+                        await this.Server.registerCompiler(this.compiler);
                     }
 
                     console.log("[Gateway] Reconnected successfully");

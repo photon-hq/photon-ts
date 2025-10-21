@@ -11,7 +11,7 @@ syntax = "proto3";
 package photon;
 
 // Gateway Service - Server <-> Gateway bidirectional stream
-service GatewayService {
+service ServerService {
   // Server initiates this stream and keeps it open
   // All Server <-> Gateway communication flows through this single stream
   rpc Stream(stream ServerMessage) returns (stream GatewayMessage);

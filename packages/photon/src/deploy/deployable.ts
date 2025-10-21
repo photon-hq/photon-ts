@@ -15,7 +15,6 @@
  */
 
 import type { Compiler } from "../core/compiler";
-import type { Context } from "../core/context";
 import type { _Target } from "../target/target";
 import { Gateway } from "../gateway";
 
@@ -57,7 +56,7 @@ export class Deployable {
         });
 
         // Register compiler
-        await this.gateway.Server.register(this.compiler);
+        await this.gateway.Server.registerCompiler(this.compiler);
 
         console.log(`[Photon] Deployed successfully`);
         console.log(`[Photon] - Project ID: ${config.projectId}`);

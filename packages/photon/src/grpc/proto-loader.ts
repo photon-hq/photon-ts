@@ -4,7 +4,7 @@
 
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { type GrpcObject, loadPackageDefinition, type ServiceDefinition } from "@grpc/grpc-js";
+import { type GrpcObject, loadPackageDefinition } from "@grpc/grpc-js";
 import { loadSync, type Options as ProtoLoaderOptions } from "@grpc/proto-loader";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30,14 +30,28 @@ function loadProto(): GrpcObject {
 }
 
 /**
- * Get GatewayService client (Server connects to Gateway)
+ * Get ServerService client (Server connects to Gateway)
  */
-export function getGatewayServiceClient(): any {
+export function getServerServiceClient(): any {
     const proto = loadProto();
-    const service = (proto.photon as any)?.GatewayService;
+    const service = (proto.photon as any)?.ServerService;
 
     if (!service) {
-        throw new Error("GatewayService not found");
+        throw new Error("ServerService not found");
+    }
+
+    return service;
+}
+
+/**
+ * Get ServerService client (Target connects to Gateway)
+ */
+export function getTargetServiceClient(): any {
+    const proto = loadProto();
+    const service = (proto.photon as any)?.TargetService;
+
+    if (!service) {
+        throw new Error("TargetService not found");
     }
 
     return service;
