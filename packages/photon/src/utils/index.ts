@@ -1,1 +1,1 @@
-export * from './aware'
+export * from "./aware";
