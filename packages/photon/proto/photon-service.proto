@@ -1,6 +1,6 @@
 /**
  * Photon Service Proto Definition
- * 
+ *
  * Architecture:
  * - Server <-> Gateway: Bidirectional Stream (Server initiates, reuses connection)
  * - Target <-> Gateway: Unary (Utils) + Bidirectional Stream (Messages)
@@ -23,7 +23,7 @@ service ServerService {
 service TargetService {
   // Unary: User identity utilities (stateless queries)
   rpc Utils(UtilsRequest) returns (UtilsResponse);
-  
+
   // Bidirectional: Message routing (stateful, long-lived)
   rpc Messages(stream TargetMessage) returns (stream GatewayTargetMessage);
 }
