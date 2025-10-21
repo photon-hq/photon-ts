@@ -1,2 +1,2 @@
-export { ContextServer, type ContextServerConfigType } from './server'
-
+export type { ProtoContextType } from "../types/context";
+export { contextToProto, protoToContext } from "./converter";

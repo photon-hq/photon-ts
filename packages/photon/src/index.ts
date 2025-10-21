@@ -2,6 +2,8 @@ export * from "./actions";
 export * from "./context";
 export * from "./core";
 export * from "./deploy";
+export * from "./gateway";
 export * from "./modifiers";
-export * from "./types"
+
 export * from "./target";
+export * from "./types";

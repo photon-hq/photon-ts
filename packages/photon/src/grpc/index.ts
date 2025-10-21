@@ -1,2 +1,1 @@
-export { getContextServiceDefinition } from './proto-loader'
-
+export * from "./proto-loader";
