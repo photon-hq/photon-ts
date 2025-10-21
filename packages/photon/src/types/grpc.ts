@@ -40,8 +40,7 @@ export interface RunActionResponseType {
 export interface RegisterRequestType {
     project_id: string;
     project_secret: string;
-    sdk_version: string;
-    sdk_address: string;
+    server_version: string;
     capabilities: string[];
 }
 
@@ -52,7 +51,6 @@ export interface RegisterResponseType {
 }
 
 export interface GatewayConfigType {
-    gateway_address: string;
     heartbeat_interval: number;
 }
 
@@ -106,3 +104,29 @@ export interface UnregisterResponseType {
 export type CompileContextHandler = (request: CompileContextRequestType) => Promise<CompileContextResponseType>;
 
 export type RunActionHandler = (request: RunActionRequestType) => Promise<RunActionResponseType>;
+
+// Bidirectional Stream Messages
+
+/**
+ * ServerMessage - Messages from Server to Gateway
+ */
+export interface ServerMessageType {
+    register?: RegisterRequestType;
+    unregister?: UnregisterRequestType;
+    send_message?: SendMessageRequestType;
+    heartbeat?: HeartbeatRequestType;
+    compile_context_response?: CompileContextResponseType;
+    run_action_response?: RunActionResponseType;
+}
+
+/**
+ * GatewayMessage - Messages from Gateway to Server
+ */
+export interface GatewayMessageType {
+    register_response?: RegisterResponseType;
+    unregister_response?: UnregisterResponseType;
+    send_message_response?: SendMessageResponseType;
+    heartbeat_response?: HeartbeatResponseType;
+    compile_context_request?: CompileContextRequestType;
+    run_action_request?: RunActionRequestType;
+}

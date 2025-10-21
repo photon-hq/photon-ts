@@ -30,21 +30,7 @@ function loadProto(): GrpcObject {
 }
 
 /**
- * Get SDK Service definition (for SDK server)
- */
-export function getSDKServiceDefinition(): ServiceDefinition {
-    const proto = loadProto();
-    const service = (proto.photon as any)?.SDKService?.service;
-
-    if (!service) {
-        throw new Error("SDKService definition not found");
-    }
-
-    return service;
-}
-
-/**
- * Get Gateway Service client constructor (SDK connects to Gateway)
+ * Get Gateway Service client constructor (Server connects to Gateway via bidirectional stream)
  */
 export function getGatewayServiceClient(): any {
     const proto = loadProto();

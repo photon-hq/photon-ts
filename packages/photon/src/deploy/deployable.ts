@@ -1,30 +1,21 @@
 import { contextToProto, protoToContext } from "../context/converter";
 import type { Compiler } from "../core/compiler";
 import type { Context } from "../core/context";
-import { SDKService } from "../grpc/sdk-service";
+import { ServerService } from "../grpc/server";
 import type { _Target } from "./target";
 
 export interface DeployConfigType {
-    // Server config
-    port?: number;
-    host?: string;
-
     // Gateway config
     // Note: Environment variable reading (process.env.GATEWAY_URL) is for testing only, not exposed to end users
     // Default: "gateway.photon.codes"
     gatewayAddress?: string;
     projectId: string;
     projectSecret: string;
-
-    // SDK public address for registration (if different from host:port)
-    // Required if host is 0.0.0.0 or behind NAT/firewall
-    // Example: 'sdk.example.com:50051' or '203.0.113.1:50051'
-    publicAddress?: string;
 }
 
 export class Deployable {
     private readonly compiler: Compiler;
-    private sdkService?: SDKService;
+    private serverService?: ServerService;
 
     constructor(compiler: Compiler) {
         this.compiler = compiler;
@@ -39,9 +30,9 @@ export class Deployable {
     }
 
     /**
-     * Deploy SDK to Gateway
+     * Deploy Server to Gateway
      *
-     * Starts gRPC server and registers with Gateway
+     * Connects to Gateway via bidirectional stream
      */
     async deploy(config: DeployConfigType): Promise<void> {
         if (!config.projectId) {
@@ -56,14 +47,11 @@ export class Deployable {
         // Note: Environment variable reading (process.env.GATEWAY_URL) is for testing only, not exposed to users
         const gatewayAddress = config.gatewayAddress ?? process.env.GATEWAY_URL ?? "gateway.photon.codes";
 
-        // Create SDK Service
-        this.sdkService = new SDKService({
-            port: config.port ?? 50051,
-            host: config.host,
+        // Create Server Service
+        this.serverService = new ServerService({
             gatewayAddress,
             projectId: config.projectId,
             projectSecret: config.projectSecret,
-            publicAddress: config.publicAddress,
             compileContext: async (request) => {
                 try {
                     // Convert proto format to TypeScript Context
@@ -88,28 +76,27 @@ export class Deployable {
             },
         });
 
-        // Start service
-        await this.sdkService.start();
+        // Start service (connects to Gateway)
+        await this.serverService.start();
 
         console.log(`[Photon] Deployed successfully`);
         console.log(`[Photon] - Project ID: ${config.projectId}`);
         console.log(`[Photon] - Gateway: ${gatewayAddress}`);
-        console.log(`[Photon] - Listening: ${config.host ?? "0.0.0.0"}:${config.port ?? 50051}`);
     }
 
     /**
-     * Get SDK Service (for sending messages, etc.)
+     * Get Server Service (for sending messages, etc.)
      */
-    getService(): SDKService | undefined {
-        return this.sdkService;
+    getService(): ServerService | undefined {
+        return this.serverService;
     }
 
     /**
-     * Stop SDK Service
+     * Stop Server Service
      */
     async stop(): Promise<void> {
-        if (this.sdkService) {
-            await this.sdkService.stop();
+        if (this.serverService) {
+            await this.serverService.stop();
         }
     }
 }

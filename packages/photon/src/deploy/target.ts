@@ -1,8 +1,8 @@
 /**
- * Target - Base class for SDK deployment targets
+ * Target - Base class for Server deployment targets
  */
 
-import type { SDKService } from "../grpc/sdk-service";
+import type { ServerService } from "../grpc/server";
 
 export interface _Target {
     start(projectKey: string, gatewayAddress: string): Promise<boolean>;
@@ -15,7 +15,7 @@ export interface MessageType {
 }
 
 export abstract class Target implements _Target {
-    protected sdkService?: SDKService;
+    protected serverService?: ServerService;
 
     /**
      * Start the target and connect to Gateway
@@ -39,12 +39,12 @@ export abstract class Target implements _Target {
     /**
      * Send message to user via Gateway
      */
-    protected async sendMessage(userId: string, message: MessageType): Promise<string> {
-        if (!this.sdkService) {
-            throw new Error("SDK Service not initialized");
+    protected async sendMessage(userId: string, message: MessageType): Promise<void> {
+        if (!this.serverService) {
+            throw new Error("Server Service not initialized");
         }
 
-        return this.sdkService.sendMessage(userId, message);
+        return this.serverService.sendMessage(userId, message);
     }
 
     /**

@@ -6,41 +6,22 @@ syntax = "proto3";
 
 package photon;
 
-// SDK Service - Handles requests from Gateway
-// Purpose: SDK provides AgentConfig compilation and action execution
-// Note: This service is for providing AgentConfig and tools only.
-//       For target connections, a separate gRPC connection is required.
-service SDKService {
-  // Gateway requests SDK to compile context
-  rpc CompileContext (CompileContextRequest) returns (CompileContextResponse);
-  
-  // Gateway requests SDK to run action
-  rpc RunAction (RunActionRequest) returns (RunActionResponse);
-}
-
-// Gateway Service - Handles requests from SDK
+// Gateway Service - Bidirectional streaming communication
+// Server initiates connection and maintains long-lived stream
+// Both sides can send messages independently over this stream
 service GatewayService {
-  // SDK registers itself with Gateway
-  rpc Register (RegisterRequest) returns (RegisterResponse);
-  
-  // SDK unregisters itself from Gateway
-  rpc Unregister (UnregisterRequest) returns (UnregisterResponse);
-  
-  // SDK sends message to user via Gateway
-  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
-  
-  // SDK reports health status
-  rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
+  // Bidirectional stream for Server <-> Gateway communication
+  rpc Stream (stream ServerMessage) returns (stream GatewayMessage);
 }
 
-// Compile Context Request (Gateway → SDK)
+// Compile Context Request (Gateway → Server)
 message CompileContextRequest {
   string request_id = 1;
   string project_id = 2;
   Context context = 3;
 }
 
-// Compile Context Response (SDK → Gateway)
+// Compile Context Response (Server → Gateway)
 message CompileContextResponse {
   string request_id = 1;
   bool success = 2;
@@ -48,7 +29,7 @@ message CompileContextResponse {
   optional Context context = 4;
 }
 
-// Run Action Request (Gateway → SDK)
+// Run Action Request (Gateway → Server)
 message RunActionRequest {
   string request_id = 1;
   string action_name = 2;
@@ -56,7 +37,7 @@ message RunActionRequest {
   Context context = 4;
 }
 
-// Run Action Response (SDK → Gateway)
+// Run Action Response (Server → Gateway)
 message RunActionResponse {
   string request_id = 1;
   bool success = 2;
@@ -64,16 +45,15 @@ message RunActionResponse {
   optional string result = 4;
 }
 
-// Register Request (SDK → Gateway)
+// Register Request (Server → Gateway)
 message RegisterRequest {
   string project_id = 1;
   string project_secret = 2;
-  string sdk_version = 3;
-  string sdk_address = 4;
-  repeated string capabilities = 5;
+  string server_version = 3;
+  repeated string capabilities = 4;
 }
 
-// Register Response (Gateway → SDK)
+// Register Response (Gateway → Server)
 message RegisterResponse {
   bool success = 1;
   optional string error = 2;
@@ -81,17 +61,16 @@ message RegisterResponse {
 }
 
 message Config {
-  string gateway_address = 1;
-  int32 heartbeat_interval = 2;
+  int32 heartbeat_interval = 1;
 }
 
-// Send Message Request (SDK → Gateway)
+// Send Message Request (Server → Gateway)
 message SendMessageRequest {
   string user_id = 1;
   Message message = 2;
 }
 
-// Send Message Response (Gateway → SDK)
+// Send Message Response (Gateway → Server)
 message SendMessageResponse {
   bool success = 1;
   optional string error = 2;
@@ -105,26 +84,26 @@ message Message {
   map<string, string> metadata = 4;
 }
 
-// Heartbeat Request (SDK → Gateway)
+// Heartbeat Request (Server → Gateway)
 message HeartbeatRequest {
   string project_id = 1;
   string status = 2;
   map<string, string> metrics = 3;
 }
 
-// Heartbeat Response (Gateway → SDK)
+// Heartbeat Response (Gateway → Server)
 message HeartbeatResponse {
   bool success = 1;
   optional string command = 2;
 }
 
-// Unregister Request (SDK → Gateway)
+// Unregister Request (Server → Gateway)
 message UnregisterRequest {
   string project_id = 1;
   string reason = 2;
 }
 
-// Unregister Response (Gateway → SDK)
+// Unregister Response (Gateway → Server)
 message UnregisterResponse {
   bool success = 1;
   optional string error = 2;
@@ -151,4 +130,30 @@ message States {
 message AgentConfig {
   string id = 1;
   repeated string instructions = 2;
+}
+
+// ==================== Bidirectional Stream Messages ====================
+
+// ServerMessage - Messages from Server to Gateway
+message ServerMessage {
+  oneof message {
+    RegisterRequest register = 1;
+    UnregisterRequest unregister = 2;
+    SendMessageRequest send_message = 3;
+    HeartbeatRequest heartbeat = 4;
+    CompileContextResponse compile_context_response = 5;
+    RunActionResponse run_action_response = 6;
+  }
+}
+
+// GatewayMessage - Messages from Gateway to Server
+message GatewayMessage {
+  oneof message {
+    RegisterResponse register_response = 1;
+    UnregisterResponse unregister_response = 2;
+    SendMessageResponse send_message_response = 3;
+    HeartbeatResponse heartbeat_response = 4;
+    CompileContextRequest compile_context_request = 5;
+    RunActionRequest run_action_request = 6;
+  }
 }
