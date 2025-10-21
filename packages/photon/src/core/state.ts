@@ -22,8 +22,8 @@ export function state<T extends ZodType>(key: string, _type: T): State<z.infer<T
             update: {
                 value(value: z.infer<T>) {
                     currentValue = value;
-                    context.states[context.scope_name] = {
-                        ...context.states[context.scope_name],
+                    context.states[context.scopeName] = {
+                        ...context.states[context.scopeName],
                         [key]: value,
                     };
                 },
@@ -43,6 +43,6 @@ export function state<T extends ZodType>(key: string, _type: T): State<z.infer<T
 }
 
 function getState(context: Context, key: string): any | undefined {
-    const states = context.states[context.scope_name] ?? {};
+    const states = context.states[context.scopeName] ?? {};
     return (states[key] as any) ?? undefined;
 }

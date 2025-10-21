@@ -3,6 +3,7 @@ export * from "./context";
 export * from "./core";
 export * from "./deploy";
 export * from "./gateway";
+export * from "./grpc";
 export * from "./modifiers";
 export * from "./target";
 export * from "./types";
