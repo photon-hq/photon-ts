@@ -8,6 +8,8 @@
 
 syntax = "proto3";
 
+import "google/protobuf/struct.proto";
+
 package photon;
 
 // Gateway Service - Server <-> Gateway bidirectional stream
@@ -67,14 +69,14 @@ message HeartbeatResponse {
 message CompileContextRequest {
   string request_id = 1; // Bidirectional-streaming requires a request_id
   string project_id = 2;
-  Context context = 3;
+  google.protobuf.Struct context = 3;
 }
 
 message CompileContextResponse {
   string request_id = 1;
   bool success = 2;
   optional string error = 3;
-  optional Context context = 4;
+  optional google.protobuf.Struct context = 4;
 }
 
 // Actions & Tools Messages
@@ -221,27 +223,4 @@ message MessageStatus {
   string message_id = 1;
   string status = 2;
   optional string error = 3;
-}
-
-// Context Data Structure
-
-message Context {
-  string scope_name = 1;
-  User user = 2;
-  map<string, States> states = 3;
-  optional AgentConfig agent_config = 4;
-}
-
-message User {
-  string id = 1;
-  optional string photon = 2;
-  optional string email = 3;
-}
-
-message States {
-  string json_data = 1;
-}
-
-message AgentConfig {
-  repeated string instructions = 1;
 }

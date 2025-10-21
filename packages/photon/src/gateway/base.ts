@@ -15,7 +15,6 @@ export const MAX_MESSAGE_SIZE = 10 * 1024 * 1024;
 
 export abstract class GatewayBase {
     protected client: any;
-    protected stream: any;
     protected readonly config!: GatewayConfig;
     protected isConnected = false;
 
@@ -42,10 +41,6 @@ export abstract class GatewayBase {
      * Disconnect and cleanup
      */
     disconnect(): void {
-        if (this.stream) {
-            this.stream.end();
-            this.stream = null;
-        }
         if (this.client) {
             this.client.close();
         }

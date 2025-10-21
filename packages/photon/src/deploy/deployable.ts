@@ -3,10 +3,10 @@
  *
  */
 
-import type { Compiler } from "../core/compiler";
-import type { _Target } from "../target/target";
-import { Gateway } from "../gateway";
 import type { Context } from "../core";
+import type { Compiler } from "../core/compiler";
+import { Gateway } from "../gateway";
+import type { _Target } from "../target/target";
 
 const DEFAULT_GATEWAY_ADDRESS = "gateway.photon.codes:443";
 
@@ -21,12 +21,12 @@ export class Deployable {
 
     constructor(rootCompiler: Compiler) {
         this.compilers = {
-            "": rootCompiler
+            "": rootCompiler,
         };
     }
-    
+
     async compile(context: Context): Promise<Context> {
-        const compiler = this.compilers[context.scopeName]
+        const compiler = this.compilers[context.scopeName];
         if (!compiler) {
             throw new Error(`Compiler not found for scope '${context.scopeName}'`);
         }
@@ -37,14 +37,14 @@ export class Deployable {
      * Deploy to Gateway with elegant API
      */
     async deploy(config?: DeployConfigType, ...targets: _Target[]): Promise<void> {
-        const projectId = config?.projectId ?? process.env.PROJECT_ID
-        const projectSecret = config?.projectSecret ?? process.env.PROJECT_SECRET
-        
-        if (!(projectId)) {
+        const projectId = config?.projectId ?? process.env.PROJECT_ID;
+        const projectSecret = config?.projectSecret ?? process.env.PROJECT_SECRET;
+
+        if (!projectId) {
             throw new Error("Project ID is required");
         }
 
-        if (!(projectSecret)) {
+        if (!projectSecret) {
             throw new Error("Project Secret is required");
         }
 
@@ -59,18 +59,12 @@ export class Deployable {
         });
 
         // Register compiler
-        await this.gateway.Server.registerCompiler(this.compile);
+        await this.gateway.Server.register();
+        this.gateway.Server.registerCompiler(this.compile);
 
         console.log(`[Photon] Deployed successfully`);
         console.log(`[Photon] - Project ID: ${projectId}`);
         console.log(`[Photon] - Gateway: ${gatewayAddress}`);
-    }
-
-    /**
-     * Get Gateway instance
-     */
-    getGateway(): Gateway | undefined {
-        return this.gateway;
     }
 
     /**

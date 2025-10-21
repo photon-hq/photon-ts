@@ -28,11 +28,12 @@ export type InvokableHandler = (invocation: Invokable) => Promise<any>;
 const RECONNECT_DELAY_MS = 5000;
 const SERVER_VERSION = "2.0.0";
 
-export class Gateway extends GatewayBase {
+class GatewayServer extends GatewayBase {
     private compiler?: Compiler;
     private heartbeatTimer?: NodeJS.Timeout;
     private isRegistered = false;
     private invokableHandler?: InvokableHandler;
+    private stream: any;
 
     protected constructor() {
         super();
@@ -48,15 +49,15 @@ export class Gateway extends GatewayBase {
      *     projectSecret: "secret",
      * })
      */
-    static override async connect(config: GatewayConfig): Promise<Gateway> {
-        const gateway = new Gateway();
-        const GatewayServiceClient = getServerServiceClient();
+    static override async connect(config: GatewayConfig): Promise<GatewayServer> {
+        const gateway = new GatewayServer();
+        const ServerServiceClient = getServerServiceClient();
 
         // Set config
         (gateway as any).config = config;
 
         // Create gRPC client
-        gateway.client = new GatewayServiceClient(config.gatewayAddress, grpc.credentials.createInsecure(), {
+        gateway.client = new ServerServiceClient(config.gatewayAddress, grpc.credentials.createInsecure(), {
             "grpc.max_receive_message_length": MAX_MESSAGE_SIZE,
             "grpc.max_send_message_length": MAX_MESSAGE_SIZE,
         });
@@ -80,9 +81,7 @@ export class Gateway extends GatewayBase {
          * Usage:
          * await gateway.Server.register(myCompiler)
          */
-        registerCompiler: async (compiler: Compiler): Promise<void> => {
-            this.compiler = compiler;
-
+        register: async (): Promise<void> => {
             return new Promise((resolve, reject) => {
                 const timeout = setTimeout(() => {
                     reject(new Error("Registration timeout"));
@@ -120,6 +119,11 @@ export class Gateway extends GatewayBase {
                     },
                 });
             });
+        },
+        
+        registerCompiler: (compiler: Compiler) => {
+            this.compiler = compiler;
+            console.log("[Gateway.Server] Compiler registered");
         },
 
         /**
@@ -370,9 +374,11 @@ export class Gateway extends GatewayBase {
                 try {
                     this.stream = this.client.Stream();
                     this.setupStreamHandlers();
+                    
+                    await this.Server.register();
 
                     if (this.compiler) {
-                        await this.Server.registerCompiler(this.compiler);
+                        this.Server.registerCompiler(this.compiler)
                     }
 
                     console.log("[Gateway] Reconnected successfully");
@@ -392,6 +398,12 @@ export class Gateway extends GatewayBase {
         if (this.isRegistered) {
             this.Server.unregister().catch(console.error);
         }
+        if (this.stream) {
+            this.stream.end();
+            this.stream = null;
+        }
         super.disconnect();
     }
 }
+
+export { GatewayServer }
