@@ -1,8 +1,7 @@
 import z from "zod";
 
-const AgentConfigSchema = z.object({
-    id: z.string(),
-    instructions: z.array(z.string())
+export const agentConfigSchema = z.object({
+    instructions: z.array(z.string()).default([])
 })
 
-export type AgentConfig = z.infer<typeof AgentConfigSchema>;
+export type AgentConfig = z.infer<typeof agentConfigSchema>;

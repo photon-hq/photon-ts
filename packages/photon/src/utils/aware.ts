@@ -1,19 +1,22 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import type { Context } from "../core/context";
 import type { Promisable } from "type-fest";
-
-type ContextAwareHandler<T> = (context: Context) => Promisable<T>;
+import type { Context } from "../core/context";
 
 const als = new AsyncLocalStorage<Context>();
 
-export function aware<T>(context: Context, handler: ContextAwareHandler<T>): Promisable<T>;
-export function aware<T>(handler: ContextAwareHandler<T>): Promisable<T>;
+export function aware<T>(context: Context, handler: (context: Context) => Promise<T>): Promise<T>;
+export function aware<T>(context: Context, handler: (context: Context) => T): T;
+export function aware<T>(handler: (context: Context) => Promise<T>): Promise<T>;
+export function aware<T>(handler: (context: Context) => T): T;
+
 export function aware<T>(
-    contextOrHandler: Context | ContextAwareHandler<T>,
-    maybeHandler?: ContextAwareHandler<T>,
-): Promisable<T> {
-    const handler: ContextAwareHandler<T> =
-        typeof contextOrHandler === "function" ? (contextOrHandler as ContextAwareHandler<T>) : (maybeHandler as ContextAwareHandler<T>);
+    contextOrHandler: Context | ((context: Context) => any),
+    maybeHandler?: (context: Context) => any,
+): any {
+    const handler =
+        typeof contextOrHandler === "function"
+            ? (contextOrHandler as (context: Context) => any)
+            : (maybeHandler as (context: Context) => any);
 
     if (!handler) {
         throw new Error("No handler provided");
@@ -24,7 +27,6 @@ export function aware<T>(
         if (!context) {
             throw new Error("No context available");
         }
-
         return als.run(context, () => handler(context));
     }
 
