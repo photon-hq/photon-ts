@@ -31,9 +31,11 @@ export interface SDKServiceConfigType {
     host?: string;
 
     // Gateway config
+    // Note: Environment variable reading (process.env.GATEWAY_URL) is for testing only, not exposed to users
+    // Default: "gateway.photon.codes"
     gatewayAddress: string;
     projectId: string;
-    token: string;
+    projectSecret: string;
 
     // SDK public address for registration
     publicAddress?: string;
@@ -43,13 +45,23 @@ export interface SDKServiceConfigType {
     runAction?: RunActionHandler;
 }
 
+/**
+ * SDK Service
+ *
+ * Purpose:
+ * - Provides AgentConfig compilation through CompileContext handler
+ * - Provides action execution through RunAction handler
+ * - Manages connection to Gateway via gRPC
+ *
+ * Note: SDK only provides AgentConfig and tools. For target connections,
+ * a separate gRPC connection is required.
+ */
 export class SDKService {
     private readonly config: Required<Omit<SDKServiceConfigType, "runAction" | "publicAddress">> & {
         runAction?: RunActionHandler;
         publicAddress?: string;
     };
     private readonly server: grpc.Server;
-    private readonly instanceId: string;
 
     private gatewayClient: any;
     private heartbeatTimer?: NodeJS.Timeout;
@@ -72,24 +84,14 @@ export class SDKService {
             host,
             gatewayAddress: config.gatewayAddress,
             projectId: config.projectId,
-            token: config.token,
+            projectSecret: config.projectSecret,
             publicAddress: config.publicAddress,
             compileContext: config.compileContext,
             runAction: config.runAction,
         };
 
-        this.instanceId = this.generateInstanceId(config.projectId);
         this.server = new grpc.Server(this.createServerOptions());
         this.registerServerService();
-    }
-
-    /**
-     * Generate unique instance ID
-     */
-    private generateInstanceId(projectId: string): string {
-        const timestamp = Date.now();
-        const random = Math.random().toString(36).substring(2, 15);
-        return `${projectId}-${timestamp}-${random}`;
     }
 
     /**
@@ -282,8 +284,7 @@ export class SDKService {
 
             const request: RegisterRequestType = {
                 project_id: this.config.projectId,
-                token: this.config.token,
-                instance_id: this.instanceId,
+                project_secret: this.config.projectSecret,
                 sdk_version: "1.0.0",
                 sdk_address: sdkAddress,
                 capabilities: this.getCapabilities(),
@@ -310,7 +311,6 @@ export class SDKService {
 
                     console.log("[SDKService] Registered successfully:");
                     console.log(`  - Project: ${this.config.projectId}`);
-                    console.log(`  - Instance: ${this.instanceId}`);
 
                     this.reconnectAttempts = 0;
                     this.startHeartbeat(response.config.heartbeat_interval);
@@ -341,7 +341,7 @@ export class SDKService {
 
             this.gatewayClient.Heartbeat(
                 {
-                    instance_id: this.instanceId,
+                    project_id: this.config.projectId,
                     status: "healthy",
                     metrics: {},
                 },
@@ -462,7 +462,7 @@ export class SDKService {
         return new Promise((resolve) => {
             const deadline = new Date(Date.now() + 5000);
             const request: UnregisterRequestType = {
-                instance_id: this.instanceId,
+                project_id: this.config.projectId,
                 reason,
             };
 
@@ -483,7 +483,7 @@ export class SDKService {
                     }
 
                     console.log("[SDKService] Unregistered successfully");
-                    console.log(`  - Instance: ${this.instanceId}`);
+                    console.log(`  - Project: ${this.config.projectId}`);
                     console.log(`  - Reason: ${reason}`);
                     resolve();
                 },

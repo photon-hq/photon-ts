@@ -39,8 +39,7 @@ export interface RunActionResponseType {
 
 export interface RegisterRequestType {
     project_id: string;
-    token: string;
-    instance_id: string;
+    project_secret: string;
     sdk_version: string;
     sdk_address: string;
     capabilities: string[];
@@ -80,7 +79,7 @@ export interface MessageType {
 // Heartbeat
 
 export interface HeartbeatRequestType {
-    instance_id: string;
+    project_id: string;
     status: "healthy" | "degraded" | "unhealthy";
     metrics: Record<string, string>;
 }
@@ -93,7 +92,7 @@ export interface HeartbeatResponseType {
 // Unregister
 
 export interface UnregisterRequestType {
-    instance_id: string;
+    project_id: string;
     reason: string;
 }
 

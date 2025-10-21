@@ -10,9 +10,11 @@ export interface DeployConfigType {
     host?: string;
 
     // Gateway config
-    gatewayAddress: string;
+    // Note: Environment variable reading (process.env.GATEWAY_URL) is for testing only, not exposed to end users
+    // Default: "gateway.photon.codes"
+    gatewayAddress?: string;
     projectId: string;
-    token: string;
+    projectSecret: string;
 
     // SDK public address for registration (if different from host:port)
     // Required if host is 0.0.0.0 or behind NAT/firewall
@@ -46,21 +48,21 @@ export class Deployable {
             throw new Error("projectId is required");
         }
 
-        if (!config.token) {
-            throw new Error("token is required");
+        if (!config.projectSecret) {
+            throw new Error("projectSecret is required");
         }
 
-        if (!config.gatewayAddress) {
-            throw new Error("gatewayAddress is required");
-        }
+        // Default gatewayAddress
+        // Note: Environment variable reading (process.env.GATEWAY_URL) is for testing only, not exposed to users
+        const gatewayAddress = config.gatewayAddress ?? process.env.GATEWAY_URL ?? "gateway.photon.codes";
 
         // Create SDK Service
         this.sdkService = new SDKService({
             port: config.port ?? 50051,
             host: config.host,
-            gatewayAddress: config.gatewayAddress,
+            gatewayAddress,
             projectId: config.projectId,
-            token: config.token,
+            projectSecret: config.projectSecret,
             publicAddress: config.publicAddress,
             compileContext: async (request) => {
                 try {
@@ -91,12 +93,12 @@ export class Deployable {
 
         console.log(`[Photon] Deployed successfully`);
         console.log(`[Photon] - Project ID: ${config.projectId}`);
-        console.log(`[Photon] - Gateway: ${config.gatewayAddress}`);
+        console.log(`[Photon] - Gateway: ${gatewayAddress}`);
         console.log(`[Photon] - Listening: ${config.host ?? "0.0.0.0"}:${config.port ?? 50051}`);
     }
 
     /**
-     * Get SDK Service instance (for sending messages, etc.)
+     * Get SDK Service (for sending messages, etc.)
      */
     getService(): SDKService | undefined {
         return this.sdkService;

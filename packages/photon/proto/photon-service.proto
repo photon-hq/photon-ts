@@ -7,6 +7,9 @@ syntax = "proto3";
 package photon;
 
 // SDK Service - Handles requests from Gateway
+// Purpose: SDK provides AgentConfig compilation and action execution
+// Note: This service is for providing AgentConfig and tools only.
+//       For target connections, a separate gRPC connection is required.
 service SDKService {
   // Gateway requests SDK to compile context
   rpc CompileContext (CompileContextRequest) returns (CompileContextResponse);
@@ -64,11 +67,10 @@ message RunActionResponse {
 // Register Request (SDK → Gateway)
 message RegisterRequest {
   string project_id = 1;
-  string token = 2;
-  string instance_id = 3;
-  string sdk_version = 4;
-  string sdk_address = 5;
-  repeated string capabilities = 6;
+  string project_secret = 2;
+  string sdk_version = 3;
+  string sdk_address = 4;
+  repeated string capabilities = 5;
 }
 
 // Register Response (Gateway → SDK)
@@ -105,7 +107,7 @@ message Message {
 
 // Heartbeat Request (SDK → Gateway)
 message HeartbeatRequest {
-  string instance_id = 1;
+  string project_id = 1;
   string status = 2;
   map<string, string> metrics = 3;
 }
@@ -118,7 +120,7 @@ message HeartbeatResponse {
 
 // Unregister Request (SDK → Gateway)
 message UnregisterRequest {
-  string instance_id = 1;
+  string project_id = 1;
   string reason = 2;
 }
 
