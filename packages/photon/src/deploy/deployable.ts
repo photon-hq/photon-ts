@@ -1,38 +1,39 @@
-import { contextToProto, protoToContext } from "../context/converter";
+/**
+ * Deployable - Elegant deployment of Photon agents
+ *
+ * Usage:
+ * ```typescript
+ * const agent = buildAgent((builder) => {
+ *     builder.instructions("You are a helpful assistant");
+ * });
+ *
+ * await agent.deploy({
+ *     projectId: "my-project",
+ *     projectSecret: "secret",
+ * });
+ * ```
+ */
+
 import type { Compiler } from "../core/compiler";
-import type { Context } from "../core/context";
-import { ServerService } from "../grpc/server";
-import type { _Target } from "./target";
+import { Gateway } from "../gateway";
+
+const DEFAULT_GATEWAY_ADDRESS = "gateway.photon.codes:443";
 
 export interface DeployConfigType {
-    // Gateway config
-    // Note: Environment variable reading (process.env.GATEWAY_URL) is for testing only, not exposed to end users
-    // Default: "gateway.photon.codes"
-    gatewayAddress?: string;
     projectId: string;
     projectSecret: string;
 }
 
 export class Deployable {
     private readonly compiler: Compiler;
-    private serverService?: ServerService;
+    private gateway?: Gateway;
 
     constructor(compiler: Compiler) {
         this.compiler = compiler;
     }
 
     /**
-     * Compile context using the compiler
-     * The compiler handles recompilation loops and agentConfig
-     */
-    private async compileContext(context: Context, _projectId?: string): Promise<Context> {
-        return await this.compiler(context);
-    }
-
-    /**
-     * Deploy Server to Gateway
-     *
-     * Connects to Gateway via bidirectional stream
+     * Deploy to Gateway with elegant API
      */
     async deploy(config: DeployConfigType): Promise<void> {
         if (!config.projectId) {
@@ -43,41 +44,18 @@ export class Deployable {
             throw new Error("projectSecret is required");
         }
 
-        // Default gatewayAddress
-        // Note: Environment variable reading (process.env.GATEWAY_URL) is for testing only, not exposed to users
-        const gatewayAddress = config.gatewayAddress ?? process.env.GATEWAY_URL ?? "gateway.photon.codes";
+        // Get gateway address: env var > default
+        const gatewayAddress = process.env.GATEWAY_URL ?? DEFAULT_GATEWAY_ADDRESS;
 
-        // Create Server Service
-        this.serverService = new ServerService({
+        // Connect to Gateway
+        this.gateway = await Gateway.connect({
             gatewayAddress,
             projectId: config.projectId,
             projectSecret: config.projectSecret,
-            compileContext: async (request) => {
-                try {
-                    // Convert proto format to TypeScript Context
-                    const context = protoToContext(request.context);
-
-                    // Compile using builder
-                    const compiledContext = await this.compileContext(context, request.project_id);
-
-                    // Convert back to proto format
-                    return {
-                        request_id: request.request_id,
-                        success: true,
-                        context: contextToProto(compiledContext),
-                    };
-                } catch (error) {
-                    return {
-                        request_id: request.request_id,
-                        success: false,
-                        error: (error as Error).message,
-                    };
-                }
-            },
         });
 
-        // Start service (connects to Gateway)
-        await this.serverService.start();
+        // Register compiler
+        await this.gateway.Server.register(this.compiler);
 
         console.log(`[Photon] Deployed successfully`);
         console.log(`[Photon] - Project ID: ${config.projectId}`);
@@ -85,18 +63,26 @@ export class Deployable {
     }
 
     /**
-     * Get Server Service (for sending messages, etc.)
+     * Get Gateway instance
      */
-    getService(): ServerService | undefined {
-        return this.serverService;
+    getGateway(): Gateway | undefined {
+        return this.gateway;
     }
 
     /**
-     * Stop Server Service
+     * Stop and disconnect
      */
     async stop(): Promise<void> {
-        if (this.serverService) {
-            await this.serverService.stop();
+        if (this.gateway) {
+            this.gateway.disconnect();
+            this.gateway = undefined;
         }
+    }
+
+    /**
+     * Get running status
+     */
+    isDeployed(): boolean {
+        return this.gateway?.connected() ?? false;
     }
 }

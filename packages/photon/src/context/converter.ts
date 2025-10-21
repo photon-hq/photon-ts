@@ -51,7 +51,7 @@ export function contextToProto(context: Context): ProtoContextType {
         states: protoStates,
         agent_config: context.agentConfig
             ? {
-                  id: "",
+                  id: context.agentConfig.id || "",
                   instructions: Array.isArray(context.agentConfig.instructions) ? context.agentConfig.instructions : [],
               }
             : {
@@ -108,6 +108,7 @@ export function protoToContext(proto: ProtoContextType): Context {
         },
         states,
         agentConfig: {
+            id: proto.agent_config?.id || "",
             instructions: Array.isArray(proto.agent_config?.instructions) ? proto.agent_config.instructions : [],
         },
     };

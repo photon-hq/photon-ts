@@ -1,51 +1,33 @@
 /**
  * Photon Service Proto Definition
+ * 
+ * Architecture:
+ * - Server <-> Gateway: Bidirectional Stream (Server initiates, reuses connection)
+ * - Target <-> Gateway: Unary (Utils) + Bidirectional Stream (Messages)
  */
 
 syntax = "proto3";
 
 package photon;
 
-// Gateway Service - Bidirectional streaming communication
-// Server initiates connection and maintains long-lived stream
-// Both sides can send messages independently over this stream
+// Gateway Service - Server <-> Gateway bidirectional stream
 service GatewayService {
-  // Bidirectional stream for Server <-> Gateway communication
-  rpc Stream (stream ServerMessage) returns (stream GatewayMessage);
+  // Server initiates this stream and keeps it open
+  // All Server <-> Gateway communication flows through this single stream
+  rpc Stream(stream ServerMessage) returns (stream GatewayMessage);
 }
 
-// Compile Context Request (Gateway → Server)
-message CompileContextRequest {
-  string request_id = 1;
-  string project_id = 2;
-  Context context = 3;
+// Target Service - Target <-> Gateway
+service TargetService {
+  // Unary: User identity utilities (stateless queries)
+  rpc Utils(UtilsRequest) returns (UtilsResponse);
+  
+  // Bidirectional: Message routing (stateful, long-lived)
+  rpc Messages(stream TargetMessage) returns (stream GatewayTargetMessage);
 }
 
-// Compile Context Response (Server → Gateway)
-message CompileContextResponse {
-  string request_id = 1;
-  bool success = 2;
-  optional string error = 3;
-  optional Context context = 4;
-}
+// Server Registration Messages
 
-// Run Action Request (Gateway → Server)
-message RunActionRequest {
-  string request_id = 1;
-  string action_name = 2;
-  map<string, string> params = 3;
-  Context context = 4;
-}
-
-// Run Action Response (Server → Gateway)
-message RunActionResponse {
-  string request_id = 1;
-  bool success = 2;
-  optional string error = 3;
-  optional string result = 4;
-}
-
-// Register Request (Server → Gateway)
 message RegisterRequest {
   string project_id = 1;
   string project_secret = 2;
@@ -53,63 +35,196 @@ message RegisterRequest {
   repeated string capabilities = 4;
 }
 
-// Register Response (Gateway → Server)
 message RegisterResponse {
   bool success = 1;
   optional string error = 2;
-  Config config = 3;
+  optional int32 heartbeat_interval = 3;
 }
 
-message Config {
-  int32 heartbeat_interval = 1;
+message UnregisterRequest {
+  string project_id = 1;
+  string reason = 2;
 }
 
-// Send Message Request (Server → Gateway)
-message SendMessageRequest {
-  string user_id = 1;
-  Message message = 2;
-}
-
-// Send Message Response (Gateway → Server)
-message SendMessageResponse {
+message UnregisterResponse {
   bool success = 1;
   optional string error = 2;
-  string message_id = 3;
 }
 
-message Message {
-  string role = 1;
-  string content = 2;
-  optional string timestamp = 3;
-  map<string, string> metadata = 4;
-}
-
-// Heartbeat Request (Server → Gateway)
 message HeartbeatRequest {
   string project_id = 1;
   string status = 2;
   map<string, string> metrics = 3;
 }
 
-// Heartbeat Response (Gateway → Server)
 message HeartbeatResponse {
   bool success = 1;
   optional string command = 2;
 }
 
-// Unregister Request (Server → Gateway)
-message UnregisterRequest {
-  string project_id = 1;
-  string reason = 2;
+// Context Compilation Messages
+
+message CompileContextRequest {
+  string request_id = 1; // Bidirectional-streaming requires a request_id
+  string project_id = 2;
+  Context context = 3;
 }
 
-// Unregister Response (Gateway → Server)
-message UnregisterResponse {
+message CompileContextResponse {
+  string request_id = 1;
+  bool success = 2;
+  optional string error = 3;
+  optional Context context = 4;
+}
+
+// Actions & Tools Messages
+
+message RunActionsRequest {
+  string request_id = 1;
+  string action_name = 2;
+  map<string, string> params = 3;
+}
+
+message RunActionsResponse {
+  string request_id = 1;
+  bool success = 2;
+  optional string error = 3;
+  optional string result = 4;
+}
+
+message CallToolsRequest {
+  string request_id = 1;
+  string tool_name = 2;
+  map<string, string> params = 3;
+}
+
+message CallToolsResponse {
+  string request_id = 1;
+  bool success = 2;
+  optional string error = 3;
+  optional string result = 4;
+}
+
+// Target Utils Messages
+
+message UtilsRequest {
+  oneof request {
+    GetUserIdRequest get_user_id = 1;
+    GetExternalIdRequest get_external_id = 2;
+  }
+}
+
+message UtilsResponse {
+  oneof response {
+    GetUserIdResponse get_user_id = 1;
+    GetExternalIdResponse get_external_id = 2;
+  }
+}
+
+message GetUserIdRequest {
+  string external_id = 1;
+  string project_id = 2;
+}
+
+message GetUserIdResponse {
   bool success = 1;
   optional string error = 2;
+  string user_id = 3;
 }
 
-// Context Data Structure (Shared)
+message GetExternalIdRequest {
+  string user_id = 1;
+}
+
+message GetExternalIdResponse {
+  bool success = 1;
+  optional string error = 2;
+  string external_id = 3;
+}
+
+// Target Messaging (TODO: for future Target adapters)
+
+message TargetMessage {
+  oneof message {
+    InboundMessage inbound = 1;   // User -> Agent (from Target SDK)
+    MessageAck ack = 2;            // Acknowledgment from Target
+  }
+}
+
+message GatewayTargetMessage {
+  oneof message {
+    OutboundMessage outbound = 1;  // Agent -> User (to Target SDK)
+    MessageStatus status = 2;       // Status update from Gateway
+  }
+}
+
+// Stream Message Multiplexing
+
+// Server -> Gateway messages
+message ServerMessage {
+  oneof message {
+    RegisterRequest register = 1;
+    HeartbeatRequest heartbeat = 2;
+    UnregisterRequest unregister = 3;
+    CompileContextResponse compile_context_response = 4;
+    RunActionsResponse run_actions_response = 5;
+    CallToolsResponse call_tools_response = 6;
+  }
+}
+
+// Gateway -> Server messages
+message GatewayMessage {
+  oneof message {
+    RegisterResponse register_response = 1;
+    HeartbeatResponse heartbeat_response = 2;
+    UnregisterResponse unregister_response = 3;
+    CompileContextRequest compile_context_request = 4;
+    RunActionsRequest run_actions_request = 5;
+    CallToolsRequest call_tools_request = 6;
+  }
+}
+
+// TODO: Message structures for Target adapters
+message InboundMessage {
+  string message_id = 1;
+  string user_id = 2;
+  MessageContent content = 3;
+  string timestamp = 4;
+}
+
+message OutboundMessage {
+  string message_id = 1;
+  string user_id = 2;
+  MessageContent content = 3;
+  string timestamp = 4;
+}
+
+message MessageContent {
+  string text = 1;
+  repeated Attachment attachments = 2;
+  map<string, string> metadata = 3;
+}
+
+message Attachment {
+  string type = 1;
+  string url = 2;
+  optional string name = 3;
+  optional int64 size = 4;
+}
+
+message MessageAck {
+  string message_id = 1;
+  bool received = 2;
+}
+
+message MessageStatus {
+  string message_id = 1;
+  string status = 2;
+  optional string error = 3;
+}
+
+// Context Data Structure
+
 message Context {
   string scope = 1;
   User user = 2;
@@ -130,30 +245,4 @@ message States {
 message AgentConfig {
   string id = 1;
   repeated string instructions = 2;
-}
-
-// ==================== Bidirectional Stream Messages ====================
-
-// ServerMessage - Messages from Server to Gateway
-message ServerMessage {
-  oneof message {
-    RegisterRequest register = 1;
-    UnregisterRequest unregister = 2;
-    SendMessageRequest send_message = 3;
-    HeartbeatRequest heartbeat = 4;
-    CompileContextResponse compile_context_response = 5;
-    RunActionResponse run_action_response = 6;
-  }
-}
-
-// GatewayMessage - Messages from Gateway to Server
-message GatewayMessage {
-  oneof message {
-    RegisterResponse register_response = 1;
-    UnregisterResponse unregister_response = 2;
-    SendMessageResponse send_message_response = 3;
-    HeartbeatResponse heartbeat_response = 4;
-    CompileContextRequest compile_context_request = 5;
-    RunActionRequest run_action_request = 6;
-  }
 }

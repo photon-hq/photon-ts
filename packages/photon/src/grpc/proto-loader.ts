@@ -30,7 +30,7 @@ function loadProto(): GrpcObject {
 }
 
 /**
- * Get Gateway Service client constructor (Server connects to Gateway via bidirectional stream)
+ * Get GatewayService client (Server connects to Gateway)
  */
 export function getGatewayServiceClient(): any {
     const proto = loadProto();
