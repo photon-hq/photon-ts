@@ -6,3 +6,5 @@ export const messageContentSchema = z.discriminatedUnion("type", [
         content: z.string()
     })
 ])
+
+export type MessageContent = z.infer<typeof messageContentSchema>;

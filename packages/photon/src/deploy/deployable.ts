@@ -1,6 +1,6 @@
 import type { Compiler } from "../core/compiler";
 import type { Context } from "../core/context";
-import type { _Target } from "./target";
+import type { _Target } from "../target/target";
 
 export class Deployable {
     private compilers: Record<string, Compiler>;
