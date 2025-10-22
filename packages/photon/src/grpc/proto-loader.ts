@@ -21,70 +21,20 @@ const PROTO_OPTIONS: ProtoLoaderOptions = {
 
 let protoCache: GrpcObject | null = null;
 
-function loadProto(): GrpcObject {
+export function loadProto(): GrpcObject {
     if (!protoCache) {
-        try {
-            const packageDef = loadSync(PROTO_PATH, PROTO_OPTIONS);
-            protoCache = loadPackageDefinition(packageDef);
-        } catch (error) {
-            throw new Error(`Failed to load Proto file at ${PROTO_PATH}: ${(error as Error).message}`);
-        }
+        const packageDef = loadSync(PROTO_PATH, PROTO_OPTIONS);
+        protoCache = loadPackageDefinition(packageDef);
     }
     return protoCache;
 }
 
-/**
- * Get ServerService client (Server connects to Gateway)
- */
-export function getServerServiceClient(): any {
+export const serverService = () => {
     const proto = loadProto();
-    const service = (proto.photon as any)?.ServerService;
-
-    if (!service) {
-        throw new Error("ServerService not found");
-    }
-
-    return service;
+    return (proto.photon as any).ServerService;
 }
 
-/**
- * Get TargetService client (Target connects to Gateway)
- */
-export function getTargetServiceClient(): any {
+export const targetService = () => {
     const proto = loadProto();
-    const service = (proto.photon as any)?.TargetService;
-
-    if (!service) {
-        throw new Error("TargetService not found");
-    }
-
-    return service;
-}
-
-/**
- * Get ServerService definition (for Gateway server implementation)
- */
-export function getServerServiceDefinition(): any {
-    const proto = loadProto();
-    const service = (proto.photon as any)?.ServerService?.service;
-
-    if (!service) {
-        throw new Error("ServerService definition not found");
-    }
-
-    return service;
-}
-
-/**
- * Get TargetService definition (for Gateway server implementation)
- */
-export function getTargetServiceDefinition(): any {
-    const proto = loadProto();
-    const service = (proto.photon as any)?.TargetService?.service;
-
-    if (!service) {
-        throw new Error("TargetService definition not found");
-    }
-
-    return service;
+    return (proto.photon as any).TargetService;
 }

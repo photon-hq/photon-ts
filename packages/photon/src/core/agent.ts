@@ -17,6 +17,7 @@ export function $(nameOrBuilder: NonEmptyString<string> | Builder, builder?: Bui
     }
 
     const name = nameOrBuilder;
+    
     if (!builder) {
         throw new Error("Builder is required when providing a name");
     }

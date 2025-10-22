@@ -9,14 +9,14 @@ import type { _Target } from "../target/target";
 
 const DEFAULT_GATEWAY_ADDRESS = "gateway.photon.codes:443";
 
-export interface DeployConfigType {
+export interface DeployConfig {
     projectId: string;
     projectSecret: string;
 }
 
 export class Deployable {
     private compilers: Record<string, Compiler>;
-    private gateway?: Gateway;
+    private gateway!: Gateway;
 
     constructor(rootCompiler: Compiler) {
         this.compilers = {
@@ -26,7 +26,7 @@ export class Deployable {
 
     /**
      * Compile method with proper this binding
-     * Using arrow function to ensure this context is preserved
+     * Using arrow function to ensure `this` is preserved
      */
     compile = async (context: Context): Promise<Context> => {
         const compiler = this.compilers[context.scopeName];
@@ -38,17 +38,18 @@ export class Deployable {
 
     /**
      * Deploy to Gateway with elegant API
+     * should not be async
      */
-    async deploy(...targets: _Target[]): Promise<void>;
-    async deploy(config: DeployConfigType, ...targets: _Target[]): Promise<void>;
-    async deploy(first: DeployConfigType | _Target, ...rest: _Target[]): Promise<void> {
-        let config: DeployConfigType | null = null;
+    deploy(...targets: _Target[]): void;
+    deploy(config: DeployConfig, ...targets: _Target[]): void;
+    deploy(first: DeployConfig | _Target, ...rest: _Target[]): void {
+        let config: DeployConfig | null = null;
         let targets: _Target[];
 
         // Check if first argument is config (has projectId and projectSecret)
         if (typeof first === "object" && "projectId" in first && "projectSecret" in first) {
             // Case: deploy(config, ...targets)
-            config = first as DeployConfigType;
+            config = first as DeployConfig;
             targets = rest;
         } else {
             // Case: deploy(...targets) - first is a Target
@@ -70,35 +71,17 @@ export class Deployable {
         const gatewayAddress = process.env.GATEWAY_URL ?? DEFAULT_GATEWAY_ADDRESS;
 
         // Connect to Gateway
-        this.gateway = await Gateway.connect({
+        this.gateway = Gateway.connect({
             gatewayAddress,
             projectId: projectId,
             projectSecret: projectSecret,
         });
-
-        // Register and configure
-        await this.gateway.register();
-        this.gateway.setCompiler(this.compile);
+        
+        // set up
+        this.gateway.Server.registerCompileHandler(this.compile);
 
         console.log(`[Photon] Deployed successfully`);
         console.log(`[Photon] - Project ID: ${projectId}`);
         console.log(`[Photon] - Gateway: ${gatewayAddress}`);
-    }
-
-    /**
-     * Stop and disconnect
-     */
-    async stop(): Promise<void> {
-        if (this.gateway) {
-            await this.gateway.disconnect();
-            this.gateway = undefined;
-        }
-    }
-
-    /**
-     * Get running status
-     */
-    isDeployed(): boolean {
-        return this.gateway?.connected() ?? false;
     }
 }

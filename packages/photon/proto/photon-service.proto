@@ -14,8 +14,8 @@ package photon;
 
 // Gateway <-> Server
 service ServerService {
-  // All Server <-> Gateway communication flows through this single stream
-  rpc Stream(stream ServerMessage) returns (stream GatewayServerMessage);
+  // Bidirectional
+  rpc Compile(stream CompileResult) returns (stream CompileRequest);
 }
 
 // Gateway <-> Target
@@ -27,94 +27,14 @@ service TargetService {
   rpc Messages(stream ChatMessage) returns (stream ChatMessage);
 }
 
-// Server Registration Messages
+// [ Server ] Compile
 
-message ServerRegisterRequest {
-  string project_id = 1;
-  string project_secret = 2;
-  repeated string capabilities = 3;
+message CompileRequest {
+    google.protobuf.Struct context = 1;
 }
 
-message ServerRegisterResponse {
-  bool success = 1;
-  optional string error = 2;
-}
-
-message ServerUnregisterRequest {
-  string project_id = 1;
-  string reason = 2;
-}
-
-message ServerUnregisterResponse {
-  bool success = 1;
-  optional string error = 2;
-}
-
-// Context Compilation Messages
-
-message CompileContextRequest {
-  string request_id = 1; // Bidirectional-streaming requires a request_id
-  string project_id = 2;
-  google.protobuf.Struct context = 3;
-}
-
-message CompileContextResponse {
-  string request_id = 1;
-  bool success = 2;
-  optional string error = 3;
-  optional google.protobuf.Struct context = 4;
-}
-
-// [ Server ] Run Actions
-
-message RunActionsRequest {
-  string request_id = 1;
-  string action_name = 2;
-  map<string, string> params = 3;
-}
-
-message RunActionsResponse {
-  string request_id = 1;
-  bool success = 2;
-  optional string error = 3;
-  optional string result = 4;
-}
-
-// [ Server ] Call Tools
-
-message CallToolsRequest {
-  string request_id = 1;
-  string tool_name = 2;
-  map<string, string> params = 3;
-}
-
-message CallToolsResponse {
-  string request_id = 1;
-  bool success = 2;
-  optional string error = 3;
-  optional string result = 4;
-}
-
-// Server -> Gateway messages
-message ServerMessage {
-  oneof message {
-    ServerRegisterRequest register = 1;
-    ServerUnregisterRequest unregister = 2;
-    CompileContextResponse compile_context_response = 3;
-    RunActionsResponse run_actions_response = 4;
-    CallToolsResponse call_tools_response = 5;
-  }
-}
-
-// Gateway -> Server messages
-message GatewayServerMessage {
-  oneof message {
-    ServerRegisterResponse register_response = 1;
-    ServerUnregisterResponse unregister_response = 2;
-    CompileContextRequest compile_context_request = 3;
-    RunActionsRequest run_actions_request = 4;
-    CallToolsRequest call_tools_request = 5;
-  }
+message CompileResult {
+    google.protobuf.Struct context = 1;
 }
 
 // [ Target ] Utils
@@ -135,7 +55,6 @@ message UtilsResponse {
 
 message GetUserIdRequest {
   string external_id = 1;
-  string project_id = 2;
 }
 
 message GetUserIdResponse {

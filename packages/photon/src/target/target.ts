@@ -1,17 +1,17 @@
-import type { DeployConfigType } from "../deploy";
+import type { DeployConfig } from "../deploy";
+import type { GatewayClient as Gateway } from "../gateway";
 import type { MessageContent } from "../types";
 import { IDStorage } from "./id-storage";
-import { GatewayClient as Gateway } from "../gateway";
 
 export interface _Target {
-    start(config: DeployConfigType): Promise<boolean>;
+    start(config: DeployConfig): Promise<boolean>;
 }
 
 export abstract class Target implements _Target {
-    gateway!: Gateway
+    gateway!: Gateway;
     idStorage = new IDStorage();
 
-    async start(config: DeployConfigType): Promise<boolean> {
+    async start(config: DeployConfig): Promise<boolean> {
         // Connect to the gateway
 
         await this.postStart();
@@ -20,11 +20,11 @@ export abstract class Target implements _Target {
     }
 
     async userId(externalID: string, extra?: { phone?: string; email?: string }): Promise<string | null> {
-        return this.idStorage.getByExternalId(externalID) ?? null;
+        return this.idStorage.getByExternalId(externalID) ?? this.gateway.Client.getUserId(externalID);
     }
 
     async externalId(userId: string): Promise<string | null> {
-        return this.idStorage.getByUserId(userId) ?? null;
+        return this.idStorage.getByUserId(userId) ?? this.gateway.Client.getExternalId(userId);
     }
 
     async sendMessage(userId: string, message: MessageContent) {
