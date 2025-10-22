@@ -31,7 +31,9 @@ export abstract class GatewayBase {
     protected createGrpcClient(ClientClass: any): any {
         // Determine if SSL should be used based on address
         const useSSL =
-            !this.config.gatewayAddress.startsWith("localhost") && !this.config.gatewayAddress.startsWith("127.0.0.1");
+            !this.config.gatewayAddress.startsWith("localhost") && 
+            !this.config.gatewayAddress.startsWith("127.0.0.1") &&
+            !this.config.gatewayAddress.startsWith("0.0.0.0") 
 
         const credentials = useSSL ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
 

@@ -24,7 +24,7 @@ service TargetService {
   rpc Utils(UtilsRequest) returns (UtilsResponse);
 
   // Bidirectional
-  rpc Messages(stream TargetMessage) returns (stream GatewayTargetMessage);
+  rpc Messages(stream ChatMessage) returns (stream ChatMessage);
 }
 
 // Server Registration Messages
@@ -154,29 +154,10 @@ message GetExternalIdResponse {
   string external_id = 3;
 }
 
-// Target Messaging
+// Target <-> Gateway Messaging
 
-message TargetMessage {
-  oneof message {
-    InboundMessage inbound = 1;    // User -> Agent (from Target SDK)
-    bool received = 2;            // Acknowledgment from Target
-  }
-}
-
-message GatewayTargetMessage {
-  oneof message {
-    OutboundMessage outbound = 1;   // Agent -> User (to Target SDK)
-    bool completed = 2;            // Completion status from Gateway
-  }
-}
-
-message InboundMessage {
-  string user_id = 1;
-  google.protobuf.Struct message_content = 2;
-  optional google.protobuf.Struct payload = 3;
-}
-
-message OutboundMessage {
-  string user_id = 1;
-  google.protobuf.Struct message_content = 2;
+message ChatMessage {
+    string user_id = 1;
+    google.protobuf.Struct message_content = 2;
+    optional google.protobuf.Struct payload = 3;
 }
