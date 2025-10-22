@@ -5,7 +5,7 @@ export type Context = {
     scopeName: string; // root's scope name should be empty string
     user: {
         id: string;
-        photon: string | null;
+        phone: string | null;
         email: string | null;
     };
     states: StatesMap;
