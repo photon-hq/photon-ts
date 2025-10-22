@@ -1,14 +1,17 @@
+import type { DeployConfigType } from "../deploy";
 import type { MessageContent } from "../types";
 import { IDStorage } from "./id-storage";
+import { GatewayClient as Gateway } from "../gateway";
 
 export interface _Target {
-    start(apiKey: string): Promise<boolean>;
+    start(config: DeployConfigType): Promise<boolean>;
 }
 
 export abstract class Target implements _Target {
+    gateway!: Gateway
     idStorage = new IDStorage();
 
-    async start(apiKey: string): Promise<boolean> {
+    async start(config: DeployConfigType): Promise<boolean> {
         // Connect to the gateway
 
         await this.postStart();

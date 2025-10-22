@@ -1,3 +1,3 @@
 export { $ } from "./agent";
 export type { Context } from "./context";
-export { state } from "./state";
+export { type StatesMap, state } from "./state";

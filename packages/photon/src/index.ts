@@ -1,7 +1,10 @@
+import { GatewayClient } from "./gateway";
+
 export * from "./actions";
 export * from "./core";
 export * from "./deploy";
 export * from "./gateway";
+export { GatewayClient as Gateway } from "./gateway";
 export * from "./grpc";
 export * from "./modifiers";
 export * from "./target";
