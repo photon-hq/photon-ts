@@ -12,7 +12,6 @@
  */
 
 import * as grpc from "@grpc/grpc-js";
-import { contextToProto, protoToContext } from "../utils";
 import type { Compiler } from "../core/compiler";
 import { getServerServiceClient } from "../grpc/proto-loader";
 import { GatewayBase, type GatewayConfig, MAX_MESSAGE_SIZE } from "./base";
@@ -260,14 +259,14 @@ class GatewayServer extends GatewayBase {
         }
 
         try {
-            const internalContext = protoToContext(context);
+            const internalContext = context;
             const compiledContext = await this.compiler(internalContext);
 
             this.stream?.write({
                 compile_context_response: {
                     request_id,
                     success: true,
-                    context: contextToProto(compiledContext),
+                    context: compiledContext,
                 },
             });
         } catch (error) {
