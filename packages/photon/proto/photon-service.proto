@@ -12,56 +12,42 @@ import "google/protobuf/struct.proto";
 
 package photon;
 
-// Gateway Service - Server <-> Gateway bidirectional stream
+// Gateway <-> Server
 service ServerService {
-  // Server initiates this stream and keeps it open
   // All Server <-> Gateway communication flows through this single stream
-  rpc Stream(stream ServerMessage) returns (stream GatewayMessage);
+  rpc Stream(stream ServerMessage) returns (stream GatewayServerMessage);
 }
 
-// Target Service - Target <-> Gateway
+// Gateway <-> Target
 service TargetService {
-  // Unary: User identity utilities (stateless queries)
+  // Unary
   rpc Utils(UtilsRequest) returns (UtilsResponse);
 
-  // Bidirectional: Message routing (stateful, long-lived)
+  // Bidirectional
   rpc Messages(stream TargetMessage) returns (stream GatewayTargetMessage);
 }
 
 // Server Registration Messages
 
-message RegisterRequest {
+message ServerRegisterRequest {
   string project_id = 1;
   string project_secret = 2;
-  string server_version = 3;
-  repeated string capabilities = 4;
+  repeated string capabilities = 3;
 }
 
-message RegisterResponse {
+message ServerRegisterResponse {
   bool success = 1;
   optional string error = 2;
-  optional int32 heartbeat_interval = 3;
 }
 
-message UnregisterRequest {
+message ServerUnregisterRequest {
   string project_id = 1;
   string reason = 2;
 }
 
-message UnregisterResponse {
+message ServerUnregisterResponse {
   bool success = 1;
   optional string error = 2;
-}
-
-message HeartbeatRequest {
-  string project_id = 1;
-  string status = 2;
-  map<string, string> metrics = 3;
-}
-
-message HeartbeatResponse {
-  bool success = 1;
-  optional string command = 2;
 }
 
 // Context Compilation Messages
@@ -79,7 +65,7 @@ message CompileContextResponse {
   optional google.protobuf.Struct context = 4;
 }
 
-// Actions & Tools Messages
+// [ Server ] Run Actions
 
 message RunActionsRequest {
   string request_id = 1;
@@ -94,6 +80,8 @@ message RunActionsResponse {
   optional string result = 4;
 }
 
+// [ Server ] Call Tools
+
 message CallToolsRequest {
   string request_id = 1;
   string tool_name = 2;
@@ -107,7 +95,29 @@ message CallToolsResponse {
   optional string result = 4;
 }
 
-// Target Utils Messages
+// Server -> Gateway messages
+message ServerMessage {
+  oneof message {
+    ServerRegisterRequest register = 1;
+    ServerUnregisterRequest unregister = 2;
+    CompileContextResponse compile_context_response = 3;
+    RunActionsResponse run_actions_response = 4;
+    CallToolsResponse call_tools_response = 5;
+  }
+}
+
+// Gateway -> Server messages
+message GatewayServerMessage {
+  oneof message {
+    ServerRegisterResponse register_response = 1;
+    ServerUnregisterResponse unregister_response = 2;
+    CompileContextRequest compile_context_request = 3;
+    RunActionsRequest run_actions_request = 4;
+    CallToolsRequest call_tools_request = 5;
+  }
+}
+
+// [ Target ] Utils
 
 message UtilsRequest {
   oneof request {
@@ -144,83 +154,29 @@ message GetExternalIdResponse {
   string external_id = 3;
 }
 
-// Target Messaging (TODO: for future Target adapters)
+// Target Messaging
 
 message TargetMessage {
   oneof message {
-    InboundMessage inbound = 1;   // User -> Agent (from Target SDK)
-    MessageAck ack = 2;            // Acknowledgment from Target
+    InboundMessage inbound = 1;    // User -> Agent (from Target SDK)
+    bool received = 2;            // Acknowledgment from Target
   }
 }
 
 message GatewayTargetMessage {
   oneof message {
-    OutboundMessage outbound = 1;  // Agent -> User (to Target SDK)
-    MessageStatus status = 2;       // Status update from Gateway
+    OutboundMessage outbound = 1;   // Agent -> User (to Target SDK)
+    bool completed = 2;            // Completion status from Gateway
   }
 }
 
-// Stream Message Multiplexing
-
-// Server -> Gateway messages
-message ServerMessage {
-  oneof message {
-    RegisterRequest register = 1;
-    HeartbeatRequest heartbeat = 2;
-    UnregisterRequest unregister = 3;
-    CompileContextResponse compile_context_response = 4;
-    RunActionsResponse run_actions_response = 5;
-    CallToolsResponse call_tools_response = 6;
-  }
-}
-
-// Gateway -> Server messages
-message GatewayMessage {
-  oneof message {
-    RegisterResponse register_response = 1;
-    HeartbeatResponse heartbeat_response = 2;
-    UnregisterResponse unregister_response = 3;
-    CompileContextRequest compile_context_request = 4;
-    RunActionsRequest run_actions_request = 5;
-    CallToolsRequest call_tools_request = 6;
-  }
-}
-
-// TODO: Message structures for Target adapters
 message InboundMessage {
-  string message_id = 1;
-  string user_id = 2;
-  MessageContent content = 3;
-  string timestamp = 4;
+  string user_id = 1;
+  google.protobuf.Struct message_content = 2;
+  optional google.protobuf.Struct payload = 3;
 }
 
 message OutboundMessage {
-  string message_id = 1;
-  string user_id = 2;
-  MessageContent content = 3;
-  string timestamp = 4;
-}
-
-message MessageContent {
-  string text = 1;
-  repeated Attachment attachments = 2;
-  map<string, string> metadata = 3;
-}
-
-message Attachment {
-  string type = 1;
-  string url = 2;
-  optional string name = 3;
-  optional int64 size = 4;
-}
-
-message MessageAck {
-  string message_id = 1;
-  bool received = 2;
-}
-
-message MessageStatus {
-  string message_id = 1;
-  string status = 2;
-  optional string error = 3;
+  string user_id = 1;
+  google.protobuf.Struct message_content = 2;
 }

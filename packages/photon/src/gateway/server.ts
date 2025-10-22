@@ -1,250 +1,137 @@
 /**
- * Gateway Server - For Photon (Server) to connect to Gateway
- *
- * Server's responsibilities:
- * - Provide Compiler (AgentConfig)
- * - Execute tools when requested by Gateway
- *
- * Usage:
- * const gateway = await Gateway.connect({ ... })
- * await gateway.Server.register(compiler)
- * gateway.Server.registerInvokableHandler(async (invocation) => { ... })
+ * Gateway Server - Photon Server SDK for connecting to Gateway
  */
 
-import * as grpc from "@grpc/grpc-js";
 import type { Compiler } from "../core/compiler";
 import { getServerServiceClient } from "../grpc/proto-loader";
-import { GatewayBase, type GatewayConfig, MAX_MESSAGE_SIZE } from "./base";
+import { GatewayBase, type GatewayConfig } from "./base";
 
-// Invokable types (for actions/tools)
-export interface Invokable {
+export interface ActionInvocation {
     name: string;
     params: Record<string, any>;
 }
 
-export type InvokableHandler = (invocation: Invokable) => Promise<any>;
+export interface ToolInvocation {
+    name: string;
+    params: Record<string, any>;
+}
 
-const RECONNECT_DELAY_MS = 5000;
-const SERVER_VERSION = "2.0.0";
+export type ActionHandler = (invocation: ActionInvocation) => Promise<any>;
+export type ToolHandler = (invocation: ToolInvocation) => Promise<any>;
 
-class GatewayServer extends GatewayBase {
+interface PendingRegistration {
+    resolve: () => void;
+    reject: (error: Error) => void;
+    timer: NodeJS.Timeout;
+}
+
+export class GatewayServer extends GatewayBase {
     private compiler?: Compiler;
-    private heartbeatTimer?: NodeJS.Timeout;
-    private isRegistered = false;
-    private invokableHandler?: InvokableHandler;
-    private stream: any;
+    private actionHandler?: ActionHandler;
+    private toolHandler?: ToolHandler;
+    private _isRegistered = false;
+    private pendingRegistration?: PendingRegistration;
 
     protected constructor() {
         super();
     }
 
-    /**
-     * Static factory method - The elegant way to connect
-     *
-     * Usage:
-     * const gateway = await Gateway.connect({
-     *     gatewayAddress: "localhost:50051",
-     *     projectId: "my-project",
-     *     projectSecret: "secret",
-     * })
-     */
-    static override async connect(config: GatewayConfig): Promise<GatewayServer> {
+    static async connect(config: GatewayConfig): Promise<GatewayServer> {
         const gateway = new GatewayServer();
-        const ServerServiceClient = getServerServiceClient();
-
-        // Set config
-        (gateway as any).config = config;
-
-        // Create gRPC client
-        gateway.client = new ServerServiceClient(config.gatewayAddress, grpc.credentials.createInsecure(), {
-            "grpc.max_receive_message_length": MAX_MESSAGE_SIZE,
-            "grpc.max_send_message_length": MAX_MESSAGE_SIZE,
-        });
-
-        // Initialize bidirectional stream
+        gateway.config = config;
+        gateway.client = gateway.createGrpcClient(getServerServiceClient());
         gateway.stream = gateway.client.Stream();
         gateway.setupStreamHandlers();
         gateway.isConnected = true;
-
-        console.log(`[Gateway] Connected to ${config.gatewayAddress}`);
+        console.log(`[Gateway.Server] Connected to ${config.gatewayAddress}`);
         return gateway;
     }
 
-    /**
-     * Server namespace
-     */
-    readonly Server = {
-        /**
-         * Register with Gateway and provide compiler
-         *
-         * Usage:
-         * await gateway.Server.register(myCompiler)
-         */
-        register: async (): Promise<void> => {
-            return new Promise((resolve, reject) => {
-                const timeout = setTimeout(() => {
-                    reject(new Error("Registration timeout"));
-                }, 10000);
+    async register(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!this.stream) {
+                reject(new Error("Stream is not available"));
+                return;
+            }
 
-                // Store resolver for register response
-                const originalHandler = this.handleRegisterResponse.bind(this);
-                this.handleRegisterResponse = async (response: any) => {
-                    clearTimeout(timeout);
-                    this.handleRegisterResponse = originalHandler;
+            const timer = setTimeout(() => {
+                this.pendingRegistration = undefined;
+                reject(new Error("Registration timeout"));
+            }, 10000);
 
-                    if (!response.success) {
-                        reject(new Error(response.error || "Registration failed"));
-                        return;
-                    }
+            this.pendingRegistration = { resolve, reject, timer };
 
-                    this.isRegistered = true;
-
-                    // Start heartbeat
-                    if (response.heartbeat_interval) {
-                        this.startHeartbeat(response.heartbeat_interval * 1000);
-                    }
-
-                    console.log("[Gateway.Server] Registered successfully");
-                    resolve();
-                };
-
-                // Send registration
-                this.stream?.write({
-                    register: {
-                        project_id: this.config.projectId,
-                        project_secret: this.config.projectSecret,
-                        server_version: SERVER_VERSION,
-                        capabilities: ["compile"],
-                    },
-                });
-            });
-        },
-        
-        registerCompiler: (compiler: Compiler) => {
-            this.compiler = compiler;
-            console.log("[Gateway.Server] Compiler registered");
-        },
-
-        /**
-         * Register handler for tool/action invocations
-         */
-        registerInvokableHandler: (handler: InvokableHandler): void => {
-            this.invokableHandler = handler;
-            console.log("[Gateway.Server] Tool handler registered");
-        },
-
-        /**
-         * Unregister from Gateway
-         */
-        unregister: async (): Promise<void> => {
-            if (!this.isRegistered) return;
-
-            this.stream?.write({
-                unregister: {
+            this.stream.write({
+                register: {
                     project_id: this.config.projectId,
-                    reason: "normal shutdown",
+                    project_secret: this.config.projectSecret,
+                    capabilities: ["compile"],
                 },
             });
-
-            this.stopHeartbeat();
-            this.isRegistered = false;
-            console.log("[Gateway.Server] Unregistered");
-        },
-    };
-
-    /**
-     * Setup stream event handlers
-     */
-    private setupStreamHandlers(): void {
-        if (!this.stream) return;
-
-        // Handle messages from Gateway
-        this.stream.on("data", async (gatewayMessage: any) => {
-            try {
-                // Register response
-                if (gatewayMessage.register_response) {
-                    await this.handleRegisterResponse(gatewayMessage.register_response);
-                }
-
-                // Heartbeat response
-                else if (gatewayMessage.heartbeat_response) {
-                    this.handleHeartbeatResponse(gatewayMessage.heartbeat_response);
-                }
-
-                // CompileContext request
-                else if (gatewayMessage.compile_context_request) {
-                    await this.handleCompileContextRequest(gatewayMessage.compile_context_request);
-                }
-
-                // Unregister response
-                else if (gatewayMessage.unregister_response) {
-                    console.log("[Gateway] Unregister acknowledged");
-                }
-
-                // RunActions request
-                else if (gatewayMessage.run_actions_request) {
-                    await this.handleInvokableRequest(gatewayMessage.run_actions_request);
-                }
-
-                // CallTools request
-                else if (gatewayMessage.call_tools_request) {
-                    await this.handleInvokableRequest(gatewayMessage.call_tools_request);
-                }
-            } catch (error) {
-                console.error("[Gateway] Error handling message:", error);
-            }
-        });
-
-        // Handle stream end
-        this.stream.on("end", () => {
-            console.log("[Gateway] Stream ended by server");
-            this.handleDisconnect();
-        });
-
-        // Handle stream error
-        this.stream.on("error", (error: Error) => {
-            console.error("[Gateway] Stream error:", error);
-            this.handleDisconnect();
         });
     }
 
-    /**
-     * Handle register response
-     */
-    private async handleRegisterResponse(response: any): Promise<void> {
-        // Default handler (overridden during registration)
-        console.log("[Gateway] Unexpected register response:", response);
-    }
+    async unregister(): Promise<void> {
+        if (!this._isRegistered) return;
 
-    /**
-     * Send heartbeat
-     */
-    private sendHeartbeat(): void {
-        if (!this.stream || !this.isRegistered) return;
-
-        this.stream.write({
-            heartbeat: {
+        this.stream?.write({
+            unregister: {
                 project_id: this.config.projectId,
-                status: "healthy",
-                metrics: {},
+                reason: "normal shutdown",
             },
         });
+
+        this._isRegistered = false;
+        console.log("[Gateway.Server] Unregistered");
     }
 
-    /**
-     * Handle heartbeat response
-     */
-    private handleHeartbeatResponse(response: any): void {
-        if (response.command === "reconnect") {
-            console.log("[Gateway] Gateway requested reconnect");
-            this.handleDisconnect();
+    setCompiler(compiler: Compiler): void {
+        this.compiler = compiler;
+        console.log("[Gateway.Server] Compiler registered");
+    }
+
+    onAction(handler: ActionHandler): void {
+        this.actionHandler = handler;
+        console.log("[Gateway.Server] Action handler registered");
+    }
+
+    onTool(handler: ToolHandler): void {
+        this.toolHandler = handler;
+        console.log("[Gateway.Server] Tool handler registered");
+    }
+
+    isRegistered(): boolean {
+        return this._isRegistered;
+    }
+
+    override async disconnect(): Promise<void> {
+        if (this._isRegistered) {
+            await this.unregister().catch(console.error);
         }
+        super.disconnect();
     }
 
-    /**
-     * Handle CompileContext request from Gateway
-     */
-    private async handleCompileContextRequest(request: any): Promise<void> {
+    private handleRegisterResponse(response: any): void {
+        if (!this.pendingRegistration) {
+            console.warn("[Gateway.Server] Unexpected register response");
+            return;
+        }
+
+        const { resolve, reject, timer } = this.pendingRegistration;
+        clearTimeout(timer);
+        this.pendingRegistration = undefined;
+
+        if (!response.success) {
+            reject(new Error(response.error || "Registration failed"));
+            return;
+        }
+
+        this._isRegistered = true;
+        console.log("[Gateway.Server] Registered successfully");
+        resolve();
+    }
+
+    private async handleCompileContext(request: any): Promise<void> {
         const { request_id, context } = request;
 
         if (!this.compiler) {
@@ -259,8 +146,7 @@ class GatewayServer extends GatewayBase {
         }
 
         try {
-            const internalContext = context;
-            const compiledContext = await this.compiler(internalContext);
+            const compiledContext = await this.compiler(context);
 
             this.stream?.write({
                 compile_context_response: {
@@ -280,129 +166,143 @@ class GatewayServer extends GatewayBase {
         }
     }
 
-    /**
-     * Handle invokable request (actions/tools)
-     */
-    private async handleInvokableRequest(request: any): Promise<void> {
-        const { request_id, action_name, tool_name, params } = request;
-        const name = action_name || tool_name;
-        const isAction = !!action_name;
-        const responseType = isAction ? "run_actions_response" : "call_tools_response";
+    private async handleAction(request: any): Promise<void> {
+        const { request_id, action_name, params } = request;
 
-        if (!this.invokableHandler) {
+        if (!this.actionHandler) {
             this.stream?.write({
-                [responseType]: {
+                run_actions_response: {
                     request_id,
                     success: false,
-                    error: "No invokable handler registered",
+                    error: "No action handler registered",
                 },
             });
             return;
         }
 
         try {
-            const result = await this.invokableHandler({ name, params });
+            const result = await this.actionHandler({ name: action_name, params });
 
             this.stream?.write({
-                [responseType]: {
+                run_actions_response: {
                     request_id,
                     success: true,
                     result: typeof result === "string" ? result : JSON.stringify(result),
                 },
             });
 
-            console.log(`[Gateway] Invokable ${name} executed successfully`);
+            console.log(`[Gateway.Server] Action ${action_name} executed successfully`);
         } catch (error) {
             this.stream?.write({
-                [responseType]: {
+                run_actions_response: {
                     request_id,
                     success: false,
                     error: (error as Error).message,
                 },
             });
 
-            console.error(`[Gateway] Invokable ${name} failed:`, error);
+            console.error(`[Gateway.Server] Action ${action_name} failed:`, error);
         }
     }
 
-    /**
-     * Start heartbeat timer
-     */
-    private startHeartbeat(interval: number): void {
-        this.stopHeartbeat();
+    private async handleTool(request: any): Promise<void> {
+        const { request_id, tool_name, params } = request;
 
-        this.heartbeatTimer = setInterval(() => {
-            this.sendHeartbeat();
-        }, interval);
-
-        console.log(`[Gateway] Heartbeat started (${interval}ms)`);
-    }
-
-    /**
-     * Stop heartbeat timer
-     */
-    private stopHeartbeat(): void {
-        if (this.heartbeatTimer) {
-            clearInterval(this.heartbeatTimer);
-            this.heartbeatTimer = undefined;
-        }
-    }
-
-    /**
-     * Handle disconnect and reconnect
-     */
-    private handleDisconnect(): void {
-        this.isRegistered = false;
-        this.stopHeartbeat();
-
-        if (this.stream) {
-            this.stream.removeAllListeners();
-            this.stream = null;
-        }
-
-        // Only attempt reconnect if still connected (not manually disconnected)
-        if (!this.isConnected) {
+        if (!this.toolHandler) {
+            this.stream?.write({
+                call_tools_response: {
+                    request_id,
+                    success: false,
+                    error: "No tool handler registered",
+                },
+            });
             return;
         }
 
-        console.log("[Gateway] Disconnected, attempting to reconnect...");
+        try {
+            const result = await this.toolHandler({ name: tool_name, params });
 
-        // Attempt reconnect
-        setTimeout(async () => {
-            if (this.isConnected) {
-                try {
-                    this.stream = this.client.Stream();
-                    this.setupStreamHandlers();
-                    
-                    await this.Server.register();
+            this.stream?.write({
+                call_tools_response: {
+                    request_id,
+                    success: true,
+                    result: typeof result === "string" ? result : JSON.stringify(result),
+                },
+            });
 
-                    if (this.compiler) {
-                        this.Server.registerCompiler(this.compiler)
-                    }
+            console.log(`[Gateway.Server] Tool ${tool_name} executed successfully`);
+        } catch (error) {
+            this.stream?.write({
+                call_tools_response: {
+                    request_id,
+                    success: false,
+                    error: (error as Error).message,
+                },
+            });
 
-                    console.log("[Gateway] Reconnected successfully");
-                } catch (error) {
-                    console.error("[Gateway] Reconnect failed:", error);
-                    this.handleDisconnect();
-                }
-            }
-        }, RECONNECT_DELAY_MS);
+            console.error(`[Gateway.Server] Tool ${tool_name} failed:`, error);
+        }
     }
 
-    /**
-     * Override disconnect to cleanup properly
-     */
-    override disconnect(): void {
-        this.stopHeartbeat();
-        if (this.isRegistered) {
-            this.Server.unregister().catch(console.error);
+    private setupStreamHandlers(): void {
+        if (!this.stream) return;
+
+        this.stream.on("data", async (gatewayMessage: any) => {
+            try {
+                if (gatewayMessage.register_response) {
+                    this.handleRegisterResponse(gatewayMessage.register_response);
+                } else if (gatewayMessage.compile_context_request) {
+                    await this.handleCompileContext(gatewayMessage.compile_context_request);
+                } else if (gatewayMessage.unregister_response) {
+                    console.log("[Gateway.Server] Unregister acknowledged");
+                } else if (gatewayMessage.run_actions_request) {
+                    await this.handleAction(gatewayMessage.run_actions_request);
+                } else if (gatewayMessage.call_tools_request) {
+                    await this.handleTool(gatewayMessage.call_tools_request);
+                }
+            } catch (error) {
+                console.error("[Gateway.Server] Error handling message:", error);
+            }
+        });
+
+        this.stream.on("end", () => {
+            console.log("[Gateway.Server] Stream ended by server");
+            this.handleDisconnect();
+        });
+
+        this.stream.on("error", (error: Error) => {
+            console.error("[Gateway.Server] Stream error:", error);
+            this.handleDisconnect();
+        });
+    }
+
+    private handleDisconnect(): void {
+        this._isRegistered = false;
+        this.cleanupStream();
+
+        if (!this.shouldReconnect()) {
+            console.error("[Gateway.Server] Cannot reconnect: max attempts reached or manually disconnected");
+            return;
         }
-        if (this.stream) {
-            this.stream.end();
-            this.stream = null;
-        }
-        super.disconnect();
+
+        const delay = this.getReconnectDelay();
+        this.incrementReconnectAttempts();
+
+        console.log(`[Gateway.Server] Disconnected, attempting reconnect #${this.reconnectAttempts} in ${delay}ms...`);
+
+        setTimeout(async () => {
+            if (!this.shouldReconnect()) return;
+
+            try {
+                this.stream = this.client.Stream();
+                this.setupStreamHandlers();
+                await this.register();
+                this.resetReconnectAttempts();
+                console.log("[Gateway.Server] Reconnected successfully");
+            } catch (error) {
+                console.error("[Gateway.Server] Reconnect failed:", error);
+                this.handleDisconnect();
+            }
+        }, delay);
     }
 }
-
-export { GatewayServer }
