@@ -1,6 +1,5 @@
 /**
  * Deployable - Elegant deployment of Photon agents
- *
  */
 
 import type { Context } from "../core";
@@ -25,13 +24,17 @@ export class Deployable {
         };
     }
 
-    async compile(context: Context): Promise<Context> {
+    /**
+     * Compile method with proper this binding
+     * Using arrow function to ensure this context is preserved
+     */
+    compile = async (context: Context): Promise<Context> => {
         const compiler = this.compilers[context.scopeName];
         if (!compiler) {
             throw new Error(`Compiler not found for scope '${context.scopeName}'`);
         }
         return await compiler(context);
-    }
+    };
 
     /**
      * Deploy to Gateway with elegant API
@@ -42,15 +45,14 @@ export class Deployable {
         let config: DeployConfigType | null = null;
         let targets: _Target[];
 
-        if (Array.isArray(first)) {
-            // Case: deploy(...targets)
-            targets = first as _Target[];
-        } else if (typeof first === "object" && !Array.isArray(first)) {
+        // Check if first argument is config (has projectId and projectSecret)
+        if (typeof first === "object" && "projectId" in first && "projectSecret" in first) {
             // Case: deploy(config, ...targets)
             config = first as DeployConfigType;
             targets = rest;
         } else {
-            throw new Error("Invalid arguments");
+            // Case: deploy(...targets) - first is a Target
+            targets = [first as _Target, ...rest];
         }
 
         const projectId = config?.projectId ?? process.env.PROJECT_ID;
@@ -74,9 +76,9 @@ export class Deployable {
             projectSecret: projectSecret,
         });
 
-        // Register compiler
-        await this.gateway.Server.register();
-        this.gateway.Server.registerCompiler(this.compile);
+        // Register and configure
+        await this.gateway.register();
+        this.gateway.setCompiler(this.compile);
 
         console.log(`[Photon] Deployed successfully`);
         console.log(`[Photon] - Project ID: ${projectId}`);
@@ -88,7 +90,7 @@ export class Deployable {
      */
     async stop(): Promise<void> {
         if (this.gateway) {
-            this.gateway.disconnect();
+            await this.gateway.disconnect();
             this.gateway = undefined;
         }
     }

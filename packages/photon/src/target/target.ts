@@ -7,7 +7,7 @@ export interface _Target {
 
 export abstract class Target implements _Target {
     idStorage = new IDStorage();
-    
+
     async start(apiKey: string): Promise<boolean> {
         // Connect to the gateway
 
@@ -16,17 +16,17 @@ export abstract class Target implements _Target {
         return true;
     }
 
-    async userId(externalID: string, extra?: { phone?: string, email?: string }): Promise<string | null> {        
-        return this.idStorage.getByExternalId(externalID) ?? null
+    async userId(externalID: string, extra?: { phone?: string; email?: string }): Promise<string | null> {
+        return this.idStorage.getByExternalId(externalID) ?? null;
     }
-    
+
     async externalId(userId: string): Promise<string | null> {
-        return this.idStorage.getByUserId(userId) ?? null
+        return this.idStorage.getByUserId(userId) ?? null;
     }
-    
+
     async sendMessage(userId: string, message: MessageContent) {
         // TODO: Implement sendMessage
     }
-    
+
     abstract postStart(): Promise<void>;
 }

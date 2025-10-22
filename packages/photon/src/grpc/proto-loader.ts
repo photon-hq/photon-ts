@@ -23,8 +23,12 @@ let protoCache: GrpcObject | null = null;
 
 function loadProto(): GrpcObject {
     if (!protoCache) {
-        const packageDef = loadSync(PROTO_PATH, PROTO_OPTIONS);
-        protoCache = loadPackageDefinition(packageDef);
+        try {
+            const packageDef = loadSync(PROTO_PATH, PROTO_OPTIONS);
+            protoCache = loadPackageDefinition(packageDef);
+        } catch (error) {
+            throw new Error(`Failed to load Proto file at ${PROTO_PATH}: ${(error as Error).message}`);
+        }
     }
     return protoCache;
 }
@@ -44,7 +48,7 @@ export function getServerServiceClient(): any {
 }
 
 /**
- * Get ServerService client (Target connects to Gateway)
+ * Get TargetService client (Target connects to Gateway)
  */
 export function getTargetServiceClient(): any {
     const proto = loadProto();
@@ -52,6 +56,34 @@ export function getTargetServiceClient(): any {
 
     if (!service) {
         throw new Error("TargetService not found");
+    }
+
+    return service;
+}
+
+/**
+ * Get ServerService definition (for Gateway server implementation)
+ */
+export function getServerServiceDefinition(): any {
+    const proto = loadProto();
+    const service = (proto.photon as any)?.ServerService?.service;
+
+    if (!service) {
+        throw new Error("ServerService definition not found");
+    }
+
+    return service;
+}
+
+/**
+ * Get TargetService definition (for Gateway server implementation)
+ */
+export function getTargetServiceDefinition(): any {
+    const proto = loadProto();
+    const service = (proto.photon as any)?.TargetService?.service;
+
+    if (!service) {
+        throw new Error("TargetService definition not found");
     }
 
     return service;
