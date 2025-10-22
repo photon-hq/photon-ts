@@ -18,6 +18,8 @@ describe("sending", () => {
                     instructions("You are a college student.")
                 }
             })
+            
+            await app.deploy(new Mock(""))
 
             await new Promise(() => {});
         },

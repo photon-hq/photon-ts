@@ -16,12 +16,12 @@ export abstract class Target implements _Target {
         return true;
     }
 
-    async userId(externalID: string, extra?: { phone?: string, email?: string }): Promise<string> {        
-        return this.idStorage.getByExternalId(externalID) ?? ()
+    async userId(externalID: string, extra?: { phone?: string, email?: string }): Promise<string | null> {        
+        return this.idStorage.getByExternalId(externalID) ?? null
     }
     
-    async externalId(userId: string): Promise<string> {
-        return this.idStorage.getByUserId(userId) ?? ()
+    async externalId(userId: string): Promise<string | null> {
+        return this.idStorage.getByUserId(userId) ?? null
     }
     
     async sendMessage(userId: string, message: MessageContent) {

@@ -36,7 +36,23 @@ export class Deployable {
     /**
      * Deploy to Gateway with elegant API
      */
-    async deploy(config?: DeployConfigType, ...targets: _Target[]): Promise<void> {
+    async deploy(...targets: _Target[]): Promise<void>;
+    async deploy(config: DeployConfigType, ...targets: _Target[]): Promise<void>;
+    async deploy(first: DeployConfigType | _Target, ...rest: _Target[]): Promise<void> {
+        let config: DeployConfigType | null = null;
+        let targets: _Target[];
+
+        if (Array.isArray(first)) {
+            // Case: deploy(...targets)
+            targets = first as _Target[];
+        } else if (typeof first === "object" && !Array.isArray(first)) {
+            // Case: deploy(config, ...targets)
+            config = first as DeployConfigType;
+            targets = rest;
+        } else {
+            throw new Error("Invalid arguments");
+        }
+
         const projectId = config?.projectId ?? process.env.PROJECT_ID;
         const projectSecret = config?.projectSecret ?? process.env.PROJECT_SECRET;
 
