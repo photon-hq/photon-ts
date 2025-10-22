@@ -2,7 +2,7 @@ import type { ZodType, z } from "zod";
 import { aware } from "../utils";
 import type { Context } from "./context";
 
-export type StatesMap = Record<string, Record<string, any>>;
+export type StatesMap = Record<string, Record<string, any>>; // scope_name: { key : value }
 
 export type State<T, maybeUndef extends boolean> = (maybeUndef extends true
     ? (T | undefined) & {
