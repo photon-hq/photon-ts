@@ -12,20 +12,17 @@ export class GatewayClient extends GatewayBase {
     // streams
     messagesStream: any;
 
-    override postConnect(): void {
+    override postConnect(targetName: string): void {
+        this.targetName = targetName;
         const metadata = this.generateMetadata();
-        metadata.append("target-name", this.targetName);
+        metadata.set("target-name", this.targetName);
         this.messagesStream = this.client.Messages({ metadata });
     }
 
     targetName!: string;
 
     readonly Client = {
-        registerTargetName: (name: string) => {
-            this.targetName = name;
-        },
-
-        sendMessage: async (userId: string, content: MessageContent, payload: any) => {
+        sendMessage: async (userId: string, content: MessageContent, payload?: any) => {
             await this.messagesStream.write({
                 user_id: userId,
                 message_content: content,

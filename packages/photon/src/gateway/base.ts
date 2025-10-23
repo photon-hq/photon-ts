@@ -39,15 +39,15 @@ export abstract class GatewayBase {
         this.clientFactory = createClientFactory();
     }
 
-    static connect<T extends GatewayBase>(this: new (config: GatewayConfig) => T, config: GatewayConfig): T {
+    static connect<T extends GatewayBase>(this: new (config: GatewayConfig) => T, config: GatewayConfig, ...args: any[]): T {
         // biome-ignore lint/complexity/noThisInStatic: <We use `this()` to get the proper version of gateway>
         const instance = new this(config);
         instance.client = instance.clientFactory.create(instance.service, instance.channel);
-        instance.postConnect();
+        instance.postConnect(...args);
         return instance;
     }
     
-    abstract postConnect(): void
+    abstract postConnect(...args: any[]): void
     
     generateMetadata(): Metadata {
         const metadata = new Metadata();

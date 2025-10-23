@@ -1,30 +1,30 @@
-import { type Message, Target } from "photon";
+import { Target } from "photon";
 
 export class Mock extends Target {
-    private readonly userId: string;
-
+    override name: string = "Mock";
+    
+    readonly userExternalId: string = crypto.randomUUID();
     readonly apiKey = `pho_${crypto.randomUUID()}`;
 
-    constructor(userId: string) {
+    constructor() {
         super();
-        this.userId = userId;
     }
 
-    onMessage(data: Message & { role: "assistant" }): void {
-        console.log(`[Edge] received assistant message: ${data.type === "plain_text" ? data.content : data.type}`);
-    }
+    async postStart(): Promise<void> {}
 
-    async postStart(): Promise<void> {
-        await this.registerUser(this.userId);
-    }
-
-    public async sendMessage(msg: string) {
-        await this.gateway.Client.send({
-            type: "plain_text",
-            content: msg,
-            userId: this.userId,
-            payload: { message: msg },
-            keysToPayloadMessage: ["message"],
-        });
+    public override async sendMessage(msg: string) {
+        const userId = await this.userId(this.userExternalId)
+        
+        if (!userId) {
+            throw new Error("User ID not found");
+        }
+        
+        super.sendMessage(
+            userId,
+            {
+                type: "plain_text",
+                content: msg
+            }
+        )
     }
 }

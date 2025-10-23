@@ -13,10 +13,9 @@ export abstract class Target implements _Target {
     idStorage = new IDStorage();
 
     start(config: GatewayConfig): boolean {
-        this.gateway = Gateway.connect(config);
+        this.gateway = Gateway.connect(config, this.name);
         
         // register
-        this.gateway.Client.registerTargetName(this.name);
 
         this.postStart();
 
@@ -35,8 +34,8 @@ export abstract class Target implements _Target {
         return rawExternalId.split("://")[1] ?? null
     }
 
-    async sendMessage(userId: string, message: MessageContent) {
-        // TODO: Implement sendMessage
+    async sendMessage(userId: string, message: MessageContent, payload?: any) {
+        await this.gateway.Client.sendMessage(userId, message, payload);
     }
 
     abstract postStart(): Promise<void>;

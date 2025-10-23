@@ -31,10 +31,10 @@ export function loadProto(): GrpcObject {
 
 export const serverService = () => {
     const proto = loadProto();
-    return (proto.photon as any).ServerService;
+    return (proto.photon as any).ServerService.service;
 }
 
 export const targetService = () => {
     const proto = loadProto();
-    return (proto.photon as any).TargetService;
+    return (proto.photon as any).TargetService.service;
 }
