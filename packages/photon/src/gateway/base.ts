@@ -1,32 +1,58 @@
-import { io, type Socket } from "socket.io-client";
+/**
+ * Gateway Base Class
+ */
 
-export class GatewayBase {
-    protected socket!: Socket;
-    protected api_key!: string;
+import * as grpc from "@grpc/grpc-js";
+import { type Channel, type Client, type ClientFactory, createChannel, createClientFactory, Metadata } from "nice-grpc";
+import type { DeployConfig } from "../deploy";
 
-    protected constructor() {}
+export type GatewayConfig = DeployConfig & {
+    gatewayAddress: string;
+};
 
-    static async connect<T extends GatewayBase>(this: new () => T, api_key: string): Promise<T> {
-        // biome-ignore lint/complexity/noThisInStatic: <We use `this()` to get the proper version of gateway>
-        const gateway = new this();
+export abstract class GatewayBase {
+    config: GatewayConfig;
+    channel: Channel;
+    clientFactory: ClientFactory;
+    client: any
+    
+    abstract service: any;
 
-        gateway.api_key = api_key;
+    public constructor(config: GatewayConfig) {
+        this.config = config;
 
-        await new Promise<void>((resolve) => {
-            gateway.socket = io("http://localhost:4001", {
-                transports: ["websocket"],
-            });
+        const useSSL =
+            !this.config.gatewayAddress.includes("localhost") &&
+            !this.config.gatewayAddress.includes("127.0.0.1") &&
+            !this.config.gatewayAddress.includes("0.0.0.0");
 
-            gateway.socket.on("connect", () => {
-                console.log("Connected:", gateway.socket.id);
-                resolve();
-            });
+        const credentials = useSSL ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
 
-            gateway.socket.on("disconnect", () => {
-                console.log("Disconnected:", gateway.socket.id);
-            });
+        this.channel = createChannel(config.gatewayAddress, credentials, {
+            "grpc.max_receive_message_length": 10 * 1024 * 1024,
+            "grpc.max_send_message_length": 10 * 1024 * 1024,
+            "grpc.keepalive_time_ms": 30000,
+            "grpc.keepalive_timeout_ms": 10000,
+            "grpc.keepalive_permit_without_calls": 1,
         });
+        
+        this.clientFactory = createClientFactory();
+    }
 
-        return gateway as T;
+    static connect<T extends GatewayBase>(this: new (config: GatewayConfig) => T, config: GatewayConfig, ...args: any[]): T {
+        // biome-ignore lint/complexity/noThisInStatic: <We use `this()` to get the proper version of gateway>
+        const instance = new this(config);
+        instance.client = instance.clientFactory.create(instance.service, instance.channel);
+        instance.postConnect(...args);
+        return instance;
+    }
+    
+    abstract postConnect(...args: any[]): void;
+    
+    generateMetadata(): Metadata {
+        const metadata = new Metadata();
+        metadata.set("project-id", this.config.projectId);
+        metadata.set("project-secret", this.config.projectSecret);
+        return metadata;
     }
 }

@@ -1,44 +1,88 @@
-import z from "zod";
-import type { Target } from "../target.ts";
-import type { OmitDiscriminant } from "../types";
-import { GatewayBase } from "./base.ts";
-import { type Message, messageSchema, type RegisterUser } from "./types";
+/**
+ * Gateway Client - Target SDK for connecting to Gateway
+ */
 
-class GatewayClient extends GatewayBase {
-    constructor() {
-        super();
+import { pushable } from "it-pushable";
+import { fromStruct, nowTimestamp, targetService, toStruct } from "../grpc";
+import type { MessageContent } from "../types";
+import { GatewayBase } from "./base";
+import { on } from "node:stream";
+
+export class GatewayClient extends GatewayBase {
+    override service: any = targetService();
+
+    // streams
+    messagesStream = pushable<any>({ objectMode: true });
+
+    override postConnect(targetName: string): void {
+        this.targetName = targetName;
+        const metadata = this.generateMetadata();
+        metadata.set("target-name", this.targetName);
+
+        const incomingMessages = this.client.Messages(this.messagesStream, { metadata });
+
+        (async () => {
+            for await (const message of incomingMessages) {
+                const content = fromStruct(message.message_content) as MessageContent;
+                this.onMessageHandler?.(message.user_id, content);
+            }
+        })();
     }
 
+    private targetName!: string;
+    private onMessageHandler: ((userId: string, message: MessageContent) => void) | null = null;
+
     readonly Client = {
-        send: async (data: OmitDiscriminant<Extract<Message, { role: "user" }>, "role">) => {
-            return await this.socket.emitWithAck("message", {
-                role: "user",
-                ...data,
-            } satisfies Message);
+        registerOnMessageHandler: (handler: (userId: string, message: MessageContent) => void) => {
+            this.onMessageHandler = handler;
         },
-
-        registerUser: async (data: Omit<RegisterUser, "apiKey">) => {
-            return await this.socket.emitWithAck("registerUser", {
-                apiKey: this.api_key,
-                ...data,
-            } satisfies RegisterUser);
-        },
-
-        registerOnMessage: (action: (data: Message & { role: "assistant" }) => void) => {
-            this.socket.on("message", (data, callback) => {
-                const result = z.safeParse(messageSchema, data);
-
-                if (result.success) {
-                    if (result.data.role === "assistant") {
-                        action(result.data);
-                    }
-                    callback({ success: true });
-                } else {
-                    console.error(result.error);
-                }
+        
+        sendMessage: async (userId: string, content: MessageContent, payload?: any) => {
+            this.messagesStream.push({
+                user_id: userId,
+                message_content: toStruct(content),
+                payload: payload ? toStruct(payload) : undefined,
+                timestamp: nowTimestamp()
             });
+        },
+
+        getUserId: async (externalId: string): Promise<string> => {
+            const metadata = this.generateMetadata();
+            metadata.delete("project-secret");
+            metadata.append("target-name", this.targetName);
+
+            const response = (
+                await this.client.Utils(
+                    {
+                        get_user_id: {
+                            external_id: externalId,
+                        },
+                    },
+                    { metadata },
+                )
+            ).get_user_id;
+
+            if (response.success) {
+                return response.user_id;
+            } else {
+                throw new Error(`Failed to get user ID: ${response.error}`);
+            }
+        },
+
+        getExternalId: async (userId: string): Promise<string> => {
+            const response = (
+                await this.client.Utils({
+                    get_external_id: {
+                        user_id: userId,
+                    },
+                })
+            ).get_external_id;
+
+            if (response.success) {
+                return response.external_id;
+            } else {
+                throw new Error(`Failed to get user ID: ${response.error}`);
+            }
         },
     };
 }
-
-export { GatewayClient };

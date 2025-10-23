@@ -1,25 +1,29 @@
 {
-    "name": "photon-ts",
-    "private": true,
-    "scripts": {
-        "build": "turbo run build",
-        "dev": "turbo run dev",
-        "test": "turbo run test",
-        "lint": "turbo run lint",
-        "format": "bunx --bun biome check --write ."
-    },
-    "devDependencies": {
-        "@biomejs/biome": "2.2.4",
-        "@types/bun": "latest",
-        "turbo": "^2.5.8",
-        "typescript": "5.9.2"
-    },
-    "packageManager": "bun@1.2.22",
-    "workspaces": [
-        "packages/*"
-    ],
-    "dependencies": {
-        "type-fest": "^5.0.1",
-        "zod": "^4.1.12"
-    }
+  "name": "photon-ts",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "bunx --bun biome check --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.4",
+    "@types/bun": "latest",
+    "turbo": "^2.5.8",
+    "typescript": "5.9.2"
+  },
+  "packageManager": "bun@1.2.22",
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.0",
+    "@grpc/proto-loader": "^0.8.0",
+    "it-pushable": "^3.2.3",
+    "nice-grpc": "^2.1.13",
+    "type-fest": "^5.1.0",
+    "zod": "^4.1.12"
+  }
 }

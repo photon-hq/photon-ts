@@ -1,18 +1,13 @@
-import type { ActionsOf, SomeExtension } from "../extensions";
-import type { Gateway } from "../gateway/server.ts";
-import type { App } from "./app.ts";
-import type { ActionReturnOf, SomeAction } from "./some-action.ts";
+import type { AgentConfig } from "../deploy/agent-config";
+import type { StatesMap } from "./state";
 
-export type Context<Ext extends SomeExtension> = {
-    _app: App<any, any, any, Ext>;
-    gateway: Gateway;
+export type Context = {
+    scopeName: string; // root's scope name should be empty string
     user: {
         id: string;
+        phone: string | null;
+        email: string | null;
     };
-} & {
-    [K in keyof ActionsOf<Ext>]: ReturnType<ActionsOf<Ext>[K]> extends infer M
-        ? M extends SomeAction<any>
-            ? (...args: Parameters<ActionsOf<Ext>[K]>) => Promise<ActionReturnOf<M>>
-            : never
-        : never;
+    states: StatesMap;
+    agentConfig: AgentConfig;
 };

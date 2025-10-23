@@ -1,0 +1,86 @@
+/**
+ * Photon Service Proto Definition
+ *
+ * Architecture:
+ * - Server <-> Gateway: Bidirectional Stream (Server initiates, reuses connection)
+ * - Target <-> Gateway: Unary (Utils) + Bidirectional Stream (Messages)
+ */
+
+syntax = "proto3";
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+package photon;
+
+// Gateway <-> Server
+service ServerService {
+  // Bidirectional
+  rpc Compile(stream CompileResult) returns (stream CompileRequest);
+}
+
+// Gateway <-> Target
+service TargetService {
+  // Unary
+  rpc Utils(UtilsRequest) returns (UtilsResponse);
+
+  // Bidirectional
+  rpc Messages(stream ChatMessage) returns (stream ChatMessage);
+}
+
+// [ Server ] Compile
+
+message CompileRequest {
+    string id = 1; // for reference
+    google.protobuf.Struct context = 2;
+}
+
+message CompileResult {
+    string id = 1; // for reference
+    google.protobuf.Struct context = 2;
+}
+
+// [ Target ] Utils
+
+message UtilsRequest {
+  oneof request {
+    GetUserIdRequest get_user_id = 1;
+    GetExternalIdRequest get_external_id = 2;
+  }
+}
+
+message UtilsResponse {
+  oneof response {
+    GetUserIdResponse get_user_id = 1;
+    GetExternalIdResponse get_external_id = 2;
+  }
+}
+
+message GetUserIdRequest {
+  string external_id = 1;
+}
+
+message GetUserIdResponse {
+  bool success = 1;
+  optional string error = 2;
+  string user_id = 3;
+}
+
+message GetExternalIdRequest {
+  string user_id = 1;
+}
+
+message GetExternalIdResponse {
+  bool success = 1;
+  optional string error = 2;
+  string external_id = 3;
+}
+
+// Target <-> Gateway Messaging
+
+message ChatMessage {
+    string user_id = 1;
+    google.protobuf.Struct message_content = 2;
+    optional google.protobuf.Struct payload = 3;
+    google.protobuf.Timestamp timestamp = 4;
+}

@@ -1,34 +1,67 @@
-import { describe, test } from "bun:test";
-import crypto from "node:crypto";
-import { App } from "photon";
+import { describe, expect, test } from "bun:test";
+import { $, instructions, state } from "photon";
+import z from "zod";
 import { Mock } from "../target.ts";
+
+process.env.GATEWAY_URL = "127.0.0.1:50052";
+
+describe("target utils", () => {
+    test("user id and external id", async () => {
+        const mockInstance = new Mock();
+
+        const app = $(() => {});
+
+        app.deploy(
+            {
+                projectId: mockInstance.apiKey,
+                projectSecret: mockInstance.apiKey,
+            },
+            mockInstance,
+        );
+        
+        const userIdFromGateway = await mockInstance.userId(mockInstance.mockId)
+        expect(userIdFromGateway).not.toBeNull();
+        
+        const externalIdFromGateway = await mockInstance.externalId(userIdFromGateway ?? "");
+        expect(externalIdFromGateway).not.toBeNull();
+        
+        expect(externalIdFromGateway).toBe(mockInstance.mockId);
+        
+        expect(mockInstance.idStorage.getByUserId(userIdFromGateway ?? "")).toBe(mockInstance.mockId);
+        expect(mockInstance.idStorage.getByExternalId(externalIdFromGateway ?? "")).toBe(userIdFromGateway ?? "");
+        
+        const secondTimeUserIdFromGateway = await mockInstance.gateway.Client.getUserId(mockInstance.mockId)
+        expect(secondTimeUserIdFromGateway).toBe(userIdFromGateway ?? "");
+    });
+});
 
 describe("sending", () => {
     test(
         "one-way sending from user",
         async () => {
-            const userId = crypto.randomUUID();
+            const mockInstance = new Mock();
 
-            console.log(`userId: ${userId}`);
+            const app = $(() => {
+                const onboard = state("onboard", z.boolean()).default(false);
 
-            const mockInstance = new Mock(userId);
+                instructions("You are Ryan.");
 
-            await new App("test", "test")
-                .onboard(async (context) => {
-                    await context.send("hello, world from server");
-                })
-                .everyMessage(
-                    async (context) => {
-                        await context.send("hello, world from every message");
-                    },
-                    {
-                        mode: "break",
-                    },
-                )
-                .deploy(mockInstance.apiKey, mockInstance);
+                if (!onboard) {
+                    instructions("You are a high school student.");
+                } else {
+                    instructions("You are a college student.");
+                }
+            });
 
-            await mockInstance.registerUser(userId);
-            await mockInstance.sendMessage("hello, world from user");
+            app.deploy(
+                {
+                    projectId: mockInstance.apiKey,
+                    projectSecret: mockInstance.apiKey,
+                },
+                mockInstance,
+            );
+
+            mockInstance.sendMessage("hello world");
 
             await new Promise(() => {});
         },

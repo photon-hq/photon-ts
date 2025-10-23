@@ -1,10 +1,12 @@
+import { GatewayClient } from "./gateway";
+
+export * from "./actions";
 export * from "./core";
-export type { SomeModifier } from "./core/some-modifier.ts";
-export * from "./extensions";
-export * from "./extensions/index.ts";
-export { GatewayClient as Gateway } from "./gateway/client.ts";
-export { Gateway as GatewayServer } from "./gateway/server.ts";
-export * from "./gateway/types";
+export * from "./deploy";
+export * from "./gateway";
+export { Gateway as GatewayServer, GatewayClient as Gateway } from "./gateway";
+export * from "./grpc";
 export * from "./modifiers";
-export { Target } from "./target.ts";
+export * from "./target";
 export * from "./types";
+export * from "./utils";
