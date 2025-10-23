@@ -30,11 +30,13 @@ service TargetService {
 // [ Server ] Compile
 
 message CompileRequest {
-    google.protobuf.Struct context = 1;
+    string id = 1 // for reference
+    google.protobuf.Struct context = 2;
 }
 
 message CompileResult {
-    google.protobuf.Struct context = 1;
+    string id = 1 // for reference
+    google.protobuf.Struct context = 2;
 }
 
 // [ Target ] Utils

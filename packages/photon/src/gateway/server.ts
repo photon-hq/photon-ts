@@ -22,7 +22,7 @@ export class GatewayServer extends GatewayBase {
         (async () => {
             for await (const response of this.compileStream) {
                 const context = response.context as Context;
-                this.Server.onCompileRequest(context).catch((error) => {
+                this.Server.onCompileRequest(response.id, context).catch((error) => {
                     console.error("Error in onCompileRequest:", error);
                 });
             }
@@ -34,15 +34,15 @@ export class GatewayServer extends GatewayBase {
             this.compileHandler = handler;
         },
         
-        onCompileRequest: async (context: Context) => {
+        onCompileRequest: async (id: string, context: Context) => {
             const result = await this.compileHandler?.(context);
             if (result) {
-                this.Server.sendCompileResult(result);
+                this.Server.sendCompileResult(id, result);
             }
         },
         
-        sendCompileResult: async (context: Context) => {
-            await this.compileStream.write({ context });
+        sendCompileResult: async (id: string, context: Context) => {
+            await this.compileStream.write({ id, context });
         }
     }
 }
