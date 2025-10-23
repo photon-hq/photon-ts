@@ -7,6 +7,8 @@ export interface _Target {
 }
 
 export abstract class Target implements _Target {
+    abstract name: string;
+    
     gateway!: Gateway;
     idStorage = new IDStorage();
 
@@ -19,11 +21,15 @@ export abstract class Target implements _Target {
     }
 
     async userId(externalID: string, extra?: { phone?: string; email?: string }): Promise<string | null> {
-        return this.idStorage.getByExternalId(externalID) ?? this.gateway.Client.getUserId(externalID);
+        return this.idStorage.getByExternalId(`${this.name}://${externalID}`) ?? await this.gateway.Client.getUserId(externalID);
     }
 
     async externalId(userId: string): Promise<string | null> {
-        return this.idStorage.getByUserId(userId) ?? this.gateway.Client.getExternalId(userId);
+        const rawExternalId: string | null = this.idStorage.getByUserId(userId) ?? await this.gateway.Client.getExternalId(userId);
+        
+        if (!rawExternalId) return null;
+        
+        return rawExternalId.split("://")[1] ?? null
     }
 
     async sendMessage(userId: string, message: MessageContent) {
