@@ -5,12 +5,13 @@
 import type { Context } from "../core";
 import { serverService } from "../grpc";
 import { GatewayBase } from "./base";
+import { pushable } from "it-pushable";
 
 export class GatewayServer extends GatewayBase {
     override service: any = serverService();
     
     // streams
-    compileStream: any
+    compileResultStream = pushable<any>({ objectMode: true })
     
     // outside handlers
     protected compileHandler: ((context: Context) => Promise<Context>) | null = null
@@ -22,10 +23,10 @@ export class GatewayServer extends GatewayBase {
             
         }
         
-        this.compileStream = this.client.Compile(compileResultsInterator(), { metadata });
+        const compileRequests = this.client.Compile(this.compileResultStream, { metadata });
         
         (async () => {
-            for await (const response of this.compileStream) {
+            for await (const response of compileRequests) {
                 const context = response.context as Context;
                 this.Server.onCompileRequest(response.id, context).catch((error) => {
                     console.error("Error in onCompileRequest:", error);
@@ -47,7 +48,7 @@ export class GatewayServer extends GatewayBase {
         },
         
         sendCompileResult: async (id: string, context: Context) => {
-            
+            this.compileResultStream.push({ id, context });
         }
     }
 }

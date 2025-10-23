@@ -11,14 +11,20 @@ export class GatewayClient extends GatewayBase {
     override service: any = targetService();
 
     // streams
-    messagesStream = pushable<any>()
+    messagesStream = pushable<any>({ objectMode: true });
 
     override postConnect(targetName: string): void {
         this.targetName = targetName;
         const metadata = this.generateMetadata();
         metadata.set("target-name", this.targetName);
         
-        this.client.Messages(this.messagesStream, { metadata });
+        const incomingMessages = this.client.Messages(this.messagesStream, { metadata });
+        
+        (async () => {
+            for await (const message of incomingMessages) {
+                console.log(message);
+            }
+        })();
     }
 
     targetName!: string;
