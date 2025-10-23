@@ -37,14 +37,14 @@ export class GatewayClient extends GatewayBase {
             metadata.delete("project-secret");
             metadata.append("target-name", this.targetName);
 
-            const response = await this.client.Utils(
+            const response = (await this.client.Utils(
                 {
                     get_user_id: {
                         external_id: externalId,
                     },
                 },
                 { metadata },
-            );
+            )).get_user_id;
 
             if (response.success) {
                 return response.user_id;
@@ -54,11 +54,11 @@ export class GatewayClient extends GatewayBase {
         },
 
         getExternalId: async (userId: string): Promise<string> => {
-            const response = await this.client.Utils({
+            const response = (await this.client.Utils({
                 get_external_id: {
                     user_id: userId,
                 },
-            });
+            })).get_external_id;
 
             if (response.success) {
                 return response.external_id;
