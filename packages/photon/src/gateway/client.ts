@@ -3,7 +3,7 @@
  */
 
 import { pushable } from "it-pushable";
-import { targetService } from "../grpc";
+import { targetService, toStruct } from "../grpc";
 import type { MessageContent } from "../types";
 import { GatewayBase } from "./base";
 
@@ -17,9 +17,9 @@ export class GatewayClient extends GatewayBase {
         this.targetName = targetName;
         const metadata = this.generateMetadata();
         metadata.set("target-name", this.targetName);
-        
+
         const incomingMessages = this.client.Messages(this.messagesStream, { metadata });
-        
+
         (async () => {
             for await (const message of incomingMessages) {
                 console.log(message);
@@ -30,10 +30,10 @@ export class GatewayClient extends GatewayBase {
     targetName!: string;
 
     readonly Client = {
-        sendMessage: async (userId: string, content: MessageContent, payload?: any) => {            
+        sendMessage: async (userId: string, content: MessageContent, payload?: any) => {
             this.messagesStream.push({
                 user_id: userId,
-                message_content: content,
+                message_content: toStruct(content),
                 payload,
             });
         },
@@ -43,14 +43,16 @@ export class GatewayClient extends GatewayBase {
             metadata.delete("project-secret");
             metadata.append("target-name", this.targetName);
 
-            const response = (await this.client.Utils(
-                {
-                    get_user_id: {
-                        external_id: externalId,
+            const response = (
+                await this.client.Utils(
+                    {
+                        get_user_id: {
+                            external_id: externalId,
+                        },
                     },
-                },
-                { metadata },
-            )).get_user_id;
+                    { metadata },
+                )
+            ).get_user_id;
 
             if (response.success) {
                 return response.user_id;
@@ -60,11 +62,13 @@ export class GatewayClient extends GatewayBase {
         },
 
         getExternalId: async (userId: string): Promise<string> => {
-            const response = (await this.client.Utils({
-                get_external_id: {
-                    user_id: userId,
-                },
-            })).get_external_id;
+            const response = (
+                await this.client.Utils({
+                    get_external_id: {
+                        user_id: userId,
+                    },
+                })
+            ).get_external_id;
 
             if (response.success) {
                 return response.external_id;
