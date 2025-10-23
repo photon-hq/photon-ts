@@ -118,14 +118,37 @@ $(() => {
 
 ---
 
-### `model()` - Choose AI Model
+### Modifiers
+
+**Modifiers** are declarative functions that configure how your AI thinks and responds. They modify the agent's configuration without executing actions.
+
+**Examples:**
+- `instructions()` - Set system prompts
+- `model()` - Choose AI model
 
 ```typescript
-import { model } from 'photon';
-
 $(() => {
-  model('gpt-4');
-  instructions('Provide expert analysis');
+  model('gpt-5');
+  instructions('You are an expert');
+});
+```
+
+---
+
+### Actions
+
+**Actions** are imperative functions that execute operations with side effects, like sending messages or calling external APIs.
+
+**Examples:**
+- `reply()` - Send a message _(coming soon)_
+- `callTool()` - Execute external function _(coming soon)_
+- `handoff()` - Transfer to another agent _(coming soon)_
+
+```typescript
+$(() => {
+  if (needsHelp) {
+    reply('Let me connect you with support');
+  }
 });
 ```
 
