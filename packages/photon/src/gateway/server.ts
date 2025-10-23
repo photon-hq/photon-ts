@@ -16,7 +16,9 @@ export class GatewayServer extends GatewayBase {
     protected compileHandler: ((context: Context) => Promise<Context>) | null = null
     
     override postConnect(): void {
-        this.compileStream = this.client.Compile();
+        const metadata = this.generateMetadata()
+        metadata.delete("project-secret")
+        this.compileStream = this.client.Compile({ metadata });
         
         (async () => {
             for await (const response of this.compileStream) {

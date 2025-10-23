@@ -69,13 +69,15 @@ export class Deployable {
 
         // Get gateway address: env var > default
         const gatewayAddress = process.env.GATEWAY_URL ?? DEFAULT_GATEWAY_ADDRESS;
-
-        // Connect to Gateway
-        this.gateway = Gateway.connect({
+        
+        const gatewayConfig = {
             gatewayAddress,
             projectId: projectId,
             projectSecret: projectSecret,
-        });
+        }
+
+        // Connect to Gateway
+        this.gateway = Gateway.connect(gatewayConfig);
         
         // set up
         this.gateway.Server.registerCompileHandler(this.compile);
@@ -83,5 +85,12 @@ export class Deployable {
         console.log(`[Photon] Deployed successfully`);
         console.log(`[Photon] - Project ID: ${projectId}`);
         console.log(`[Photon] - Gateway: ${gatewayAddress}`);
+        
+        // Start Targets
+        for (const target of targets) {
+            target.start(gatewayConfig);
+        }
+        
+        console.log(`[Photon] - Targets started`);
     }
 }
