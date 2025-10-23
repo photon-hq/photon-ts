@@ -2,6 +2,7 @@
  * Gateway Client - Target SDK for connecting to Gateway
  */
 
+import { pushable } from "it-pushable";
 import { targetService } from "../grpc";
 import type { MessageContent } from "../types";
 import { GatewayBase } from "./base";
@@ -10,25 +11,25 @@ export class GatewayClient extends GatewayBase {
     override service: any = targetService();
 
     // streams
-    messagesStream: any;
+    messagesStream = pushable<any>()
 
     override postConnect(targetName: string): void {
         this.targetName = targetName;
         const metadata = this.generateMetadata();
         metadata.set("target-name", this.targetName);
         
-        async function* sendMessagesIterator() {
-            
-        }
-        
-        this.messagesStream = this.client.Messages(sendMessagesIterator(), { metadata });
+        this.client.Messages(this.messagesStream, { metadata });
     }
 
     targetName!: string;
 
     readonly Client = {
-        sendMessage: async (userId: string, content: MessageContent, payload?: any) => {
-            
+        sendMessage: async (userId: string, content: MessageContent, payload?: any) => {            
+            this.messagesStream.push({
+                user_id: userId,
+                message_content: content,
+                payload,
+            });
         },
 
         getUserId: async (externalId: string): Promise<string> => {

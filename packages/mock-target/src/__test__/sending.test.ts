@@ -27,6 +27,8 @@ describe("sending", () => {
                 projectId: mockInstance.apiKey,
                 projectSecret: mockInstance.apiKey,
             }, mockInstance)
+            
+            mockInstance.sendMessage("hello world")
 
             await new Promise(() => {});
         },
