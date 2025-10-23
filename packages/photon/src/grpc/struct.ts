@@ -1,4 +1,4 @@
-type StructLike = { fields?: Record<string, any> };
+export type StructLike = { fields?: Record<string, any> };
 
 export function toStruct(obj: any): StructLike {
     const fields: Record<string, any> = {};
