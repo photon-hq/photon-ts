@@ -22,9 +22,9 @@ export abstract class GatewayBase {
         this.config = config;
 
         const useSSL =
-            !this.config.gatewayAddress.startsWith("localhost") &&
-            !this.config.gatewayAddress.startsWith("127.0.0.1") &&
-            !this.config.gatewayAddress.startsWith("0.0.0.0");
+            !this.config.gatewayAddress.includes("localhost") &&
+            !this.config.gatewayAddress.includes("127.0.0.1") &&
+            !this.config.gatewayAddress.includes("0.0.0.0");
 
         const credentials = useSSL ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
 
@@ -47,7 +47,7 @@ export abstract class GatewayBase {
         return instance;
     }
     
-    abstract postConnect(...args: any[]): void
+    abstract postConnect(...args: any[]): void;
     
     generateMetadata(): Metadata {
         const metadata = new Metadata();

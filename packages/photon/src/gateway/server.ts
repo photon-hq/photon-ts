@@ -17,7 +17,12 @@ export class GatewayServer extends GatewayBase {
     
     override postConnect(): void {
         const metadata = this.generateMetadata()
-        this.compileStream = this.client.Compile({ metadata });
+        
+        async function* compileResultsInterator() {
+            
+        }
+        
+        this.compileStream = this.client.Compile(compileResultsInterator(), { metadata });
         
         (async () => {
             for await (const response of this.compileStream) {
@@ -42,7 +47,7 @@ export class GatewayServer extends GatewayBase {
         },
         
         sendCompileResult: async (id: string, context: Context) => {
-            await this.compileStream.write({ id, context });
+            
         }
     }
 }

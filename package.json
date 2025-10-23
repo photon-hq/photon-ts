@@ -21,6 +21,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.14.0",
     "@grpc/proto-loader": "^0.8.0",
+    "it-pushable": "^3.2.3",
     "nice-grpc": "^2.1.13",
     "type-fest": "^5.1.0",
     "zod": "^4.1.12"

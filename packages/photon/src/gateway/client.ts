@@ -16,18 +16,19 @@ export class GatewayClient extends GatewayBase {
         this.targetName = targetName;
         const metadata = this.generateMetadata();
         metadata.set("target-name", this.targetName);
-        this.messagesStream = this.client.Messages({ metadata });
+        
+        async function* sendMessagesIterator() {
+            
+        }
+        
+        this.messagesStream = this.client.Messages(sendMessagesIterator(), { metadata });
     }
 
     targetName!: string;
 
     readonly Client = {
         sendMessage: async (userId: string, content: MessageContent, payload?: any) => {
-            await this.messagesStream.write({
-                user_id: userId,
-                message_content: content,
-                payload,
-            });
+            
         },
 
         getUserId: async (externalId: string): Promise<string> => {
@@ -53,7 +54,7 @@ export class GatewayClient extends GatewayBase {
 
         getExternalId: async (userId: string): Promise<string> => {
             const response = await this.client.Utils({
-                get_user_id: {
+                get_external_id: {
                     user_id: userId,
                 },
             });
