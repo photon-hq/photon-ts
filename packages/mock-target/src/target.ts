@@ -3,7 +3,7 @@ import { Target, type MessageContent } from "photon";
 export class Mock extends Target {
     override name: string = "Mock";
     
-    readonly userExternalId: string = crypto.randomUUID();
+    readonly mockId: string = crypto.randomUUID();
     readonly apiKey = `pho_${crypto.randomUUID()}`;
 
     constructor() {
@@ -13,7 +13,7 @@ export class Mock extends Target {
     async postStart(): Promise<void> {}
 
     public override async sendMessage(msg: string) {
-        const userId = await this.userId(this.userExternalId)
+        const userId = await this.userId(this.mockId)
         
         if (!userId) {
             throw new Error("User ID not found");

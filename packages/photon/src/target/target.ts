@@ -26,16 +26,22 @@ export abstract class Target implements _Target {
     
     abstract postStart(): Promise<void>;
 
-    async userId(externalID: string, extra?: { phone?: string; email?: string }): Promise<string | null> {
-        return this.idStorage.getByExternalId(`${this.name}://${externalID}`) ?? await this.gateway.Client.getUserId(externalID);
+    async userId(externalId: string, extra?: { phone?: string; email?: string }): Promise<string | null> {
+        const userId = this.idStorage.getByExternalId(externalId) ?? await this.gateway.Client.getUserId(externalId);
+        this.idStorage.set({
+            userId,
+            externalId
+        })
+        return userId;
     }
 
     async externalId(userId: string): Promise<string | null> {
-        const rawExternalId: string | null = this.idStorage.getByUserId(userId) ?? await this.gateway.Client.getExternalId(userId);
-        
-        if (!rawExternalId) return null;
-        
-        return rawExternalId.split("://")[1] ?? null
+        const externalId = this.idStorage.getByUserId(userId) ?? await this.gateway.Client.getExternalId(userId);
+        this.idStorage.set({
+            userId,
+            externalId
+        })
+        return externalId;
     }
 
     // MARK: Messages

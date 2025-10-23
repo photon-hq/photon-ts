@@ -2,9 +2,9 @@ export class IDStorage {
     userByExternal: Record<string, string> = {};
     externalByUser: Record<string, string> = {};
 
-    set(userId: string, externalId: string) {
-        this.userByExternal[externalId] = userId;
-        this.externalByUser[userId] = externalId;
+    set(v: { userId: string; externalId: string }) {
+        this.userByExternal[v.externalId] = v.userId;
+        this.externalByUser[v.userId] = v.externalId;
     }
 
     getByUserId(userId: string): string | undefined {
