@@ -14,6 +14,9 @@ export abstract class Target implements _Target {
 
     start(config: GatewayConfig): boolean {
         this.gateway = Gateway.connect(config);
+        
+        // register
+        this.gateway.Client.registerTargetName(this.name);
 
         this.postStart();
 
