@@ -1,4 +1,4 @@
-import { Target } from "photon";
+import { Target, type MessageContent } from "photon";
 
 export class Mock extends Target {
     override name: string = "Mock";
@@ -26,5 +26,9 @@ export class Mock extends Target {
                 content: msg
             }
         )
+    }
+    
+    protected override onMessage(userId: string, message: MessageContent): void {
+        console.log(`Received message from ${userId}: ${message.content}`);
     }
 }

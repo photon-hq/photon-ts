@@ -3,9 +3,10 @@
  */
 
 import { pushable } from "it-pushable";
-import { fromStruct, targetService, toStruct } from "../grpc";
+import { fromStruct, nowTimestamp, targetService, toStruct } from "../grpc";
 import type { MessageContent } from "../types";
 import { GatewayBase } from "./base";
+import { on } from "node:stream";
 
 export class GatewayClient extends GatewayBase {
     override service: any = targetService();
@@ -23,24 +24,25 @@ export class GatewayClient extends GatewayBase {
         (async () => {
             for await (const message of incomingMessages) {
                 const content = fromStruct(message.message_content) as MessageContent;
-                const payload = message.payload ? fromStruct(message.payload) : undefined;
-                console.log("[SDK.Client] Received message:", {
-                    user_id: message.user_id,
-                    content,
-                    payload,
-                });
+                this.onMessageHandler?.(message.user_id, content);
             }
         })();
     }
 
-    targetName!: string;
+    private targetName!: string;
+    private onMessageHandler: ((userId: string, message: MessageContent) => void) | null = null;
 
     readonly Client = {
+        registerOnMessageHandler: (handler: (userId: string, message: MessageContent) => void) => {
+            this.onMessageHandler = handler;
+        },
+        
         sendMessage: async (userId: string, content: MessageContent, payload?: any) => {
             this.messagesStream.push({
                 user_id: userId,
                 message_content: toStruct(content),
                 payload: payload ? toStruct(payload) : undefined,
+                timestamp: nowTimestamp()
             });
         },
 

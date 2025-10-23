@@ -16,11 +16,15 @@ export abstract class Target implements _Target {
         this.gateway = Gateway.connect(config, this.name);
         
         // register
-
+        this.gateway.Client.registerOnMessageHandler(this.onMessage.bind(this));
+        
+        // post start
         this.postStart();
 
         return true;
     }
+    
+    abstract postStart(): Promise<void>;
 
     async userId(externalID: string, extra?: { phone?: string; email?: string }): Promise<string | null> {
         return this.idStorage.getByExternalId(`${this.name}://${externalID}`) ?? await this.gateway.Client.getUserId(externalID);
@@ -34,9 +38,10 @@ export abstract class Target implements _Target {
         return rawExternalId.split("://")[1] ?? null
     }
 
+    // MARK: Messages
     async sendMessage(userId: string, message: MessageContent, payload?: any) {
         await this.gateway.Client.sendMessage(userId, message, payload);
     }
-
-    abstract postStart(): Promise<void>;
+    
+    protected abstract onMessage(userId: string, message: MessageContent): void
 }

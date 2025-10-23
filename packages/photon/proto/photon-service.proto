@@ -9,6 +9,7 @@
 syntax = "proto3";
 
 import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 
 package photon;
 
@@ -81,4 +82,5 @@ message ChatMessage {
     string user_id = 1;
     google.protobuf.Struct message_content = 2;
     optional google.protobuf.Struct payload = 3;
+    google.protobuf.Timestamp timestamp = 4;
 }
