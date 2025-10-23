@@ -3,7 +3,7 @@ import { $, instructions, state } from "photon";
 import { Mock } from "../target.ts";
 import z from "zod";
 
-process.env.GATEWAY_URL = "http://127.0.0.1:4001";
+process.env.GATEWAY_URL = "127.0.0.1:50052";
 
 describe("sending", () => {
     test(

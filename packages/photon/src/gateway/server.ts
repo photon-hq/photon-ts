@@ -3,7 +3,7 @@
  */
 
 import type { Context } from "../core";
-import { serverService } from "../grpc";
+import { serverService, toStruct, fromStruct } from "../grpc";
 import { GatewayBase } from "./base";
 import { pushable } from "it-pushable";
 
@@ -27,7 +27,7 @@ export class GatewayServer extends GatewayBase {
         
         (async () => {
             for await (const response of compileRequests) {
-                const context = response.context as Context;
+                const context = fromStruct(response.context) as Context;
                 this.Server.onCompileRequest(response.id, context).catch((error) => {
                     console.error("Error in onCompileRequest:", error);
                 });
@@ -48,7 +48,10 @@ export class GatewayServer extends GatewayBase {
         },
         
         sendCompileResult: async (id: string, context: Context) => {
-            this.compileResultStream.push({ id, context });
+            this.compileResultStream.push({ 
+                id, 
+                context: toStruct(context) 
+            });
         }
     }
 }
