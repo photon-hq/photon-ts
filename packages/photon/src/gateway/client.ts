@@ -3,7 +3,7 @@
  */
 
 import { pushable } from "it-pushable";
-import { targetService, toStruct, fromStruct } from "../grpc";
+import { fromStruct, targetService, toStruct } from "../grpc";
 import type { MessageContent } from "../types";
 import { GatewayBase } from "./base";
 
@@ -24,10 +24,10 @@ export class GatewayClient extends GatewayBase {
             for await (const message of incomingMessages) {
                 const content = fromStruct(message.message_content) as MessageContent;
                 const payload = message.payload ? fromStruct(message.payload) : undefined;
-                console.log("[SDK.Client] Received message:", { 
-                    user_id: message.user_id, 
-                    content, 
-                    payload 
+                console.log("[SDK.Client] Received message:", {
+                    user_id: message.user_id,
+                    content,
+                    payload,
                 });
             }
         })();
