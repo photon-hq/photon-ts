@@ -18,6 +18,8 @@ import { GatewayBase } from "./base";
      readonly Client = {
          getUserId: async (externalId: string): Promise<string> => {
              const metadata = this.generateMetadata()
+             metadata.delete("project-secret")
+             
              const response = await this.client.Utils({
                  get_user_id: {
                      external_id: externalId

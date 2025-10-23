@@ -17,7 +17,6 @@ export class GatewayServer extends GatewayBase {
     
     override postConnect(): void {
         const metadata = this.generateMetadata()
-        metadata.delete("project-secret")
         this.compileStream = this.client.Compile({ metadata });
         
         (async () => {
