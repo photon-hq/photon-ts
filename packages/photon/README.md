@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@photon-ai/photon.svg)](https://www.npmjs.com/package/@photon-ai/photon)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/license-SSPL-blue.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 **Build AI agents with 10x less code.**
 
@@ -77,7 +77,7 @@ const agent = $(() => {
 });
 ```
 
-Every time a user sends a message, this function runs to determine how your AI should behave.
+This function runs during initialization or when state changes to determine how your AI should behave.
 
 ---
 
@@ -103,18 +103,22 @@ import { state } from 'photon';
 import { z } from 'zod';
 
 $(() => {
-  const count = state('count', z.number()).default(0);
+  const language = state('language', z.string()).default('en');
   
-  instructions(`This user has sent ${count} messages`);
+  instructions(`Reply in ${language} language`);
   
-  count.update(count + 1);
+  tool('change_language', (newLang: string) => {
+    language.update(newLang);
+    return `Language changed to ${newLang}`;
+  });
 });
 ```
 
 **How it works:**
-- Each user gets their own `count`
+- Each user gets their own `language` state
 - Value persists across messages
-- When `count.update()` is called, state is saved automatically
+- AI can call `change_language` tool to update it
+- Next message will use the new language
 
 ---
 
@@ -177,40 +181,6 @@ User → Target → Gateway (IF no tool call, Your $() Code → AI Response) →
 
 ## Examples
 
-### Basic Example
-
-```typescript
-import { $, instructions, state } from 'photon';
-import { z } from 'zod';
-
-// Define agent
-const agent = $(() => {
-  instructions('You are a helpful assistant');
-
-  const count = state('count', z.number()).default(0);
-  instructions(`This user has sent ${count} messages`);
-  count.update(count + 1);
-});
-
-// Deploy
-agent.deploy(new iMessage());
-```
-
-**Environment:**
-
-```bash
-export PROJECT_ID=my-project
-export PROJECT_SECRET=my-secret
-```
-
-**Run:**
-
-```bash
-bun run agent.ts
-```
-
----
-
 ### Complete Example: Subscription-Based AI Assistant
 
 ```typescript
@@ -251,6 +221,18 @@ on_stripe_webhook((status, user_id) => {
 });
 
 app.deploy(new iMessage(), new WhatsApp());
+```
+**Environment:**
+
+```bash
+export PROJECT_ID=my-project
+export PROJECT_SECRET=my-secret
+```
+
+**Run:**
+
+```bash
+bun run agent.ts
 ```
 
 **What this does:**
@@ -365,13 +347,4 @@ Your Target can SEND messages to Gateway, but can't RECEIVE AI responses back to
 
 ## License
 
-This project is licensed under the [Server Side Public License v1 (SSPL)](./LICENSE) with additional restrictions.
-
-### Prohibited Use
-
-**You may NOT use this software to create competing products or services**, including but not limited to:
-- AI agent frameworks or platforms
-- Multi-platform agent deployment services
-- Similar agent orchestration or state management tools
-
-For the complete license terms, see the [LICENSE](./LICENSE) file.
+This project is licensed under the [MIT License](./LICENSE).
