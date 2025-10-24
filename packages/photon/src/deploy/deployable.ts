@@ -30,7 +30,10 @@ export class Deployable {
         this.invokbales.set(name, invokable);
     }
 
-    invoke = async (name: string, context: Context, values: any): Promise<any> => {
+    invoke = async (name: string, context: Context, values: any): Promise<{
+        context: Context;
+        returnValues: any;
+    }> => {
         const invokable = this.invokbales.get(name);
         if (!invokable) {
             throw new Error(`Invokable named '${name}' not found`);
@@ -96,6 +99,7 @@ export class Deployable {
 
         // set up
         this.gateway.Server.registerCompileHandler(this.compile);
+        this.gateway.Server.registerInvokeHandler(this.invoke);
 
         console.log(`[Photon] Deployed successfully`);
         console.log(`[Photon] - Project ID: ${projectId}`);

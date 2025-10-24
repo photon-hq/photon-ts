@@ -11,5 +11,5 @@ export type Context = {
     };
     states: StatesMap;
     agentConfig: AgentConfig;
-    app: Deployable | null | undefined
+    app?: Deployable | null | undefined
 };

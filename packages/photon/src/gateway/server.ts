@@ -3,6 +3,7 @@
  */
 
 import type { Context } from "../core";
+import type { Deployable } from "../deploy";
 import { serverService, toStruct, fromStruct } from "../grpc";
 import { GatewayBase } from "./base";
 import { pushable } from "it-pushable";
@@ -12,30 +13,45 @@ export class GatewayServer extends GatewayBase {
     
     // streams
     compileResultStream = pushable<any>({ objectMode: true })
+    invokeResultStream = pushable<any>({ objectMode: true })
     
     // outside handlers
     protected compileHandler: ((context: Context) => Promise<Context>) | null = null
+    protected invokeHandler: typeof Deployable.prototype.invoke | null = null;
     
     override postConnect(): void {
         const metadata = this.generateMetadata()
         
-        async function* compileResultsInterator() {
-            
-        }
-        
         const compileRequests = this.client.Compile(this.compileResultStream, { metadata });
         
         (async () => {
-            for await (const response of compileRequests) {
-                const context = fromStruct(response.context) as Context;
-                this.Server.onCompileRequest(response.id, context).catch((error) => {
+            for await (const request of compileRequests) {
+                const context = fromStruct(request.context) as Context;
+                this.Server.onCompileRequest(request.id, context).catch((error) => {
                     console.error("Error in onCompileRequest:", error);
                 });
             }
         })();
+        
+        const invokeRequests = this.client.Invoke(this.invokeResultStream, { metadata });
+        
+        (async () => {
+            for await (const request of invokeRequests) {
+                const context = fromStruct(request.context) as Context;
+                const values = fromStruct(request.values)
+                this.Server.onInvokeRequest(request.id, request.name, context, values).catch((error) => {
+                    console.error("Error in onInvokeRequest:", error);
+                });
+            }
+        })();
+
     }
     
     readonly Server = {
+        registerInvokeHandler: (handler: typeof this.invokeHandler) => {
+            this.invokeHandler = handler;
+        },
+        
         registerCompileHandler: (handler: typeof this.compileHandler) => {
             this.compileHandler = handler;
         },
@@ -47,11 +63,26 @@ export class GatewayServer extends GatewayBase {
             }
         },
         
+        onInvokeRequest: async (id: string, name: string, context: Context, values: any) => {
+            const result = await this.invokeHandler?.(name, context, values);
+            if (result) {
+                this.Server.sendInvokeResult(id, result.context, result.returnValues);
+            }
+        },
+        
         sendCompileResult: async (id: string, context: Context) => {
             this.compileResultStream.push({ 
                 id, 
                 context: toStruct(context) 
             });
-        }
+        },
+        
+        sendInvokeResult: async (id: string, context: Context, returnValues: any) => {
+            this.invokeResultStream.push({ 
+                id, 
+                context: toStruct(context),
+                return_values: toStruct(returnValues)
+            });
+        },
     }
 }
