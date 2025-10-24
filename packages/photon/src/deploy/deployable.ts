@@ -33,6 +33,7 @@ export class Deployable {
         if (!compiler) {
             throw new Error(`Compiler not found for scope '${context.scopeName}'`);
         }
+        context.app = this
         return await compiler(context);
     };
 
