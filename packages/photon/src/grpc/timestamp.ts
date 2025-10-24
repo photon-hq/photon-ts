@@ -20,8 +20,7 @@ export function toTimestamp(value: Date | string | number | null): TimestampLike
  * Converts a google.protobuf.Timestamp to a JS Date.
  * Returns null if invalid.
  */
-export function fromTimestamp(timestamp: TimestampLike | null): Date | null {
-    if (!timestamp) return null;
+export function fromTimestamp(timestamp: TimestampLike): Date {
     const seconds = Number(timestamp.seconds ?? 0);
     const nanos = timestamp.nanos ?? 0;
     return new Date(seconds * 1000 + nanos / 1e6);
