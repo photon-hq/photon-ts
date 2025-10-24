@@ -9,12 +9,12 @@ export type Invokable = (
     returnValues: any;
 }>;
 
-export function buildInvokbale(builder: (values: any) => Promise<any>): Invokable {
+export function buildInvokbale(runner: (values: any) => Promise<any>): Invokable {
     return async (_context_, values) => {
         const context = _context_;
 
         const returnValues = await aware(context, async () => {
-            return await builder(values);
+            return await runner(values);
         });
 
         return {
