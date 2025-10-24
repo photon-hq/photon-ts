@@ -17,6 +17,9 @@ package photon;
 service ServerService {
   // Bidirectional
   rpc Compile(stream CompileResult) returns (stream CompileRequest);
+  
+  // bi-di for hooks / tools
+  rpc Invoke(stream InvokeResult) returns (stream InvokeRequest);
 }
 
 // Gateway <-> Target
@@ -26,6 +29,21 @@ service TargetService {
 
   // Bidirectional
   rpc Messages(stream ChatMessage) returns (stream ChatMessage);
+}
+
+// [ Server ] Invoke
+
+message InvokeRequest {
+    string id = 1;
+    string name = 2;
+    google.protobuf.Struct context = 3;
+    optional google.protobuf.Struct values = 4;
+}
+
+message InvokeResult {
+    string id = 1;
+    google.protobuf.Struct context = 2;
+    optional google.protobuf.Struct return_values = 3;
 }
 
 // [ Server ] Compile
