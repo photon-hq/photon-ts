@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { $, instructions, state } from "photon";
+import { $, instructions, reply, state } from "photon";
 import z from "zod";
+import { hook } from "../../../photon/src/modifiers/hook.ts";
 import { Mock } from "../target.ts";
 
 process.env.GATEWAY_URL = "127.0.0.1:50052";
@@ -18,19 +19,19 @@ describe("target utils", () => {
             },
             mockInstance,
         );
-        
-        const userIdFromGateway = await mockInstance.userId(mockInstance.mockId)
+
+        const userIdFromGateway = await mockInstance.userId(mockInstance.mockId);
         expect(userIdFromGateway).not.toBeNull();
-        
+
         const externalIdFromGateway = await mockInstance.externalId(userIdFromGateway ?? "");
         expect(externalIdFromGateway).not.toBeNull();
-        
+
         expect(externalIdFromGateway).toBe(mockInstance.mockId);
-        
+
         expect(mockInstance.idStorage.getByUserId(userIdFromGateway ?? "")).toBe(mockInstance.mockId);
         expect(mockInstance.idStorage.getByExternalId(externalIdFromGateway ?? "")).toBe(userIdFromGateway ?? "");
-        
-        const secondTimeUserIdFromGateway = await mockInstance.gateway.Client.getUserId(mockInstance.mockId)
+
+        const secondTimeUserIdFromGateway = await mockInstance.gateway.Client.getUserId(mockInstance.mockId);
         expect(secondTimeUserIdFromGateway).toBe(userIdFromGateway ?? "");
     });
 });
@@ -42,15 +43,17 @@ describe("sending", () => {
             const mockInstance = new Mock();
 
             const app = $(() => {
-                const onboard = state("onboard", z.boolean()).default(false);
-
-                instructions("You are Ryan.");
-
-                if (!onboard) {
-                    instructions("You are a high school student.");
-                } else {
-                    instructions("You are a college student.");
-                }
+                hook(
+                    async () => {
+                        await reply("hiiii")
+                        return {
+                            history: []
+                        };
+                    },
+                    {
+                        type: "modifyHistory",
+                    },
+                );
             });
 
             app.deploy(

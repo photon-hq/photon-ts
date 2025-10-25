@@ -1,3 +1,4 @@
+import type { Deployable } from "../deploy";
 import type { AgentConfig } from "../deploy/agent-config";
 import type { StatesMap } from "./state";
 
@@ -10,4 +11,5 @@ export type Context = {
     };
     states: StatesMap;
     agentConfig: AgentConfig;
+    app?: Deployable | null | undefined
 };

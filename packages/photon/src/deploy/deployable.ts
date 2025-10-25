@@ -2,7 +2,7 @@
  * Deployable - Elegant deployment of Photon agents
  */
 
-import type { Context } from "../core";
+import type { Context, Invokable } from "../core";
 import type { Compiler } from "../core/compiler";
 import { Gateway } from "../gateway";
 import type { _Target } from "../target/target";
@@ -16,6 +16,8 @@ export interface DeployConfig {
 
 export class Deployable {
     private compilers: Record<string, Compiler>;
+    private invokbales = new Map<string, Invokable>();
+
     private gateway!: Gateway;
 
     constructor(rootCompiler: Compiler) {
@@ -23,6 +25,26 @@ export class Deployable {
             "": rootCompiler,
         };
     }
+    
+    async action(name: string, values: any): Promise<any> {
+        return await this.gateway.Server.sendAction(name, values);
+    }
+
+    addInvokable(name: string, invokable: Invokable) {
+        this.invokbales.set(name, invokable);
+    }
+
+    invoke = async (name: string, context: Context, values: any): Promise<{
+        context: Context;
+        returnValues: any;
+    }> => {
+        const invokable = this.invokbales.get(name);
+        if (!invokable) {
+            throw new Error(`Invokable named '${name}' not found`);
+        }
+        context.app = this;
+        return await invokable(context, values);
+    };
 
     /**
      * Compile method with proper this binding
@@ -33,6 +55,7 @@ export class Deployable {
         if (!compiler) {
             throw new Error(`Compiler not found for scope '${context.scopeName}'`);
         }
+        context.app = this;
         return await compiler(context);
     };
 
@@ -69,28 +92,29 @@ export class Deployable {
 
         // Get gateway address: env var > default
         const gatewayAddress = process.env.GATEWAY_URL ?? DEFAULT_GATEWAY_ADDRESS;
-        
+
         const gatewayConfig = {
             gatewayAddress,
             projectId: projectId,
             projectSecret: projectSecret,
-        }
+        };
 
         // Connect to Gateway
         this.gateway = Gateway.connect(gatewayConfig);
-        
+
         // set up
         this.gateway.Server.registerCompileHandler(this.compile);
+        this.gateway.Server.registerInvokeHandler(this.invoke);
 
         console.log(`[Photon] Deployed successfully`);
         console.log(`[Photon] - Project ID: ${projectId}`);
         console.log(`[Photon] - Gateway: ${gatewayAddress}`);
-        
+
         // Start Targets
         for (const target of targets) {
             target.start(gatewayConfig);
         }
-        
+
         console.log(`[Photon] - Targets started`);
     }
 }

@@ -1,5 +1,10 @@
 import { aware } from "../utils";
 
-export function reply(content: string) {
-    aware((context) => {});
+export async function reply(content: string) {
+    await aware(async (context) => {
+        await context.app?.action('reply', { 
+            content,
+            userId: context.user?.id
+        });
+    });
 }
