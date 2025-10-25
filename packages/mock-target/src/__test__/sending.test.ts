@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { $, instructions, state } from "photon";
+import { $, instructions, reply, state } from "photon";
 import z from "zod";
 import { hook } from "../../../photon/src/modifiers/hook.ts";
 import { Mock } from "../target.ts";
@@ -44,9 +44,11 @@ describe("sending", () => {
 
             const app = $(() => {
                 hook(
-                    ({ history }) => {
-                        console.log("hooked");
-                        return history;
+                    async () => {
+                        await reply("hiiii")
+                        return {
+                            history: []
+                        };
                     },
                     {
                         type: "modifyHistory",

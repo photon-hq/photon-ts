@@ -25,6 +25,10 @@ export class Deployable {
             "": rootCompiler,
         };
     }
+    
+    async action(name: string, values: any): Promise<any> {
+        return await this.gateway.Server.sendAction(name, values);
+    }
 
     addInvokable(name: string, invokable: Invokable) {
         this.invokbales.set(name, invokable);
@@ -38,6 +42,7 @@ export class Deployable {
         if (!invokable) {
             throw new Error(`Invokable named '${name}' not found`);
         }
+        context.app = this;
         return await invokable(context, values);
     };
 

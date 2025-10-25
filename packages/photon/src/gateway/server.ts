@@ -71,7 +71,6 @@ export class GatewayServer extends GatewayBase {
 
         sendCompileResult: async (id: string, context: Context) => {
             context.app = undefined
-            console.log(fromStruct(toStruct(context)))
             this.compileResultStream.push({
                 id,
                 context: toStruct(context),
@@ -86,5 +85,12 @@ export class GatewayServer extends GatewayBase {
                 return_values: toStruct(returnValues),
             });
         },
+        
+        sendAction: async (name: string, values: any) => {
+            return (await this.client.Actions({
+                name,
+                values: toStruct(values)
+            })).return_values ?? null;
+        }
     };
 }

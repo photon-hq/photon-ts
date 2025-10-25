@@ -20,6 +20,8 @@ service ServerService {
   
   // bi-di for hooks / tools
   rpc Invoke(stream InvokeResult) returns (stream InvokeRequest);
+  
+  rpc Actions(ActionRequest) returns (ActionResponse);
 }
 
 // Gateway <-> Target
@@ -29,6 +31,17 @@ service TargetService {
 
   // Bidirectional
   rpc Messages(stream ChatMessage) returns (stream ChatMessage);
+}
+
+// [ Server ] Actions
+
+message ActionRequest {
+    string name = 1;
+    google.protobuf.Struct values = 3;
+}
+
+message ActionResponse {
+    optional google.protobuf.Struct return_values = 1;
 }
 
 // [ Server ] Invoke

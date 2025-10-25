@@ -5,7 +5,10 @@ import { hookTypeSchema } from "../modifiers/hook";
 export const agentConfigSchema = z.object({
     model: z.string().default(Model.default),
     instructions: z.array(z.string()).default([]),
-    hooks: z.set(hookTypeSchema).default(new Set()),
+    hooks: z.union([
+        z.set(hookTypeSchema),
+        z.array(hookTypeSchema).transform((value) => new Set(value))
+    ]).default(new Set()),
 });
 
 export type AgentConfig = z.infer<typeof agentConfigSchema>;
