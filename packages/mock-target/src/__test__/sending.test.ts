@@ -45,13 +45,30 @@ describe("sending", () => {
             const app = $(() => {
                 hook(
                     async () => {
-                        await reply("hiiii")
+                        const a = state("a", z.string())
+                        a.update("new value")
+                        await reply("Hello!");
+
                         return {
-                            history: []
+                            history: [],
                         };
                     },
                     {
-                        type: "modifyHistory",
+                        type: "modifyHistoryBefore",
+                    },
+                );
+
+                hook(
+                    async () => {
+                        const a = state("a", z.string())
+                        await reply(`Hello! x2 with ${a}`);
+
+                        return {
+                            history: [],
+                        };
+                    },
+                    {
+                        type: "modifyHistoryAfter",
                     },
                 );
             });

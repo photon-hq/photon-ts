@@ -6,7 +6,6 @@ import { pushable } from "it-pushable";
 import { fromStruct, nowTimestamp, targetService, toStruct } from "../grpc";
 import type { MessageContent } from "../types";
 import { GatewayBase } from "./base";
-import { on } from "node:stream";
 
 export class GatewayClient extends GatewayBase {
     override service: any = targetService();

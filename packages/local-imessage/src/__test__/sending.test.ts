@@ -21,7 +21,17 @@ describe(
                             history: []
                         }
                     }, {
-                        type: "modifyHistory"
+                        type: "modifyHistoryBefore"
+                    })
+                    
+                    hook(async () => {
+                        await reply("Hello! x2")
+                        
+                        return {
+                            history: []
+                        }
+                    }, {
+                        type: "modifyHistoryAfter"
                     })
                 });
 
