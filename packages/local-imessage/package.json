@@ -12,7 +12,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@photon-ai/imessage-kit": "^1.0.3",
+    "@photon-ai/imessage-kit": "^1.0.4",
     "photon": "workspace:*"
   }
 }
