@@ -1,6 +1,7 @@
 import { describe, test } from "bun:test";
-import { $, instructions } from "photon";
+import { $, instructions, reply } from "photon";
 import { LocalIMessage } from "../target.ts";
+import { hook } from "../../../photon/src/modifiers/hook.ts";
 
 process.env.GATEWAY_URL = "127.0.0.1:50052";
 
@@ -13,7 +14,15 @@ describe(
                 const imessage = new LocalIMessage();
 
                 const app = $(() => {
-                    instructions("You are a helpful assistant. Reply briefly and clearly.");
+                    hook(async () => {
+                        await reply("Hello!")
+                        
+                        return {
+                            history: []
+                        }
+                    }, {
+                        type: "modifyHistory"
+                    })
                 });
 
                 app.deploy(

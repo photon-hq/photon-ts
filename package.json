@@ -16,8 +16,7 @@
   },
   "packageManager": "bun@1.2.22",
   "workspaces": [
-    "packages/*",
-    "gateway"
+    "packages/*"
   ],
   "dependencies": {
     "@grpc/grpc-js": "^1.14.0",
