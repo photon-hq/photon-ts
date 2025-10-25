@@ -1,0 +1,18 @@
+{
+  "name": "@photon/local-imessage",
+  "scripts": {
+    "test": "bun test"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "module": "src/index.ts",
+  "type": "module",
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "photon": "workspace:*",
+    "@photon-ai/imessage-kit": "latest"
+  }
+}
