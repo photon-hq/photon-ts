@@ -82,6 +82,7 @@ describe("sending", () => {
             );
 
             mockInstance.sendMessage("hello world");
+            mockInstance.sendMessage("hello world 111");
 
             await new Promise(() => {});
         },
