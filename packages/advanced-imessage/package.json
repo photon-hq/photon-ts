@@ -1,0 +1,18 @@
+{
+  "name": "@photon/advanced-imessage",
+  "scripts": {
+    "test": "bun test"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "module": "src/index.ts",
+  "type": "module",
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@sg-hq/advanced-imessage-kit": "file:../../../advanced-imessage-kit",
+    "photon": "workspace:*"
+  }
+}
