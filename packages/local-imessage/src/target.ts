@@ -1,7 +1,5 @@
 import { Target, type MessageContent } from "photon";
-import { IMessageSDK, type IMessage } from "@photon-ai/imessage-kit";
-
-type Message = IMessage.Message;
+import { IMessageSDK, type Message } from "@photon-ai/imessage-kit";
 
 export class LocalIMessage extends Target {
     override name: string = "LocalIMessage";
@@ -65,4 +63,3 @@ export class LocalIMessage extends Target {
         await this.sdk.close();
     }
 }
-
