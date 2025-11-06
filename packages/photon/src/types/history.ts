@@ -1,13 +1,13 @@
-import type { MessageContent } from "./message-content"
+import type { MessageContent } from "./message-content";
 
 export type UserMessages = {
-    role: "user",
-    messages: MessageContent[]
-}
+    role: "user";
+    messages: MessageContent[];
+};
 
 export type AssistantMessages = {
-    role: "assistant",
-    messages: MessageContent[]
-}
+    role: "assistant";
+    messages: MessageContent[];
+};
 
-export type History = (UserMessages | AssistantMessages)[]
+export type History = (UserMessages | AssistantMessages)[];

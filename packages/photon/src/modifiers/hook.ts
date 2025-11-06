@@ -1,5 +1,6 @@
 import z from "zod";
 import { buildInvokbale } from "../core";
+import type { History } from "../types";
 import { aware } from "../utils";
 
 export const hookTypeSchema = z.enum(["modifyHistoryBefore", "modifyHistoryAfter"]);

@@ -89,6 +89,8 @@ message UtilsResponse {
 
 message GetUserIdRequest {
   string external_id = 1;
+  optional string phone = 2;
+  optional string email = 3;
 }
 
 message GetUserIdResponse {
